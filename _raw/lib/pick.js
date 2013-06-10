@@ -100,8 +100,8 @@
                 // Create the picker root with a new wrapped holder and bind the events.
                 P.$root = $( Pick._.node( 'div', createWrappedExtension(), CLASSES.picker ) ).
 
-                    // Any click within the root shouldn’t bubble up.
-                    on( 'click', function( event ) {
+                    // Any click or mouseup within the root shouldn’t bubble up.
+                    on( 'click mouseup', function( event ) {
                         event.stopPropagation()
                     }).
 
@@ -115,6 +115,7 @@
                     // Maintain focus when things are getting picked.
                     on( 'mousedown', '[data-pick]', function( event ) {
                         event.stopPropagation()
+                        event.preventDefault()
                     }).
 
                     // When something within the root is picked, set the value.
@@ -177,6 +178,15 @@
                                 if ( isKeycodeDelete ) { P.clear().close() }
                                 else { P.open( true ) }
                             }
+                        })
+                }
+
+                else {
+
+                    $ELEMENT.
+                        on( 'click.P' + STATE.id, function( event ) {
+                            event.stopPropagation()
+                            P.open( true )
                         })
                 }
 
@@ -300,59 +310,62 @@
                     $ELEMENT.addClass( CLASSES.active )
 
                     // If it’s an input, pass focus to the element’s jQuery object.
-                    if ( IS_INPUT ) $ELEMENT.focus()
+                    // if ( IS_INPUT ) $ELEMENT.focus()
 
-                    // Add the “opened” class from the picker root.
-                    P.$root.addClass( CLASSES.opened )
+                    // Add the “focused” class to the picker root.
+                    P.$root.addClass( CLASSES.focused )
 
                     // Bind the document events.
-                    $document.on( 'click.P' + STATE.id + ' focusin.P' + STATE.id, function( event ) {
+                    $document.
+                        on( 'click.P' + STATE.id + ' focusin.P' + STATE.id, function( event ) {
 
-                        // If the target of the event is not the element, close the picker picker.
-                        // * Don’t worry about clicks or focusins on the root because those don’t bubble up.
-                        //   Also, for Firefox, a click on an `option` element bubbles up directly
-                        //   to the doc. So make sure the target wasn't the doc.
-                        if ( event.target != ELEMENT && event.target != document ) P.close()
+                            // If the target of the event is not the element, close the picker.
+                            // * Don’t worry about clicks or focusins on the root because those don’t bubble up.
+                            //   Also, for Firefox, a click on an `option` element bubbles up directly
+                            //   to the doc. So make sure the target wasn't the doc.
+                            if ( event.target != ELEMENT && event.target != document ) P.close()
 
-                    }).on( 'keydown.P' + STATE.id, function( event ) {
+                        }).
+                        on( 'mouseup.P' + STATE.id, P.close ).
+                        on( 'keydown.P' + STATE.id, function( event ) {
 
-                        var
-                            // Get the keycode.
-                            keycode = event.keyCode,
+                            var
+                                // Get the keycode.
+                                keycode = event.keyCode,
 
-                            // Translate that to an extension keycode action.
-                            keycodeAction = EXTENSION.keys[ keycode ],
+                                // Translate that to an extension keycode action.
+                                keycodeAction = EXTENSION.keys[ keycode ],
 
-                            // Grab the target.
-                            target = event.target
-
-
-                        // On escape, close the picker and give focus.
-                        if ( keycode == 27 ) {
-                            P.close( true )
-                        }
+                                // Grab the target.
+                                target = event.target
 
 
-                        // Check if the picker is active and there is a recorded key action.
-                        else if ( STATE.active && keycodeAction ) {
-
-                            // Prevent the default action to stop page movement.
-                            event.preventDefault()
-
-                            // Trigger the key action.
-                            if ( keycodeAction ) {
-                                Pick._.trigger( EXTENSION.keys.go, P, [ keycodeAction ] )
+                            // On escape, close the picker and give focus.
+                            if ( keycode == 27 ) {
+                                P.close( true )
                             }
-                        }
 
 
-                        // If the target is within the root and “enter” is pressed,
-                        // prevent the default action and trigger a click on the target instead.
-                        else if ( P.$root.find( target ).length && keycode == 13 ) {
-                            event.preventDefault()
-                            target.click()
-                        }
-                    })
+                            // Check if the picker is active and there is a recorded key action.
+                            else if ( STATE.active && keycodeAction ) {
+
+                                // Prevent the default action to stop page movement.
+                                event.preventDefault()
+
+                                // Trigger the key action.
+                                if ( keycodeAction ) {
+                                    Pick._.trigger( EXTENSION.keys.go, P, [ keycodeAction ] )
+                                }
+                            }
+
+
+                            // If the target is within the root and “enter” is pressed,
+                            // prevent the default action and trigger a click on the target instead.
+                            else if ( P.$root.find( target ).length && keycode == 13 ) {
+                                event.preventDefault()
+                                target.click()
+                            }
+                        })
                 }
 
                 // Trigger the queued “open” events.
@@ -490,8 +503,8 @@
                     // First check if a picker state exists.
                     STATE[ thing ] != null ? STATE[ thing ] :
 
-                    // Otherwise trigger the `thing` diction with some options.
-                    Pick._.trigger( EXTENSION.dict.get, P, [ thing, options ] )
+                    // Otherwise get the formatted or basic `thing` diction value.
+                    Pick._.trigger( EXTENSION.dict.get, P, [ thing, options ] ) || EXTENSION.dict.values[ thing ]
             }, //get
 
 
@@ -522,8 +535,20 @@
                         // Check if the diction exists.
                         if ( thingItem in EXTENSION.dict.values ) {
 
-                            // Get the definition of the relevant extension item.
-                            thingDefined = Pick._.trigger( EXTENSION.dict.set, P, [ thingItem, thingValue, options ] )
+                            // Check if there’s a custom set method.
+                            thingDefined = EXTENSION.dict.set ?
+
+                                // Set the definition of the relevant extension item.
+                                Pick._.trigger( EXTENSION.dict.set, P, [ thingItem, thingValue, options ] ) :
+
+                                // Otherwise directly set the item diction value and cascade through changes.
+                                (function() {
+                                    EXTENSION.dict.values[ thingItem ] = thingValue
+                                    if ( EXTENSION.dict.cascades && EXTENSION.dict.cascades[ thingItem ] ) {
+                                        P.set( EXTENSION.dict.cascades[ thingItem ], thingValue, options )
+                                    }
+                                    return thingValue
+                                })()
 
                             // Check if a change in value is needed.
                             if ( thingItem == 'select' || thingItem == 'highlight' || thingItem == 'clear' ) {
@@ -805,6 +830,11 @@ $.fn.pick = function( name, options, action ) {
         // Grab the component data.
         componentData = this.data( 'pick.' + name )
 
+
+    // Check if an extension was found.
+    if ( !extension ) {
+        throw 'ComponentError: No extension found by the name of “' + name + '”.'
+    }
 
     // If the picker is requested, return the component data.
     if ( options == 'picker' ) {

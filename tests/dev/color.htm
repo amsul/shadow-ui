@@ -1,0 +1,131 @@
+<!doctype html>
+
+<meta charset="utf-8">
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+    body {
+        font-family: sans-serif;
+        font-weight: 100;
+    }
+</style>
+<link rel="stylesheet" href="pick.css">
+<style>
+    .picker__input {
+        border: 1px solid #999;
+    }
+    .picker__input:focus {
+        border-color: #0089ec;
+    }
+    .picker__holder {
+        min-width: 200px;
+        max-width: 200px;
+    }
+    .picker__box {
+        padding: .5em;
+    }
+    .picker__list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        font-size: 0.1px; /* To remove the gaps between lists */
+    }
+    .picker__list-item {
+        display: inline-block;
+        width: 20px;
+        padding-top: 20px;
+        position: relative;
+        margin-right: 2px;
+        margin-bottom: 2px;
+    }
+    .picker__color {
+        cursor: pointer;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border: 2px solid transparent;
+    }
+</style>
+
+<br><br>
+<input class="color" type="color">
+<input type="text">
+
+<script src="jquery.js"></script>
+<script src="pick.js"></script>
+<script>
+    Pick.extend({
+        name: 'colorpicker',
+        content: function() {
+            var picker = this,
+                extension = picker.extension,
+                colors = extension.dict.colors(),
+                selectedColor = extension.dict.select(),
+                numInRow = 4,
+                classes = picker.settings.klass
+
+            return Pick._.node(
+                'ul',
+                Pick._.range({
+                    min: 0,
+                    max: colors.length - 1,
+                    item: function( count ) {
+                        var colorvalue = colors[ count ]
+                        return Pick._.node(
+                            'li',
+                            Pick._.node(
+                                'div',
+                                '', classes.color,
+                                'data-pick="' + colorvalue + '" style="background:' + colorvalue + ( colorvalue === selectedColor ? ';box-shadow:inset 0 0 0 1px #fff;border-color:black' : '' ) + '"'
+                            ),
+                            classes.listItem
+                        )
+                    }
+                }),
+                classes.list
+            ) + '<p><input tabindex=-1 type=text></p>'
+        },
+        dict: (function() {
+
+            var linkvalue = localStorage.color || '#0089ec'
+
+            return {
+                colors: function() {
+                    return [ 'red', 'green', 'black', 'purple', '#0089ec', '#ff0', 'orange', 'brown', 'grey' ]
+                },
+                select: function( value ) {
+                    if ( value ) linkvalue = localStorage.color = value
+                    return linkvalue
+                }
+            }
+        })(),
+
+        keys: {
+            37: 'left',
+            38: 'up',
+            39: 'right',
+            40: 'down',
+            go: function( movement ) {
+                console.log( 'going', movement )
+            }
+        },
+
+        // Need `define` to add things to the dictionary.
+        define: function( thing, value, options ) {
+            return Pick._.trigger( this.extension.dict[ thing ], this.dict, [ value, options ] )
+        },
+
+        defaults: {
+            klass: {
+                list: 'picker__list',
+                listItem: 'picker__list-item',
+                color: 'picker__color'
+            }
+        }
+    })
+    $( '.color' ).pick( 'colorpicker' )//.pick( 'colorpicker', 'open' )
+</script>

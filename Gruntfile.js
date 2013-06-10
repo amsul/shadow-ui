@@ -149,7 +149,10 @@ module.exports = function( grunt ) {
                 }
             },
             demos: {
-                files: { '<%= dirs.dest.demos %>/scripts/main.js': '<%= dirs.src.demos %>/scripts/*.js' }
+                files: {
+                    '<%= dirs.dest.demos %>/scripts/main.js': '<%= dirs.src.demos %>/scripts/*.js',
+                    '<%= dirs.dest.demos %>/jquery.js': '<%= dirs.src.demos %>/jquery.js'
+                }
             },
             pickers: {
                 expand: true,

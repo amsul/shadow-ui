@@ -1,17 +1,17 @@
-# pickadate v3.0.4 [![pickadate build status](https://travis-ci.org/amsul/pickadate.js.png?branch=gh-pages)](https://travis-ci.org/amsul/pickadate.js)
+# pick v3.5.0-alpha [![pick build status](https://travis-ci.org/amsul/pickadate.js.png?branch=gh-pages)](https://travis-ci.org/amsul/pickadate.js)
 
-The mobile-friendly, responsive, and lightweight jQuery date & time input picker.
+The mobile-friendly, responsive, and lightweight jQuery picker & modal extension.
 
 
 
 #### To get started, check out the:
 
-[Homepage](http://amsul.github.io/pickadate.js) - [Date picker](http://amsul.github.io/pickadate.js/date.htm) - [Time picker](http://amsul.github.io/pickadate.js/time.htm) - [API]({http://amsul.github.io/pickadate.js/api.htm)
+[Homepage](http://amsul.github.io/pick.js) - [Date picker](http://amsul.github.io/pick.js/date.htm) - [Time picker](http://amsul.github.io/pick.js/time.htm) - [API]({http://amsul.github.io/pick.js/api.htm)
 
 
 #### To get it:
 
-[Download v3.0.4](https://github.com/amsul/pickadate.js/archive/3.0.4.zip) or `git clone git://github.com/amsul/pickadate.js.git` or `bower install pickadate`
+[Download v3.5.0-alpha](https://github.com/amsul/pick.js/archive/3.5.0-alpha.zip) or `git clone git://github.com/amsul/pickadate.js.git` or `bower install pickadate`
 
 
 
@@ -19,7 +19,7 @@ The mobile-friendly, responsive, and lightweight jQuery date & time input picker
 <br>
 ## Upgrading from v2 to v3
 
-The v3 API is significantly different from v2 (all for the greater good!). So if you’re upgrading to v3, make sure to read the [changelog](https://github.com/amsul/pickadate.js/blob/gh-pages/CHANGELOG.md).
+The v3 API is significantly different from v2 (all for the greater good!). So if you’re upgrading to v3, make sure to read the [changelog](https://github.com/amsul/pick.js/blob/gh-pages/CHANGELOG.md).
 
 
 
@@ -36,9 +36,9 @@ There are currently two pickers: **date** and **time**.
 
 File                    | Contents                 | Size (min & gzip)
 ----------------------- | ------------------------ | ----------------------
-`picker.js`             | __Base *__               | 1.26kb
-`picker.date.js`        | Date picker              | 1.89kb
-`picker.time.js`        | Time picker              | 1.30kb
+`picker.js`             | __Base *__               | 1.25kb
+`picker.date.js`        | Date picker              | 1.90kb
+`picker.time.js`        | Time picker              | 1.29kb
 
 __*__ The base script is **required** for any of the pickers to function.
 
@@ -58,11 +58,11 @@ File                    | Contents                 | Size (min & gzip)
 `classic.date.css`      | Classic date picker      | 0.69kb
 `classic.time.css`      | Classic time picker      | 0.35kb
 
-__*__ One and only one base stylesheet is **required**. [Choose a theme](http://amsul.github.io/pickadate.js) then include the respective pickers as well.
+__*__ One and only one base stylesheet is **required**. [Choose a theme](http://amsul.github.io/pick.js) then include the respective pickers as well.
 
 ### Translations
 
-The translations are copied into the `lib/translations` folder. There are currently [30 languages](https://github.com/amsul/pickadate.js/blob/v3.0.4/lib/translations) included.
+The translations are copied into the `lib/translations` folder. There are currently [30 languages](https://github.com/amsul/pick.js/blob/v3.5.0/lib/translations) included.
 
 
 
@@ -103,7 +103,7 @@ Constructed as such:
 <br>
 ## Bugs
 
-Before opening a new issue, please search the existing [Issues](https://github.com/amsul/pickadate.js/issues) for anything similar – there might already be an answer to your problem. You might also wanna check out the [Contributing](https://github.com/amsul/pickadate.js/blob/gh-pages/CONTRIBUTING.md) guide.
+Before opening a new issue, please search the existing [Issues](https://github.com/amsul/pick.js/issues) for anything similar – there might already be an answer to your problem. You might also wanna check out the [Contributing](https://github.com/amsul/pick.js/blob/gh-pages/CONTRIBUTING.md) guide.
 
 
 
@@ -112,7 +112,7 @@ Before opening a new issue, please search the existing [Issues](https://github.c
 <br>
 ## Contributing
 
-Before contributing any code to the project, please take a look at the [Contributing](https://github.com/amsul/pickadate.js/blob/gh-pages/CONTRIBUTING.md) guide.
+Before contributing any code to the project, please take a look at the [Contributing](https://github.com/amsul/pick.js/blob/gh-pages/CONTRIBUTING.md) guide.
 
 
 

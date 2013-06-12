@@ -1,0 +1,40 @@
+<!doctype html>
+
+<meta charset="utf-8">
+
+<style>
+    body {
+        font-family: sans-serif;
+        font-weight: 100;
+        padding: 2em;
+    }
+    input {
+        border: 1px solid #ccc;
+        margin: 0;
+    }
+    input:focus {
+        border-color: #444;
+    }
+</style>
+<link rel="stylesheet" href="../lib/pick.css">
+
+<a class="anchor" href="#" title="some title">some link</a>
+
+<br><br>
+<div class="div" data-value="1">hello there</div>
+
+<br><br>
+<input class="color" type="color">
+
+<br><br>
+<input class="input" type="date">
+
+<script src="jquery.js"></script>
+<script src="../lib/pick.js"></script>
+<script>
+    Pick.extend({
+        name: 'dropper',
+        content: '<div style="padding:10px;">This is a basic picker.</div>'
+    })
+    $( '.div' ).pick( 'dropper' )
+</script>

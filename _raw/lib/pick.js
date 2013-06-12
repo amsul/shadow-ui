@@ -201,8 +201,8 @@
                         }
                     }).
 
-                    // Add the “input” class.
-                    addClass( CLASSES.input ).
+                    // Add the “element” class.
+                    addClass( CLASSES.element ).
 
                     // Store the picker data by the extension name.
                     data( 'pick.' + EXTENSION.name, P )
@@ -260,8 +260,8 @@
                 // Remove the root.
                 P.$root.remove()
 
-                // Remove the input class, unbind the events, and remove the stored data.
-                $ELEMENT.removeClass( CLASSES.input ).off( '.P' + STATE.id ).removeData( EXTENSION.name )
+                // Remove the “element” class, unbind the events, and remove the stored data.
+                $ELEMENT.removeClass( CLASSES.element ).off( '.P' + STATE.id ).removeData( EXTENSION.name )
 
                 // Restore the input element state.
                 if ( IS_INPUT ) {
@@ -660,8 +660,8 @@ Pick._ = {
             opened: '--opened',
             focused: '--focused',
 
-            input: 'input',
-            active: 'input--active',
+            element: '-element',
+            active: '-element--active',
 
             holder: 'holder',
 
@@ -680,7 +680,7 @@ Pick._ = {
         prefix = prefix || 'picker'
         for ( var klass in klasses ) {
             className = klasses[ klass ]
-            klasses[ klass ] = ( className ? prefix + ( className.match( /^--/ ) ? '' : '__' ) + className : prefix )
+            klasses[ klass ] = ( className ? prefix + ( className.match( /^-/ ) ? '' : '__' ) + className : prefix )
         }
         return klasses
     }, //prefix

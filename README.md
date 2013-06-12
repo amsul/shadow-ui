@@ -1,118 +1,6 @@
-# pick v3.5.0-alpha [![pick build status](https://travis-ci.org/amsul/pickadate.js.png?branch=gh-pages)](https://travis-ci.org/amsul/pickadate.js)
+# pick v0.1.0-alpha [![pick build status](https://travis-ci.org/amsul/pick.js.png)](https://travis-ci.org/amsul/pick.js)
 
-The mobile-friendly, responsive, and lightweight jQuery picker & modal extension.
-
-
-
-#### To get started, check out the:
-
-[Homepage](http://amsul.github.io/pick.js) - [Date picker](http://amsul.github.io/pick.js/date.htm) - [Time picker](http://amsul.github.io/pick.js/time.htm) - [API]({http://amsul.github.io/pick.js/api.htm)
-
-
-#### To get it:
-
-[Download v3.5.0-alpha](https://github.com/amsul/pick.js/archive/3.5.0-alpha.zip) or `git clone git://github.com/amsul/pickadate.js.git` or `bower install pickadate`
-
-
-
-
-<br>
-## Upgrading from v2 to v3
-
-The v3 API is significantly different from v2 (all for the greater good!). So if you’re upgrading to v3, make sure to read the [changelog](https://github.com/amsul/pick.js/blob/gh-pages/CHANGELOG.md).
-
-
-
-
-
-<br>
-## Library files
-
-The `lib` folder includes all the compiled files and a `compressed` folder with the minified counter-parts.
-
-### Pickers
-
-There are currently two pickers: **date** and **time**.
-
-File                    | Contents                 | Size (min & gzip)
------------------------ | ------------------------ | ----------------------
-`picker.js`             | __Base *__               | 1.25kb
-`picker.date.js`        | Date picker              | 1.90kb
-`picker.time.js`        | Time picker              | 1.29kb
-
-__*__ The base script is **required** for any of the pickers to function.
-
-_To support old browsers, namely IE8, **also include** the `legacy.js` file._
-
-
-### Themes
-
-All themes are [generated using LESS](#less-styling) and compiled into the `lib/themes` folder.
-
-File                    | Contents                 | Size (min & gzip)
------------------------ | ------------------------ | ----------------------
-`default.css`           | __Base default *__       | 0.49kb
-`default.date.css`      | Default date picker      | 0.69kb
-`default.time.css`      | Default time picker      | 0.35kb
-`classic.css`           | __Base classic *__       | 0.32kb
-`classic.date.css`      | Classic date picker      | 0.69kb
-`classic.time.css`      | Classic time picker      | 0.35kb
-
-__*__ One and only one base stylesheet is **required**. [Choose a theme](http://amsul.github.io/pick.js) then include the respective pickers as well.
-
-### Translations
-
-The translations are copied into the `lib/translations` folder. There are currently [30 languages](https://github.com/amsul/pick.js/blob/v3.5.0/lib/translations) included.
-
-
-
-
-<br>
-<a name="less-styling"></a>
-## Styling with LESS
-
-The picker themes are built using [LESS](http://lesscss.org/) with Grunt. To customize the CSS output, read the `_variables.less` file in the `_raw/lib/themes` folder. You can specify:
-
-- colors for the theme,
-- sizes for the picker,
-- media-query breakpoints,
-- and a whole bunch of other stuff.
-
-
-After making any changes, run `grunt less:themes` to compile it into CSS.
-
-
-
-<br>
-## Versioning
-
-To maintain some consistency in the sort of changes to expect with version bumps, [Semantic Versioning guidelines](http://semver.org/) will now be followed as closely as possible:
-
-`<major>.<minor>.<patch>`
-
-Constructed as such:
-
-- `major`: breaks backward compatibility (resets the `minor` and `patch`)
-- `minor`: new additions with backward compatibility (resets the `patch`)
-- `patch`: bug fixes and misc changes
-
-
-
-
-
-<br>
-## Bugs
-
-Before opening a new issue, please search the existing [Issues](https://github.com/amsul/pick.js/issues) for anything similar – there might already be an answer to your problem. You might also wanna check out the [Contributing](https://github.com/amsul/pick.js/blob/gh-pages/CONTRIBUTING.md) guide.
-
-
-
-
-
-<br>
-## Contributing
-
-Before contributing any code to the project, please take a look at the [Contributing](https://github.com/amsul/pick.js/blob/gh-pages/CONTRIBUTING.md) guide.
+Pick things with ease.
 
 
 
@@ -128,6 +16,37 @@ Before contributing any code to the project, please take a look at the [Contribu
 
 Read the Gruntfile to see the build tasks and relative directories of the source files.
 
+
+
+
+<br>
+## Bugs
+
+Before opening a new issue, please search the existing [Issues](https://github.com/amsul/pick.js/issues) for anything similar – there might already be an answer to your problem. You might also wanna check out the [Contributing](https://github.com/amsul/pick.js/blob/gh-pages/CONTRIBUTING.md) guide.
+
+
+
+
+<br>
+## Contributing
+
+Before contributing any code to the project, please take a look at the [Contributing](https://github.com/amsul/pick.js/blob/gh-pages/CONTRIBUTING.md) guide.
+
+
+
+
+<br>
+## Versioning
+
+To maintain consistency in the sort of changes to expect with version bumps, [Semantic Versioning guidelines](http://semver.org/) will be followed as closely as possible:
+
+`<major>.<minor>.<patch>`
+
+Constructed as such:
+
+- `major`: breaks backward compatibility (resets the `minor` and `patch`)
+- `minor`: new additions with backward compatibility (resets the `patch`)
+- `patch`: bug fixes and misc changes
 
 
 

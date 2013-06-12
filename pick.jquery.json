@@ -1,8 +1,8 @@
 {
   "name": "pick",
-  "version": "3.5.0-alpha",
+  "version": "0.1.0-alpha",
   "title": "pick.js",
-  "description": "The mobile-friendly, responsive, and lightweight jQuery picker & modal extension.",
+  "description": "Pick things with ease.",
   "author": {
     "name": "Amsul",
     "email": "reach@amsul.ca",

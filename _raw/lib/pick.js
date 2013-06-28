@@ -98,7 +98,11 @@
 
 
                 // Create the picker root with a new wrapped holder and bind the events.
-                P.$root = $( Pick._.node( 'div', createWrappedExtension(), CLASSES.picker ) ).
+                P.$root = $(
+                    Pick._.node( 'div', createWrappedExtension(), CLASSES.picker + ( SETTINGS.align ?
+                        ' ' + Pick._.prefix( EXTENSION.prefix, '--' + SETTINGS.align ) :
+                        '' )
+                    ) ).
 
                     // Any click or mouseup within the root shouldn’t bubble up.
                     on( 'click mouseup', function( event ) {
@@ -585,34 +589,39 @@
      */
     function createWrappedExtension() {
 
-        // Create a picker wrapper holder
+        // Create a picker wrapper holder.
         return Pick._.node( 'div',
 
-            // Create a picker wrapper node
+            Pick._.node( 'div', '', CLASSES.pointer/*, (function( alignment, measurement ) {
+                    return 'style="' + alignment + ':' + ( measurement ) + 'px;"'
+                })( SETTINGS.align, Math.ceil( ELEMENT.clientWidth / 2 ) - 10 )*/
+            ) +
+
+            // Create a picker wrapper node.
             Pick._.node( 'div',
 
-                // Create a picker frame
+                // Create a picker frame.
                 Pick._.node( 'div',
 
-                    // Create a picker box node
+                    // Create a picker box node.
                     Pick._.node( 'div',
 
                         // Insert the component’s content.
                         Pick._.trigger( EXTENSION.content, P ),
 
-                        // The picker box class
+                        // The picker box class.
                         CLASSES.box
                     ),
 
-                    // Picker wrap class
+                    // Picker wrap class.
                     CLASSES.wrap
                 ),
 
-                // Picker frame class
+                // Picker frame class.
                 CLASSES.frame
             ),
 
-            // Picker holder class
+            // Picker holder class.
             CLASSES.holder
         ) //endreturn
     } //createWrappedExtension
@@ -665,6 +674,8 @@ Pick._ = {
 
             holder: 'holder',
 
+            pointer: 'pointer',
+
             frame: 'frame',
             wrap: 'wrap',
 
@@ -674,15 +685,21 @@ Pick._ = {
 
 
     /**
-     * Prefix an object of classes.
+     * Prefix a single class or an object of classes.
      */
     prefix: function( prefix, klasses ) {
-        prefix = prefix || 'picker'
-        for ( var klass in klasses ) {
-            className = klasses[ klass ]
-            klasses[ klass ] = ( className ? prefix + ( className.match( /^-/ ) ? '' : '__' ) + className : prefix )
+        var bemPrefixify = function( klass ) {
+            return ( klass ? prefix + ( klass.match( /^-/ ) ? '' : '__' ) + klass : prefix )
         }
-        return klasses
+        prefix = prefix || 'picker'
+        if ( Pick._.isObject( klasses ) ) {
+            for ( var klass in klasses ) {
+                className = klasses[ klass ]
+                klasses[ klass ] = bemPrefixify( className )
+            }
+            return klasses
+        }
+        return bemPrefixify( klasses )
     }, //prefix
 
 

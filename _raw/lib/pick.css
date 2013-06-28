@@ -34,16 +34,6 @@
     font-size: 16px;
     text-align: left;
     line-height: 1.2;
-
-    /* Collapse the width. */
-    width: 0;
-
-    /* Fix the element edges to the parent. */
-    left: 0;
-    right: 0;
-
-    /* Then center it. */
-    margin: 0 auto;
 }
 
 /* Opened picker state. */
@@ -64,9 +54,6 @@
         /* Set a width. */
         width: 270px;
 
-        /* Adjust to the center with a negative margin. */
-        margin-left: -135px;
-
         /* Hide everything to begin with. */
         max-height: 0;
         overflow: hidden;
@@ -79,9 +66,7 @@
         -webkit-transition: all .2s ease-out, max-height 0 .2s, padding-top 0 .2s;
     }
 
-    /**
-     * The opened content holder.
-     */
+    /* The opened content holder. */
     .picker--opened .picker__holder {
 
         /* Reveal the content. */
@@ -100,47 +85,38 @@
     }
 
 
-    /**
-     * The picker’s pointer and pseudo-border.
-     */
-    .picker__holder:after,
-    .picker__holder:before {
-        content: " ";
+        /**
+         * The picker’s pointer and pseudo-border.
+         */
+        .picker__pointer,
+        .picker__pointer:after {
 
-        /* Add the base border styling. */
-        border: 10px solid transparent;
+            /* Add the base border styling. */
+            border: 10px solid transparent;
 
-        /* Position them in the center with no width. */
-        position: absolute;
-        left: 0;
-        right: 0;
-        width: 0;
-        margin: 0 auto;
-    }
+            /* Default position is near the left edge */
+            position: absolute;
+            top: -9px;
+            left: 10px;
+            width: 0;
+        }
 
-    /**
-     * The pseudo-border.
-     */
-    .picker__holder:before {
+        /* The pointer pseudo-border. */
+        .picker__pointer {
+            border-bottom-color: #aaa;
+        }
 
-        /* Nudge it into view 1px more than the foreground. */
-        top: -9px;
+        /* The pointer foreground. */
+        .picker__pointer:after {
+            content: " ";
 
-        /* Add the border color. */
-        border-bottom-color: #aaa;
-    }
+            /* Nudge it back it’s own width. */
+            left: -10px;
 
-    /**
-     * The foreground pointer.
-     */
-    .picker__holder:after {
+            /* Add the foreground color. */
+            border-bottom-color: #f5f5f5;
+        }
 
-        /* Nudge it into view. */
-        top: -8px;
-
-        /* Add the foreground color. */
-        border-bottom-color: #f5f5f5;
-    }
 
         /**
          * The frame creates a picker boundary.
@@ -157,4 +133,56 @@
             /* Add a drop shadow. */
             box-shadow: 0 2px 12px 1px rgba(0,0,0,.15);
         }
+
+
+
+
+/**
+ * The center aligned picker.
+ */
+.picker--center {
+
+    /* Collapse the width. */
+    width: 0;
+
+    /* Fix the element edges to the parent. */
+    left: 0;
+    right: 0;
+
+    /* Then center it. */
+    margin: 0 auto;
+}
+
+    /* Adjust the holder to the center with a negative margin. */
+    .picker--center .picker__holder {
+        margin-left: -135px;
+    }
+
+        /* Align the pointer to the center with a collapsed width. */
+        .picker--center .picker__pointer {
+            left: 0;
+            right: 0;
+            margin: 0 auto;
+        }
+
+
+
+
+/**
+ * The right aligned picker.
+ */
+.picker--right {
+    width: 100%;
+    left: auto;
+    right: auto;
+}
+    .picker--right .picker__holder {
+        right: 0;
+    }
+        .picker--right .picker__holder .picker__pointer {
+            left: auto;
+            right: 10px;
+        }
+
+
 

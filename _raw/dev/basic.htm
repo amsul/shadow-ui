@@ -15,13 +15,20 @@
     input:focus {
         border-color: #444;
     }
+    .div {
+        /*float: left;*/
+        text-align: center;
+        position: relative;
+    }
 </style>
 <link rel="stylesheet" href="../lib/pick.css">
 
 <a class="anchor" href="#" title="some title">some link</a>
 
 <br><br>
-<div class="div" data-value="1">hello there</div>
+<div>
+    <div class="div">hello there</div>
+</div>
 
 <br><br>
 <input class="color" type="color">
@@ -34,7 +41,9 @@
 <script>
     Pick.extend({
         name: 'dropper',
-        content: '<div style="padding:10px;">This is a basic picker.</div>'
+        content: '<div style="padding:10px;">This is the most basic form of a picker.</div>'
     })
-    $( '.div' ).pick( 'dropper' )
+    $( '.div' ).pick( 'dropper', {
+        align: 'center',
+    })//.pick( 'dropper', 'picker' ).open()
 </script>

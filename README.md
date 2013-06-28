@@ -1,4 +1,4 @@
-# pick v0.1.0-alpha [![pick build status](https://travis-ci.org/amsul/pick.js.png)](https://travis-ci.org/amsul/pick.js)
+# pick v0.1.1 [![pick build status](https://travis-ci.org/amsul/pick.js.png)](https://travis-ci.org/amsul/pick.js)
 
 Pick things with ease.
 

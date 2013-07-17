@@ -51,18 +51,6 @@ module.exports = function( grunt ) {
         },
 
 
-        // Generate static HTML templates.
-        htmlify: {
-            demos: {
-                expand: true,
-                cwd: '<%= dirs.src.raw %>',
-                src: [ '/!(base|hero)*.htm' ],
-                dest: '',
-                base: '/base.htm'
-            }
-        },
-
-
         // Copy over files to destination directions.
         copy: {
             pkg: {
@@ -150,42 +138,6 @@ module.exports = function( grunt ) {
     // Register the tasks.
     grunt.registerTask( 'default', [ 'clean', 'copy' ] )
     // grunt.registerTask( 'travis', [ 'jshint:pickers', 'qunit:pickers' ] )
-
-
-
-    // // Create and register the task to build out the static HTML files.
-    // grunt.registerMultiTask( 'htmlify', 'Build static HTML files', function() {
-
-    //     var task = this,
-
-    //         // Process the base file using the source file content.
-    //         processFile = function( fileSource ) {
-
-    //             var processedContent = ''
-
-    //             // Process the base template using the file source content.
-    //             grunt.verbose.writeln( 'Processing ' + fileSource )
-    //             processedContent = grunt.template.process( grunt.file.read( task.data.cwd + task.data.base ), {
-    //                 delimiters: 'curly',
-    //                 data: {
-    //                     pkg: packageJSON,
-    //                     page: fileSource.match( /[\w-]+(?=\.htm$)/ )[ 0 ],
-    //                     content: grunt.file.read( fileSource ),
-    //                     meta: grunt.config.data.meta,
-    //                     dirs: grunt.config.data.dirs
-    //                 }
-    //             })
-
-    //             // Write the destination file by cleaning the file name.
-    //             grunt.log.writeln( 'Writing ' + fileSource.cyan )
-    //             grunt.file.write( task.data.dest + fileSource.match( /[\w-]+\.htm$/ )[ 0 ], processedContent )
-    //         }
-
-
-    //     // Map through the task directory and process the HTML files.
-    //     grunt.log.writeln( 'Expanding ' + task.data.cwd.cyan )
-    //     grunt.file.expand( task.data.cwd + task.data.src ).map( processFile )
-    // })
 
 } //module.exports
 

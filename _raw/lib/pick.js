@@ -14,27 +14,67 @@
     eqnull: true
  */
 
-(function ( root, $, factory ) {
+(function ( root, picker, $, factory ) {
 
-    var pick = {}
-    factory( pick, $, $( document ) )
+    // Create the picker factory.
+    factory( picker, $, $( document ) )
 
     // Setup the exports for Node module pattern, AMD, and basic <script> includes.
-    if ( typeof module === 'object' && module && typeof module.exports === 'object' )
-        module.exports = pick
-    else if ( typeof define === 'function' && define.amd )
-        define( pick )
+    if ( typeof module == 'object' && typeof module.exports == 'object' )
+        module.exports = picker
+    else if ( typeof define == 'function' && define.amd )
+        define( picker )
     else
-        root.Pick = pick
+        root.Pick = picker
 
-}( this, jQuery, function( Pick, $, $document ) {
+}( this, {}, jQuery, function( Pick, $, $document ) {
+
+
+
+/**
+ * A picker creator.
+ */
+Pick.create = function( name, options, action ) {
+
+    var
+        // Grab the extension by name.
+        extension = Pick._.EXTENSIONS[ name ],
+
+        // Grab the component data.
+        componentData = this.data( 'Pick.' + name )
+
+
+    // Check if an extension was found.
+    if ( !extension ) {
+        throw 'ComponentError: No extension found by the name of “' + name + '”.'
+    }
+
+    // If the picker is requested, return the component data.
+    if ( options == 'picker' ) {
+        return componentData
+    }
+
+    // If the component data exists and `options` is a string, carry out the action.
+    if ( componentData && typeof options == 'string' ) {
+        Pick._.trigger( componentData[ options ], componentData, [ action ] )
+        return this
+    }
+
+    // Otherwise go through each matched element and compose new extensions.
+    return this.each( function() {
+        var $this = $( this )
+        if ( !$this.data( name ) ) {
+            new Pick.Compose( this, extension, options )
+        }
+    })
+} //pick
 
 
 
 /**
  * The composer that creates a new extension picker.
  */
- Pick.Compose = function( ELEMENT, EXTENSION, OPTIONS ) {
+Pick.Compose = function( ELEMENT, EXTENSION, OPTIONS ) {
 
 
     var
@@ -209,7 +249,7 @@
                     addClass( CLASSES.element ).
 
                     // Store the picker data by the extension name.
-                    data( 'pick.' + EXTENSION.name, P )
+                    data( 'Pick.' + EXTENSION.name, P )
 
                     // Insert the root and hidden input based on the type of element.
                     [ IS_INPUT ? 'after' : 'append' ]( P.$root, P._hidden )
@@ -775,10 +815,18 @@ Pick._ = {
 
 
     /**
+     * Tell if something is a certain type.
+     */
+    isType: function( value, type ) {
+        return {}.toString.call( value ).indexOf( type ) > -1
+    },
+
+
+    /**
      * Tell if something is an object.
      */
     isObject: function( value ) {
-        return {}.toString.call( value ).indexOf( 'Object' ) > -1
+        return this.isType( value, 'Object' )
     },
 
 
@@ -786,7 +834,7 @@ Pick._ = {
      * Tell if something is a date object.
      */
     isDate: function( value ) {
-        return {}.toString.call( value ).indexOf( 'Date' ) > -1
+        return this.isType( value, 'Date' )
     },
 
 
@@ -794,10 +842,8 @@ Pick._ = {
      * Tell if something is an integer.
      */
     isInteger: function( value ) {
-        return {}.toString.call( value ).indexOf( 'Number' ) > -1 && value % 1 === 0
+        return this.isType( value, 'Number' ) && value % 1 === 0
     }
-
-
 } //Pick._
 
 
@@ -836,42 +882,10 @@ Pick.extend = function( component ) {
 
 
 /**
- * Extend jQuery.
+ * Allow extending and creating pickers through jQuery.
  */
-$.fn.pick = function( name, options, action ) {
-
-    var
-        // Grab the extension by name.
-        extension = Pick._.EXTENSIONS[ name ],
-
-        // Grab the component data.
-        componentData = this.data( 'pick.' + name )
-
-
-    // Check if an extension was found.
-    if ( !extension ) {
-        throw 'ComponentError: No extension found by the name of “' + name + '”.'
-    }
-
-    // If the picker is requested, return the component data.
-    if ( options == 'picker' ) {
-        return componentData
-    }
-
-    // If the component data exists and `options` is a string, carry out the action.
-    if ( componentData && typeof options == 'string' ) {
-        Pick._.trigger( componentData[ options ], componentData, [ action ] )
-        return this
-    }
-
-    // Otherwise go through each matched element and compose new extensions.
-    return this.each( function() {
-        var $this = $( this )
-        if ( !$this.data( name ) ) {
-            new Pick.Compose( this, extension, options )
-        }
-    })
-} //$.fn.pick
+$.fn.pick = Pick.create
+$.fn.pick.extend = Pick.extend
 
 }));
 

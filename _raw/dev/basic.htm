@@ -19,6 +19,7 @@
         /*float: left;*/
         text-align: center;
         position: relative;
+        background: #ddd;
     }
 </style>
 <link rel="stylesheet" href="../lib/pick.css">
@@ -39,11 +40,11 @@
 <script src="jquery.js"></script>
 <script src="../lib/pick.js"></script>
 <script>
-    Pick.extend({
+    $.fn.pick.extend({
         name: 'dropper',
         content: '<div style="padding:10px;">This is the most basic form of a picker.</div>'
     })
     $( '.div' ).pick( 'dropper', {
-        align: 'center',
+        // align: 'center',
     })//.pick( 'dropper', 'picker' ).open()
 </script>

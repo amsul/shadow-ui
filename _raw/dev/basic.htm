@@ -6,7 +6,10 @@
     body {
         font-family: sans-serif;
         font-weight: 100;
-        padding: 2em;
+        margin: 2em;
+    }
+    section {
+        margin: 2em 0;
     }
     input {
         border: 1px solid #ccc;
@@ -24,18 +27,27 @@
 </style>
 <link rel="stylesheet" href="../lib/pick.css">
 
-<a class="anchor" href="#" title="some title">some link</a>
+<section>
+    <div class="div div--basic">Left aligned</div>
+</section>
 
-<br><br>
-<div>
-    <div class="div">hello there</div>
-</div>
+<section>
+    <div class="div div--center">Center aligned</div>
+</section>
+
+<section>
+    <div class="div div--right">Right aligned</div>
+</section>
+
+<!--<br><br>
+
+<a class="anchor" href="#" title="some title">some link</a>
 
 <br><br>
 <input class="color" type="color">
 
 <br><br>
-<input class="input" type="date">
+<input class="input" type="date">-->
 
 <script src="jquery.js"></script>
 <script src="../lib/pick.js"></script>
@@ -44,7 +56,11 @@
         name: 'dropper',
         content: '<div style="padding:10px;">This is the most basic form of a picker.</div>'
     })
-    $( '.div' ).pick( 'dropper', {
-        // align: 'center',
-    })//.pick( 'dropper', 'picker' ).open()
+    $( '.div--basic' ).pick( 'dropper' )
+    $( '.div--center' ).pick( 'dropper', {
+        align: 'center'
+    })
+    $( '.div--right' ).pick( 'dropper', {
+        align: 'right'
+    })
 </script>

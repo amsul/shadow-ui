@@ -50,35 +50,82 @@ var Constructor = (function() {
             return instances[ id ]
         },
 
-        initialize = function( picker ) {
+        initialize = function( element ) {
 
             // Create a new instance.
             var instance = new Instance()
 
-            // Merge the defaults and options passed.
-            instance.settings = $.extend( true, {}, picker.extension.defaults, picker.options )
-
-            // Merge the default classes with the settings and then prefix them.
-            instance.klasses = Pick._.prefix( picker.extension.prefix, $.extend( {}, Pick._.klasses(), instance.settings.klass ) )
-
             // Check which type of element we’re binding to.
-            instance.isInput = picker.$node[0].nodeName == 'INPUT'
+            instance.isInput = element.nodeName == 'INPUT'
 
+            // Return the instance.
             return instance
-        }
+        },
+
+        createTemplate = function( classNames, extensionContent ) {
+
+            // Create the template root.
+            return Pick._.node({
+                klass: classNames.picker,
+
+                // Create a wrapped holder.
+                content: Pick._.node({
+                    klass: classNames.holder,
+                    content: [
+
+                        // Create the pointer node.
+                        Pick._.node({
+                            klass: classNames.pointer
+                        }),
+
+                        // Create the picker frame.
+                        Pick._.node({
+                            klass: classNames.frame,
+
+                            // Create the content wrapper.
+                            content: Pick._.node({
+                                klass: classNames.wrap,
+
+                                // Create a box node.
+                                content: Pick._.node({
+                                    klass: classNames.box,
+
+                                    // Attach the extension content.
+                                    content: extensionContent
+                                })
+                            })
+                        })
+                    ]
+                })
+            })
+        } //createTemplate
+
+
 
 
     /**
      * The composer that creates a pick extension.
      */
     function PickComposer( $element, extension, options ) {
-        var picker = this
+
+        var picker = this,
+            instance = initialize( $element[0] )
+
+        // Link up the composition.
         picker.$node = $element
         picker.extension = extension
         picker.options = options
-        picker.i = (function( instance ) {
-            return function() { return instance }
-        })( initialize( picker ) );
+
+        // Create a method to retrieve the instance.
+        picker.i = function() { return instance }
+
+        // Merge the defaults and options passed.
+        picker.settings = $.extend( true, {}, extension.defaults, options )
+
+        // Merge the default classes with the settings and then prefix them.
+        picker.klasses = Pick._.prefix( extension.prefix, $.extend( {}, Pick._.klasses(), picker.settings.klass ) )
+
+        // Start up the picker.
         picker.start()
     }
 
@@ -107,14 +154,29 @@ var Constructor = (function() {
             // Store the extension data.
             picker.$node.data( 'pick.' + picker.extension.name, picker )
 
+            var templateContent = createTemplate( picker.klasses, Pick._.trigger( picker.extension.content, picker ) )
+
             if ( hasShadowRoot ) {
-                var template = Pick._.node( 'template', picker.extension.content )
-                var root = Pick._.node( picker.$node[0].webkitCreateShadowRoot(), template.content )
+                var root = Pick._.node({
+                    el: picker.$node[0].webkitCreateShadowRoot(),
+                    content: Pick._.node({
+                        el: 'template',
+                        content: templateContent.outerHTML
+                    }).content
+                })
                 root.applyAuthorStyles = true
             }
             else {
-                picker.$node.html( picker.extension.content )
+                picker.$node.html( templateContent )
             }
+
+            console.log( templateContent )
+
+            // debugger
+            // Pick._.node( 'div', createTemplate(), CLASSES.picker + ( SETTINGS.align ?
+            //     ' ' + Pick._.prefix( EXTENSION.prefix, '--' + SETTINGS.align ) :
+            //     '' )
+            // )
 
             return P
         }
@@ -803,38 +865,36 @@ Pick._ = {
     /**
      * Create a dom node.
      */
-    node: function( element, content, classNames, attributes ) {
+    node: function( options ) {
+
+        var element = options.el || 'div',
+            content = options.content,
+            classNames = options.klass,
+            attributes = options.attrs
 
         function isContainerNode( el ) {
             return el.nodeType === 1 || el.nodeType === 11
         }
 
+        // Create the element.
         element = isContainerNode( element ) ? element : document.createElement( element )
 
-        if ( isContainerNode( content ) ) {
-            if ( element.childNodes.length ) element.replaceChild( content, element.childNodes[0] )
-            else element.appendChild( content )
-        }
-        else {
-            element.innerHTML = content
-        }
+        // Empty the element.
+        element.innerHTML = ''
 
+        // Create the content.
+        content = $.isArray( content ) ? content : [content]
+        content.forEach( function( frag ) {
+            frag = frag || ''
+            if ( isContainerNode( frag ) ) element.appendChild( frag )
+            else element.innerHTML += frag
+        })
+
+        // Set the classname.
+        if ( classNames ) element.className = classNames
+
+        // Return the element.
         return element
-
-        // // If the item is null or undefined, return an empty string.
-        // if ( item == null ) return ''
-
-        // // If the item is an array, do a join.
-        // item = Array.isArray( item ) ? item.join( '' ) : item
-
-        // // Check for any classes.
-        // klass = klass ? ' class="' + klass + '"' : ''
-
-        // // Check for any attributes.
-        // attribute = attribute ? ' ' + attribute : ''
-
-        // // Return the wrapped item.
-        // return '<' + wrapper + klass + attribute + '>' + item + '</' + wrapper + '>'
     },
 
 

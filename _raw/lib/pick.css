@@ -67,7 +67,7 @@
     }
 
     /* The opened content holder. */
-    .picker--opened .picker__holder {
+    /*.picker--opened*/ .picker__holder {
 
         /* Reveal the content. */
         max-height: 25em;

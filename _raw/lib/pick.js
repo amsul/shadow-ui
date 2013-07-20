@@ -14,10 +14,10 @@
     eqnull: true
  */
 
-(function ( root, picker, $, factory ) {
+(function ( root, doc, picker, $, factory ) {
 
     // Create the picker factory.
-    factory( picker, $, $( document ) )
+    factory( picker, $, $( doc ), 'webkitCreateShadowRoot' in doc.body )
 
     // Setup the exports for Node module pattern, AMD, and basic <script> includes.
     if ( typeof module == 'object' && typeof module.exports == 'object' )
@@ -27,47 +27,104 @@
     else
         root.Pick = picker
 
-}( this, {}, jQuery, function( Pick, $, $document ) {
+}( this, document, {}, jQuery, function( Pick, $, $document, hasShadowRoot ) {
 
 
 
-/**
- * A picker creator.
- */
-Pick.create = function( name, options, action ) {
+var Constructor = (function() {
 
     var
-        // Grab the extension by name.
-        extension = Pick._.EXTENSIONS[ name ],
+        // Keep a track of the instances created.
+        instances = {},
 
-        // Grab the component data.
-        componentData = this.data( 'Pick.' + name )
+        // Construct and record an instance.
+        Instance = function() {
+            var id = new Date().getTime()
+            instances[ id ] = {
+                id: 'P.' + id,
+                start: false,
+                open: false,
+                keys: {},
+                methods: {}
+            }
+            return instances[ id ]
+        },
 
+        initialize = function( picker ) {
 
-    // Check if an extension was found.
-    if ( !extension ) {
-        throw 'ComponentError: No extension found by the name of “' + name + '”.'
-    }
+            // Create a new instance.
+            var instance = new Instance()
 
-    // If the picker is requested, return the component data.
-    if ( options == 'picker' ) {
-        return componentData
-    }
+            // Merge the defaults and options passed.
+            instance.settings = $.extend( true, {}, picker.extension.defaults, picker.options )
 
-    // If the component data exists and `options` is a string, carry out the action.
-    if ( componentData && typeof options == 'string' ) {
-        Pick._.trigger( componentData[ options ], componentData, [ action ] )
-        return this
-    }
+            // Merge the default classes with the settings and then prefix them.
+            instance.klasses = Pick._.prefix( picker.extension.prefix, $.extend( {}, Pick._.klasses(), instance.settings.klass ) )
 
-    // Otherwise go through each matched element and compose new extensions.
-    return this.each( function() {
-        var $this = $( this )
-        if ( !$this.data( name ) ) {
-            new Pick.Compose( this, extension, options )
+            // Check which type of element we’re binding to.
+            instance.isInput = picker.$node[0].nodeName == 'INPUT'
+
+            return instance
         }
-    })
-} //pick
+
+
+    /**
+     * The composer that creates a pick extension.
+     */
+    function PickComposer( $element, extension, options ) {
+        var picker = this
+        picker.$node = $element
+        picker.extension = extension
+        picker.options = options
+        picker.i = (function( instance ) {
+            return function() { return instance }
+        })( initialize( picker ) );
+        picker.start()
+    }
+
+
+    /**
+     * The extension prototype.
+     */
+    var P = PickComposer.prototype = {
+
+        constructor: PickComposer,
+
+        /**
+         * Start the extension building.
+         */
+        start: function() {
+
+            var picker = this,
+                instance = picker.i()
+
+            // If it’s already started, do nothing.
+            if ( instance.start ) return P
+
+            // Set it as started.
+            instance.start = true
+
+            // Store the extension data.
+            picker.$node.data( 'pick.' + picker.extension.name, picker )
+
+            if ( hasShadowRoot ) {
+                var template = Pick._.node( 'template', picker.extension.content )
+                var root = Pick._.node( picker.$node[0].webkitCreateShadowRoot(), template.content )
+                root.applyAuthorStyles = true
+            }
+            else {
+                picker.$node.html( picker.extension.content )
+            }
+
+            return P
+        }
+    }
+
+    return PickComposer
+})();
+
+
+
 
 
 
@@ -744,24 +801,40 @@ Pick._ = {
 
 
     /**
-     * Create a dom node string
+     * Create a dom node.
      */
-    node: function( wrapper, item, klass, attribute ) {
+    node: function( element, content, classNames, attributes ) {
 
-        // If the item is null or undefined, return an empty string.
-        if ( item == null ) return ''
+        function isContainerNode( el ) {
+            return el.nodeType === 1 || el.nodeType === 11
+        }
 
-        // If the item is an array, do a join.
-        item = Array.isArray( item ) ? item.join( '' ) : item
+        element = isContainerNode( element ) ? element : document.createElement( element )
 
-        // Check for any classes.
-        klass = klass ? ' class="' + klass + '"' : ''
+        if ( isContainerNode( content ) ) {
+            if ( element.childNodes.length ) element.replaceChild( content, element.childNodes[0] )
+            else element.appendChild( content )
+        }
+        else {
+            element.innerHTML = content
+        }
 
-        // Check for any attributes.
-        attribute = attribute ? ' ' + attribute : ''
+        return element
 
-        // Return the wrapped item.
-        return '<' + wrapper + klass + attribute + '>' + item + '</' + wrapper + '>'
+        // // If the item is null or undefined, return an empty string.
+        // if ( item == null ) return ''
+
+        // // If the item is an array, do a join.
+        // item = Array.isArray( item ) ? item.join( '' ) : item
+
+        // // Check for any classes.
+        // klass = klass ? ' class="' + klass + '"' : ''
+
+        // // Check for any attributes.
+        // attribute = attribute ? ' ' + attribute : ''
+
+        // // Return the wrapped item.
+        // return '<' + wrapper + klass + attribute + '>' + item + '</' + wrapper + '>'
     },
 
 
@@ -882,9 +955,44 @@ Pick.extend = function( component ) {
 
 
 /**
- * Allow extending and creating pickers through jQuery.
+ * Extend jQuery.
  */
-$.fn.pick = Pick.create
+$.fn.pick = function( name, options, action ) {
+
+    var
+        // Grab the extension by name.
+        extension = Pick._.EXTENSIONS[ name ],
+
+        // Grab the component data.
+        componentData = this.data( 'Pick.' + name )
+
+
+    // Check if an extension was found.
+    if ( !extension ) {
+        throw 'ComponentError: No extension found by the name of “' + name + '”.'
+    }
+
+    // If the picker is requested, return the component data.
+    if ( options == 'picker' ) {
+        return componentData
+    }
+
+    // If the component data exists and `options` is a string, carry out the action.
+    if ( componentData && typeof options == 'string' ) {
+        Pick._.trigger( componentData[ options ], componentData, [ action ] )
+        return this
+    }
+
+    // Otherwise go through each matched element and compose new extensions.
+    return this.each( function() {
+        var $this = $( this )
+        if ( !$this.data( 'pick.' + name ) ) {
+            // new Pick.Compose( this, extension, options )
+            new Constructor( $this, extension, options )
+        }
+    })
+}
+
 $.fn.pick.extend = Pick.extend
 
 }));

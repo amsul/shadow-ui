@@ -17,16 +17,34 @@ module( 'Core', {
 })
 
 test( 'Methods', function() {
-    ok( Pick && Pick.create, 'Picker exists globally.' )
-    ok( $.fn.pick, 'Picker exists as jQuery method.' )
+    ok( Pick, 'Pick object' )
+    ok( $.isFunction( Pick.extend ), 'Extend method' )
+    ok( $.isFunction( $.fn.pick ), 'Create using jQuery' )
+    deepEqual( $.fn.pick.extend, Pick.extend, 'Extend using jQuery' )
 })
 
-test( 'Creation', function() {
+test( 'Extend and create', function() {
 
-})
+    // Create an extension object.
+    var extension = {
+        name: 'dropper',
+        content: '<div>This is the most basic form of a pick extension.</div>'
+    }
 
-test( 'Extension', function() {
+    // Extend the pick method.
+    $.fn.pick.extend( extension )
 
+    // Confirm it extended appropriately.
+    deepEqual( Pick._.EXTENSIONS.dropper, extension, 'Extend picker' )
+
+    // Create a pick extension on the `div`.
+    var $cloneDiv = $NODE_DIV.clone().pick( 'dropper' )
+    ok( $cloneDiv.data( 'pick.dropper' ), 'Create picker on `div`' )
+
+    // Create a pick extension on the `input`.
+    var $cloneInput = $NODE_INPUT.clone().pick( 'dropper' ),
+        cloneInputData = $cloneInput.data( 'pick.dropper' )
+    ok( cloneInputData, 'Create picker on `input`' )
 })
 
 

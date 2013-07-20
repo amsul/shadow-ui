@@ -37,10 +37,12 @@ module.exports = function( grunt ) {
         dirs: {
             src: {
                 raw: '_raw',
-                lib: '_raw/lib'
+                lib: '_raw/lib',
+                tests: '_raw/tests'
             },
             dest: {
-                lib: 'dest/lib'
+                lib: 'dest/lib',
+                tests: '_raw/tests'
             }
         },
 
@@ -53,12 +55,12 @@ module.exports = function( grunt ) {
 
         // Copy over files to destination directions.
         copy: {
+            options: {
+                processContent: function( content ) {
+                    return grunt.template.process( content, { delimiters: 'curly' } )
+                }
+            },
             pkg: {
-                options: {
-                    processContent: function( content ) {
-                        return grunt.template.process( content, { delimiters: 'curly' } )
-                    }
-                },
                 files: [
                     { '<%= pkg.name %>.jquery.json': 'package.json' },
                     { 'README.md': '<%= dirs.src.raw %>/README.md' },
@@ -66,6 +68,12 @@ module.exports = function( grunt ) {
                     { 'CHANGELOG.md': '<%= dirs.src.raw %>/CHANGELOG.md' },
                     { 'CONTRIBUTING.md': '<%= dirs.src.raw %>/CONTRIBUTING.md' }
                 ]
+            },
+            tests: {
+                expand: true,
+                cwd: '<%= dirs.src.tests %>',
+                src: [ '*' ],
+                dest: '<%= dirs.dest.tests %>'
             }
         },
 

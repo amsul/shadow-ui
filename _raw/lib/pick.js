@@ -1,6 +1,6 @@
 
 /*!
- * {%= pkg.title %} v{%= pkg.version %}, {%= grunt.template.today("yyyy/mm/dd") %}
+ * {%= pkg.title %} v{%= pkg.version %}, {%= grunt.template.today("yyyy/mm/dd") %}
  * By {%= pkg.author.name %}, {%= pkg.author.url %}
  * Hosted on {%= pkg.homepage %}
  * Licensed under {%= pkg.licenses[0].type %}
@@ -140,7 +140,7 @@ Pick.Compose = function( ELEMENT, EXTENSION, OPTIONS ) {
                 // Create the picker root with a new wrapped holder and bind the events.
                 P.$root = $(
                     Pick._.node( 'div', createWrappedExtension(), CLASSES.picker + ( SETTINGS.align ?
-                        ' ' + Pick._.prefix( EXTENSION.prefix, '--' + SETTINGS.align ) :
+                        ' ' + Pick._.prefix( EXTENSION.prefix, '--' + SETTINGS.align ) :
                         '' )
                     ) ).
 
@@ -219,7 +219,7 @@ Pick.Compose = function( ELEMENT, EXTENSION, OPTIONS ) {
 
                                 // If `delete` was pressed, clear the values and close the picker.
                                 // Otherwise open the picker.
-                                if ( isKeycodeDelete ) { P.clear().close() }
+                                if ( isKeycodeDelete ) { P.clear().close() }
                                 else { P.open( true ) }
                             }
                         })

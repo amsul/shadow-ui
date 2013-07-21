@@ -42,8 +42,10 @@ var Constructor = (function() {
             var id = new Date().getTime()
             instances[ id ] = {
                 id: 'P' + id,
-                start: false,
-                open: false,
+                is: {
+                    started: false,
+                    opened: false
+                },
                 keys: {},
                 methods: {},
                 template: ( function( el ) {
@@ -145,11 +147,11 @@ var Constructor = (function() {
 
 
             // If it’s already started, do nothing.
-            if ( instance.start ) return P
+            if ( instance.is.started ) return P
 
 
-            // Set it as started.
-            instance.start = true
+            // Update the `started` state.
+            instance.is.started = true
 
 
             // If there’s a format for the hidden input element, create the element
@@ -226,7 +228,7 @@ var Constructor = (function() {
                 instance = picker.i()
 
             // If it’s already stopped, do nothing.
-            if ( !instance.start ) return picker
+            if ( !instance.is.started ) return picker
 
             // Close the picker.
             picker.close()
@@ -248,8 +250,8 @@ var Constructor = (function() {
             // Remove the “element” class, unbind the events, and remove the stored data.
             picker.$node.removeClass( picker.klasses.element ).off( '.' + instance.id ).removeData( 'pick.' + picker.extension.name )
 
-            // Update the `start` state.
-            instance.start = false
+            // Update the `started` state.
+            instance.is.started = false
 
             // Trigger the queued “stop” event methods.
             picker.trigger( 'stop' )
@@ -271,10 +273,10 @@ var Constructor = (function() {
                 instance = picker.i()
 
             // If it’s already open, do nothing.
-            if ( instance.open ) return picker
+            if ( instance.is.opened ) return picker
 
-            // Set it as open.
-            instance.open = true
+            // Update the `opened` state.
+            instance.is.opened = true
 
             // Add the “opened” class to the picker root.
             picker.$root.addClass( picker.klasses.opened )
@@ -294,10 +296,10 @@ var Constructor = (function() {
                 instance = picker.i()
 
             // If it’s already closed, do nothing.
-            if ( !instance.open ) return picker
+            if ( !instance.is.opened ) return picker
 
-            // Set it as closed.
-            instance.open = false
+            // Update the `opened` state.
+            instance.is.opened = false
 
             // Remove the “opened” class from the picker root.
             picker.$root.removeClass( picker.klasses.opened )
@@ -357,6 +359,49 @@ var Constructor = (function() {
                 })
             }
             return picker
+        },
+
+
+
+        /**
+         * Get a state of the picker or extension.
+         */
+        is: function( thing ) {
+
+            var picker = this,
+                instance = picker.i()
+
+            // Return the instance’s state of the thing.
+            return instance.is[ thing ]
+        },
+
+
+
+        /**
+         * Get something from the picker or extension.
+         */
+        get: function( thing, options ) {
+
+            console.log( thing, options )
+
+            // var picker = this,
+            //     instance = picker.i()
+
+            // // First check if the thing exists within the instance.
+            // return instance[ thing ] != null ? instance[ thing ] :
+
+            //     // Otherwise get the formatted or basic `thing` diction value.
+            //     Pick._.trigger( picker.extension.dict.get, picker, [ thing, options ] ) || picker.extension.dict.values[ thing ]
+        }, //get
+
+
+
+        /**
+         * Set something to the picker or extension.
+         */
+        set: function( thing, value, options ) {
+
+            console.log( thing, value, options )
         }
 
 

@@ -18,10 +18,10 @@ module( 'Core', {
 })
 
 test( 'Globals', function() {
-    ok( Pick, 'Pick object' )
-    ok( $.isFunction( Pick.extend ), 'Extend method' )
-    ok( $.isFunction( $.fn.pick ), 'Create using jQuery' )
-    deepEqual( $.fn.pick.extend, Pick.extend, 'Extend using jQuery' )
+    ok( Pick, 'Object: Pick' )
+    ok( $.isFunction( Pick.extend ), 'Method: Extend picker' )
+    deepEqual( $.fn.pick.extend, Pick.extend, 'Method: Extend picker with jQuery' )
+    ok( $.isFunction( $.fn.pick ), 'Method: Create picker extension' )
 })
 
 test( 'Methods and states', function() {
@@ -36,31 +36,35 @@ test( 'Methods and states', function() {
     $.fn.pick.extend( extension )
 
     // Confirm it extended appropriately.
-    deepEqual( Pick._.EXTENSIONS.dropper, extension, 'Extend picker' )
+    deepEqual( Pick._.EXTENSIONS.dropper, extension, 'Extend: picker' )
 
 
-    // ========================================== //
+    // ================================================ //
 
 
     var $node = this.$node.pick( 'dropper' )
     var picker = $node.pick( 'dropper', 'picker' )
 
     // Create a pick extension on the element.
-    ok( $node.data( 'pick.dropper' ), 'Create picker on element' )
+    ok( $node.data( 'pick.dropper' ), 'Create: picker' )
+
+    // Confirm the state updated.
+    strictEqual( picker.is( 'started' ), true, 'Check: started' )
 
     // Destroy a pick extension on the element.
     picker.stop()
-    strictEqual( $node.data( 'pick.dropper' ), undefined, 'Destroy picker on element' )
+    strictEqual( $node.data( 'pick.dropper' ), undefined, 'Destroy: picker' )
+
+    // Confirm the state updated.
+    strictEqual( picker.is( 'started' ), false, 'Check: stopped' )
 
     // Re-create a pick extension on the element.
     picker.start()
-    ok( $node.data( 'pick.dropper' ), 'Re-create picker on element' )
+    ok( $node.data( 'pick.dropper' ), 'Re-create: picker' )
 
+    // Confirm the state updated.
+    strictEqual( picker.is( 'started' ), true, 'Check: started' )
 
-    // ========================================== //
-
-
-    picker.get( 'open' )
 })
 
 

@@ -17,17 +17,17 @@ module( 'Core', {
     }
 })
 
-test( 'Methods', function() {
+test( 'Globals', function() {
     ok( Pick, 'Pick object' )
     ok( $.isFunction( Pick.extend ), 'Extend method' )
     ok( $.isFunction( $.fn.pick ), 'Create using jQuery' )
     deepEqual( $.fn.pick.extend, Pick.extend, 'Extend using jQuery' )
 })
 
-test( 'Extend, create, and destroy', function() {
+test( 'Methods and states', function() {
 
     // Create an extension object.
-    var extension = {
+    var extension = {
         name: 'dropper',
         content: '<div>This is the most basic form of a pick extension.</div>'
     }
@@ -38,21 +38,29 @@ test( 'Extend, create, and destroy', function() {
     // Confirm it extended appropriately.
     deepEqual( Pick._.EXTENSIONS.dropper, extension, 'Extend picker' )
 
+
+    // ========================================== //
+
+
+    var $node = this.$node.pick( 'dropper' )
+    var picker = $node.pick( 'dropper', 'picker' )
+
     // Create a pick extension on the element.
-    this.$node.pick( 'dropper' )
-    ok( this.$node.data( 'pick.dropper' ), 'Create picker on element' )
+    ok( $node.data( 'pick.dropper' ), 'Create picker on element' )
 
     // Destroy a pick extension on the element.
-    this.$node.pick( 'dropper', 'stop' )
-    strictEqual( this.$node.data( 'pick.dropper' ), undefined, 'Destroy picker on element' )
-})
+    picker.stop()
+    strictEqual( $node.data( 'pick.dropper' ), undefined, 'Destroy picker on element' )
 
-test( 'Instance states', function() {
-    ok( true )
-})
+    // Re-create a pick extension on the element.
+    picker.start()
+    ok( $node.data( 'pick.dropper' ), 'Re-create picker on element' )
 
-test( 'Instance methods', function() {
-    ok( true )
+
+    // ========================================== //
+
+
+    picker.get( 'open' )
 })
 
 

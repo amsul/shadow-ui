@@ -162,9 +162,11 @@ var Constructor = (function() {
                 var host = picker.$node[0].webkitCreateShadowRoot()
                 host.applyAuthorStyles = true
                 host.innerHTML = Pick._.node({ el: 'content' }) + instance.template.outerHTML
+                picker.$root = $( picker.$node[0].webkitShadowRoot.childNodes[1] )
             }
             else {
-                picker.$node.append( instance.template )
+                picker.$root = $( instance.template )
+                picker.$node.append( picker.$root )
             }
 
 
@@ -223,12 +225,11 @@ var Constructor = (function() {
             var picker = this,
                 instance = picker.i()
 
-
             // If it’s already stopped, do nothing.
             if ( !instance.start ) return picker
 
             // Close the picker.
-            // picker.close()
+            picker.close()
 
             // Remove the hidden field.
             if ( picker._hidden ) {
@@ -258,6 +259,52 @@ var Constructor = (function() {
 
             return picker
         }, //stop
+
+
+
+        /**
+         * Open the picker.
+         */
+        open: function() {
+
+            var picker = this,
+                instance = picker.i()
+
+            // If it’s already open, do nothing.
+            if ( instance.open ) return picker
+
+            // Set it as open.
+            instance.open = true
+
+            // Add the “opened” class to the picker root.
+            picker.$root.addClass( picker.klasses.opened )
+
+            // Trigger the queued “open” events.
+            return picker.trigger( 'open' )
+        }, //open
+
+
+
+        /**
+         * Close the picker.
+         */
+        close: function() {
+
+            var picker = this,
+                instance = picker.i()
+
+            // If it’s already closed, do nothing.
+            if ( !instance.open ) return picker
+
+            // Set it as closed.
+            instance.open = false
+
+            // Remove the “opened” class from the picker root.
+            picker.$root.removeClass( picker.klasses.opened )
+
+            // Trigger the queued “close” events.
+            return picker.trigger( 'close' )
+        }, //close
 
 
 

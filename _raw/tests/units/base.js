@@ -24,7 +24,7 @@ test( 'Methods', function() {
     deepEqual( $.fn.pick.extend, Pick.extend, 'Extend using jQuery' )
 })
 
-test( 'Extend and create', function() {
+test( 'Extend, create, and destroy', function() {
 
     // Create an extension object.
     var extension = {
@@ -41,6 +41,18 @@ test( 'Extend and create', function() {
     // Create a pick extension on the element.
     this.$node.pick( 'dropper' )
     ok( this.$node.data( 'pick.dropper' ), 'Create picker on element' )
+
+    // Destroy a pick extension on the element.
+    this.$node.pick( 'dropper', 'stop' )
+    strictEqual( this.$node.data( 'pick.dropper' ), undefined, 'Destroy picker on element' )
+})
+
+test( 'Instance states', function() {
+    ok( true )
+})
+
+test( 'Instance methods', function() {
+    ok( true )
 })
 
 

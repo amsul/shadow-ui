@@ -38,25 +38,20 @@ var Constructor = (function() {
         instances = {},
 
         // Construct and record an instance.
-        Instance = function() {
+        Instance = function( klasses, content ) {
             var id = new Date().getTime()
             instances[ id ] = {
                 id: 'P' + id,
                 start: false,
                 open: false,
                 keys: {},
-                methods: {}
+                methods: {},
+                template: ( function( el ) {
+                    el.innerHTML = createTemplate( klasses, content )
+                    return el.children[0]
+                })( document.createElement( 'div' ) )
             }
             return instances[ id ]
-        },
-
-        initialize = function( element ) {
-
-            // Make sure we have a usable root element.
-            if ( element.nodeName == 'INPUT' || element.nodeName == 'TEXTAREA' ) throw 'Cannot create a picker out of a form field..'
-
-            // Create and return a new instance.
-            return new Instance()
         },
 
         createTemplate = function( classNames, extensionContent ) {
@@ -105,22 +100,27 @@ var Constructor = (function() {
      */
     function PickComposer( $element, extension, options ) {
 
-        var picker = this,
-            instance = initialize( $element[0] )
+        var instance, picker = this
+
+        // Make sure we have a usable element.
+        if ( $element[0].nodeName == 'INPUT' || $element[0].nodeName == 'TEXTAREA' ) throw 'Cannot create a picker out of a form field..'
 
         // Link up the composition.
         picker.$node = $element
         picker.extension = extension
         picker.options = options
 
-        // Create a method to retrieve the instance.
-        picker.i = function() { return instance }
-
         // Merge the defaults and options passed.
         picker.settings = $.extend( true, {}, extension.defaults, options )
 
         // Merge the default classes with the settings and then prefix them.
         picker.klasses = Pick._.prefix( extension.prefix, $.extend( {}, Pick._.klasses(), picker.settings.klass ) )
+
+        // Initialize the instance with an extension.
+        instance = new Instance( picker.klasses, Pick._.trigger( picker.extension.content, picker ) )
+
+        // Create a method to retrieve the instance.
+        picker.i = function() { return instance }
 
         // Start up the picker.
         picker.start()
@@ -136,7 +136,7 @@ var Constructor = (function() {
 
 
         /**
-         * Start the extension building.
+         * Construct the extension.
          */
         start: function() {
 
@@ -158,14 +158,13 @@ var Constructor = (function() {
 
 
             // Create and insert the template into the dom.
-            var template = createTemplate( picker.klasses, Pick._.trigger( picker.extension.content, picker ) )
             if ( hasShadowRoot ) {
-                var root = picker.$node[0].webkitCreateShadowRoot()
-                root.applyAuthorStyles = true
-                root.innerHTML = Pick._.node({ el: 'content' }) + template
+                var host = picker.$node[0].webkitCreateShadowRoot()
+                host.applyAuthorStyles = true
+                host.innerHTML = Pick._.node({ el: 'content' }) + instance.template.outerHTML
             }
             else {
-                picker.$node.append( template )
+                picker.$node.append( instance.template )
             }
 
 
@@ -213,6 +212,52 @@ var Constructor = (function() {
             // Trigger any queued “start” and “render” events.
             return picker.trigger( 'start' ).trigger( 'render' )
         }, //start
+
+
+
+        /**
+         * Deconstruct the extension.
+         */
+        stop: function() {
+
+            var picker = this,
+                instance = picker.i()
+
+
+            // If it’s already stopped, do nothing.
+            if ( !instance.start ) return picker
+
+            // Close the picker.
+            // picker.close()
+
+            // Remove the hidden field.
+            if ( picker._hidden ) {
+                console.log( 'need to remove hidden field..' )
+                // picker._hidden.parentNode.removeChild( picker._hidden )
+            }
+
+            // Remove the extension template content.
+            if ( hasShadowRoot ) {
+                picker.$node.after( picker.$node.clone() ).remove()
+            }
+            else {
+                instance.template.remove()
+            }
+
+            // Remove the “element” class, unbind the events, and remove the stored data.
+            picker.$node.removeClass( picker.klasses.element ).off( '.' + instance.id ).removeData( 'pick.' + picker.extension.name )
+
+            // Update the `start` state.
+            instance.start = false
+
+            // Trigger the queued “stop” event methods.
+            picker.trigger( 'stop' )
+
+            // Then reset all instance methods.
+            instance.methods = {}
+
+            return picker
+        }, //stop
 
 
 
@@ -457,7 +502,7 @@ Pick.Compose = function( ELEMENT, EXTENSION, OPTIONS ) {
                     addClass( CLASSES.element ).
 
                     // Store the picker data by the extension name.
-                    data( 'Pick.' + EXTENSION.name, P )
+                    data( 'pick.' + EXTENSION.name, P )
 
                     // Insert the root and hidden input based on the type of element.
                     [ IS_INPUT ? 'after' : 'append' ]( P.$root, P._hidden )
@@ -1090,7 +1135,7 @@ $.fn.pick = function( name, options, action ) {
         extension = Pick._.EXTENSIONS[ name ],
 
         // Grab the component data.
-        componentData = this.data( 'Pick.' + name )
+        componentData = this.data( 'pick.' + name )
 
 
     // Check if an extension was found.

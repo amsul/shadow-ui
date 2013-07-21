@@ -1,7 +1,6 @@
 
 
 var $DOM = $( '#qunit-fixture' ),
-    $NODE_INPUT = $( '<input type=password>' ),
     $NODE_DIV = $( '<div/>' )
 
 
@@ -10,9 +9,11 @@ var $DOM = $( '#qunit-fixture' ),
  */
 module( 'Core', {
     setup: function() {
-        // debugger
+        $DOM.html( $NODE_DIV.clone() )
+        this.$node = $DOM.children( 'div' )
     },
     teardown: function() {
+        $DOM.empty()
     }
 })
 
@@ -37,14 +38,9 @@ test( 'Extend and create', function() {
     // Confirm it extended appropriately.
     deepEqual( Pick._.EXTENSIONS.dropper, extension, 'Extend picker' )
 
-    // Create a pick extension on the `div`.
-    var $cloneDiv = $NODE_DIV.clone().pick( 'dropper' )
-    ok( $cloneDiv.data( 'pick.dropper' ), 'Create picker on `div`' )
-
-    // Create a pick extension on the `input`.
-    var $cloneInput = $NODE_INPUT.clone().pick( 'dropper' ),
-        cloneInputData = $cloneInput.data( 'pick.dropper' )
-    ok( cloneInputData, 'Create picker on `input`' )
+    // Create a pick extension on the element.
+    this.$node.pick( 'dropper' )
+    ok( this.$node.data( 'pick.dropper' ), 'Create picker on element' )
 })
 
 

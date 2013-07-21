@@ -52,14 +52,11 @@ var Constructor = (function() {
 
         initialize = function( element ) {
 
-            // Create a new instance.
-            var instance = new Instance()
+            // Make sure we have a usable root element.
+            if ( element.nodeName == 'INPUT' || element.nodeName == 'TEXTAREA' ) throw 'Cannot create a picker out of a form field..'
 
-            // Check which type of element we’re binding to.
-            instance.isInput = element.nodeName == 'INPUT'
-
-            // Return the instance.
-            return instance
+            // Create and return a new instance.
+            return new Instance()
         },
 
         createTemplate = function( classNames, extensionContent ) {
@@ -154,29 +151,21 @@ var Constructor = (function() {
             // Store the extension data.
             picker.$node.data( 'pick.' + picker.extension.name, picker )
 
-            var templateContent = createTemplate( picker.klasses, Pick._.trigger( picker.extension.content, picker ) )
+
+            var template = createTemplate( picker.klasses, Pick._.trigger( picker.extension.content, picker ) )
 
             if ( hasShadowRoot ) {
-                var root = Pick._.node({
-                    el: picker.$node[0].webkitCreateShadowRoot(),
-                    content: Pick._.node({
-                        el: 'template',
-                        content: templateContent.outerHTML
-                    }).content
-                })
+                var root = picker.$node[0].webkitCreateShadowRoot()
                 root.applyAuthorStyles = true
+                root.innerHTML = template
             }
             else {
-                picker.$node.html( templateContent )
+                picker.$node.html( template )
             }
 
-            console.log( templateContent )
-
-            // debugger
-            // Pick._.node( 'div', createTemplate(), CLASSES.picker + ( SETTINGS.align ?
-            //     ' ' + Pick._.prefix( EXTENSION.prefix, '--' + SETTINGS.align ) :
-            //     '' )
-            // )
+            // If there’s a format for the hidden input element, create the element
+            // using the name of the original input and a suffix. Otherwise set it to undefined.
+            picker._hidden = picker.settings.formatSubmit ? '<span>need to do this...</span>' : undefined
 
             return P
         }
@@ -869,32 +858,17 @@ Pick._ = {
 
         var element = options.el || 'div',
             content = options.content,
-            classNames = options.klass,
+            klasses = options.klass,
             attributes = options.attrs
 
-        function isContainerNode( el ) {
-            return el.nodeType === 1 || el.nodeType === 11
-        }
-
-        // Create the element.
-        element = isContainerNode( element ) ? element : document.createElement( element )
-
-        // Empty the element.
-        element.innerHTML = ''
-
-        // Create the content.
-        content = $.isArray( content ) ? content : [content]
-        content.forEach( function( frag ) {
-            frag = frag || ''
-            if ( isContainerNode( frag ) ) element.appendChild( frag )
-            else element.innerHTML += frag
-        })
+        // Add the content.
+        content = $.isArray( content ) ? content.join( '' ) : content
 
         // Set the classname.
-        if ( classNames ) element.className = classNames
+        if ( klasses ) klasses = ' class="' + ( $.isArray( klasses ) ? klasses.join( ' ' ) : klasses ) + '"'
 
         // Return the element.
-        return element
+        return '<' + element + (klasses||'') + '>' + (content||'') + '</' + element + '>'
     },
 
 

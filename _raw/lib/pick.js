@@ -41,7 +41,7 @@ var Constructor = (function() {
         Instance = function() {
             var id = new Date().getTime()
             instances[ id ] = {
-                id: 'P.' + id,
+                id: 'P' + id,
                 start: false,
                 open: false,
                 keys: {},
@@ -130,9 +130,10 @@ var Constructor = (function() {
     /**
      * The extension prototype.
      */
-    var P = PickComposer.prototype = {
+    PickComposer.prototype = {
 
         constructor: PickComposer,
+
 
         /**
          * Start the extension building.
@@ -142,34 +143,133 @@ var Constructor = (function() {
             var picker = this,
                 instance = picker.i()
 
+
             // If it’s already started, do nothing.
             if ( instance.start ) return P
+
 
             // Set it as started.
             instance.start = true
 
-            // Store the extension data.
-            picker.$node.data( 'pick.' + picker.extension.name, picker )
-
-
-            var template = createTemplate( picker.klasses, Pick._.trigger( picker.extension.content, picker ) )
-
-            if ( hasShadowRoot ) {
-                var root = picker.$node[0].webkitCreateShadowRoot()
-                root.applyAuthorStyles = true
-                root.innerHTML = template
-            }
-            else {
-                picker.$node.html( template )
-            }
 
             // If there’s a format for the hidden input element, create the element
             // using the name of the original input and a suffix. Otherwise set it to undefined.
             picker._hidden = picker.settings.formatSubmit ? '<span>need to do this...</span>' : undefined
 
-            return P
+
+            // Create and insert the template into the dom.
+            var template = createTemplate( picker.klasses, Pick._.trigger( picker.extension.content, picker ) )
+            if ( hasShadowRoot ) {
+                var root = picker.$node[0].webkitCreateShadowRoot()
+                root.applyAuthorStyles = true
+                root.innerHTML = Pick._.node({ el: 'content' }) + template
+            }
+            else {
+                picker.$node.append( template )
+            }
+
+
+            // Prepare the host element.
+            picker.$node.
+
+                // Open up the picker on click.
+                on( 'click.' + instance.id, function( event ) {
+                    event.stopPropagation()
+                    picker.open( true )
+                }).
+
+                // Update the hidden value with the correct format.
+                on( 'change.' + instance.id, function() {
+                    if ( picker._hidden ) {
+                        console.log( 'need to update the hidden value with formatting' )
+                    }
+                }).
+
+                // Add the “element” class.
+                addClass( picker.klasses.element ).
+
+                // Store the extension data.
+                data( 'pick.' + picker.extension.name, picker )
+
+
+            // Attach the default extension and settings events.
+            picker.on({
+                start: picker.extension.onStart,
+                render: picker.extension.onRender,
+                stop: picker.extension.onStop,
+                open: picker.extension.onOpen,
+                close: picker.extension.onClose,
+                set: picker.extension.onSet
+            }).on({
+                start: picker.settings.onStart,
+                render: picker.settings.onRender,
+                stop: picker.settings.onStop,
+                open: picker.settings.onOpen,
+                close: picker.settings.onClose,
+                set: picker.settings.onSet
+            })
+
+
+            // Trigger any queued “start” and “render” events.
+            return picker.trigger( 'start' ).trigger( 'render' )
+        }, //start
+
+
+
+        /**
+         * Attach callbacks to events.
+         */
+        on: function( thing, method ) {
+
+            var thingName, thingMethod,
+                thingIsObject = $.isPlainObject( thing ),
+                thingObject = thingIsObject ? thing : {},
+                picker = this,
+                instance = picker.i()
+
+            if ( thing ) {
+
+                // If the thing isn’t an object, make it one.
+                if ( !thingIsObject ) {
+                    thingObject[ thing ] = method
+                }
+
+                // Go through the things to bind to.
+                for ( thingName in thingObject ) {
+
+                    // Grab the method of the thing.
+                    thingMethod = thingObject[ thingName ]
+
+                    // Make sure the thing methods collection exists.
+                    if ( !instance.methods[ thingName ] ) instance.methods[ thingName ] = []
+
+                    // Add the method to the relative method collection.
+                    instance.methods[ thingName ].push( thingMethod )
+                }
+            }
+
+            return picker
+        }, //on
+
+
+
+        /**
+         * Fire off any instance methods by name.
+         */
+        trigger: function( name, data ) {
+            var picker = this,
+                methodList = picker.i().methods[ name ]
+            if ( methodList ) {
+                methodList.map( function( method ) {
+                    Pick._.trigger( method, picker, [ data ] )
+                })
+            }
+            return picker
         }
-    }
+
+
+    } //PickComposer.prototype
+
 
     return PickComposer
 })();
@@ -840,7 +940,7 @@ Pick._ = {
             return ( klass ? prefix + ( klass.match( /^-/ ) ? '' : '__' ) + klass : prefix )
         }
         prefix = prefix || 'picker'
-        if ( Pick._.isObject( klasses ) ) {
+        if ( $.isPlainObject( klasses ) ) {
             for ( var klass in klasses ) {
                 className = klasses[ klass ]
                 klasses[ klass ] = bemPrefixify( className )
@@ -926,14 +1026,6 @@ Pick._ = {
      */
     isType: function( value, type ) {
         return {}.toString.call( value ).indexOf( type ) > -1
-    },
-
-
-    /**
-     * Tell if something is an object.
-     */
-    isObject: function( value ) {
-        return this.isType( value, 'Object' )
     },
 
 

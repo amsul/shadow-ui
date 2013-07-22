@@ -33,21 +33,17 @@
 <link rel="stylesheet" href="../lib/pick.css">
 
 <section>
-    <div class="div div--basic">Left aligned</div>
+    <div class="div div--basic">Basic</div>
+</section>
+
+<section>
+    <div class="div div--values">Values</div>
 </section>
 
 <section>
     <div class="div div--input">
         <input class="input input--basic" type="text">
     </div>
-</section>
-
-<section>
-    <div class="div div--center">Center aligned</div>
-</section>
-
-<section>
-    <div class="div div--right">Right aligned</div>
 </section>
 
 <!--<br><br>
@@ -66,13 +62,36 @@
     $.fn.pick.extend({
         name: 'dropper',
         content: function() {
-            console.log( this.extension )
             return '<div class="asdfasdfasdf" style="padding:10px;">This is the most basic form of a picker.</div>'
         }
     })
 
     var $div = $( '.div--basic' ).pick( 'dropper' )
-    var picker = $div.pick( 'dropper', 'picker' )
+
+
+    ////////////////////////////////////////////////////////////
+
+
+    $.fn.pick.extend({
+        name: 'selector',
+        content: function() {
+            return '<div class="asdfasdfasdf" style="padding:10px;">' +
+                'The selected thing is: <u>' + this.get('select') + '</u><br> ' +
+                'and highlighted is <u>' + this.get('highlight') + '</u>.' +
+            '</div>'
+        },
+        dict: {
+            wassup: false,
+            values: {
+                sup: true
+            }
+        }
+    })
+
+    var $div2 = $( '.div--values' ).pick( 'selector' )
+    var picker = $div2.pick( 'selector', 'picker' )
+    picker.open()
+    picker.set('select', 10)
 
 
     // $( '.div--input' ).pick( 'dropper' )

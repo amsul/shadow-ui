@@ -9,8 +9,9 @@ var setUpTheWall = function( extension, options ) {
     return $clone.pick( extension.name, 'picker' )
 }
 var tearDownTheWall = function() {
-    delete Pick._.EXTENSIONS[ this.extension.name ]
+    this.picker.stop()
     $DOM.empty()
+    ;delete Pick._.EXTENSIONS[ this.extension.name ]
 }
 
 
@@ -34,7 +35,7 @@ test( 'Globals', function() {
 /**
  * Check the most basic api.
  */
-module( 'Minimal API', {
+module( 'API minimal', {
     setup: function() {
         this.extension = {
             name: 'dropper',
@@ -47,8 +48,11 @@ module( 'Minimal API', {
 
 test( 'Extension', function() {
 
-    // Confirm it extended appropriately.
-    deepEqual( Pick._.EXTENSIONS.dropper, this.extension, 'Extend: pick dropper' )
+    // Confirm the picker instance has the extension.
+    deepEqual( this.picker.extension, this.extension, 'Check: instance extension' )
+
+    // Confirm it also stored appropriately.
+    deepEqual( Pick._.EXTENSIONS.dropper, this.extension, 'Check: dropper extension' )
 })
 
 test( 'Start and stop with extension data', function() {
@@ -77,7 +81,7 @@ test( 'Start and stop with extension data', function() {
     strictEqual( picker.is( 'started' ), true, 'Check: started' )
 })
 
-test( 'Open and close', function() {
+test( 'Open, close, focus, and blur', function() {
 
     var picker = this.picker
     var $node = picker.$node
@@ -123,9 +127,32 @@ test( 'Open and close', function() {
 
 
 /**
+ * Check the values-based api.
+ */
+module( 'API values', {
+    setup: function() {
+        this.extension = {
+            name: 'selector',
+            content: function() {
+                console.log( 'sup' )
+            }
+        }
+    }/*,
+    teardown: tearDownTheWall*/
+})
+
+test( 'Extension', function() {
+
+})
+
+
+
+
+
+/**
  * Check the basic events.
  */
-module( 'Base API events', {
+module( 'API events', {
     setup: function() {
         var mod = this
         mod.has = {}
@@ -137,6 +164,9 @@ module( 'Base API events', {
             },
             onRender: function() {
                 mod.has.rendered = true
+            },
+            onStop: function() {
+                mod.has.stopped = true
             },
             onOpen: function() {
                 mod.has.opened = true
@@ -161,6 +191,9 @@ module( 'Base API events', {
             onRender: function() {
                 mod.has.opts_rendered = true
             },
+            onStop: function() {
+                mod.has.opts_stopped = true
+            },
             onOpen: function() {
                 mod.has.opts_opened = true
             },
@@ -182,7 +215,7 @@ module( 'Base API events', {
     teardown: tearDownTheWall
 })
 
-test( 'Extension events as defaults', function() {
+test( 'As defaults', 8, function() {
 
     var mod = this
     var picker = this.picker
@@ -204,9 +237,12 @@ test( 'Extension events as defaults', function() {
 
     picker.set( 'select' )
     strictEqual( mod.has.selected, true, 'Check: `onSet`' )
+
+    picker.stop()
+    strictEqual( mod.has.stopped, true, 'Check: `onStop`' )
 })
 
-test( 'Extension events as options', function() {
+test( 'As options', 8, function() {
 
     var mod = this
     var picker = this.picker
@@ -228,7 +264,104 @@ test( 'Extension events as options', function() {
 
     picker.set( 'select' )
     strictEqual( mod.has.opts_selected, true, 'Check: `onSet`' )
+
+    picker.stop()
+    strictEqual( mod.has.opts_stopped, true, 'Check: `onStop`' )
 })
+
+test( 'As multiple bindings', 8, function() {
+
+    var picker = this.picker
+
+    // Register the events.
+    picker.
+        on( 'start', function() {
+            ok( true, 'Check: `on(‘start’)`' )
+        }).
+        on( 'render', function() {
+            ok( true, 'Check: `on(‘render’)`' )
+        }).
+        on( 'stop', function() {
+            ok( true, 'Check: `on(‘stop’)`' )
+        }).
+        on( 'open', function() {
+            ok( true, 'Check: `on(‘open’)`' )
+        }).
+        on( 'close', function() {
+            ok( true, 'Check: `on(‘close’)`' )
+        }).
+        on( 'blur', function() {
+            ok( true, 'Check: `on(‘blur’)`' )
+        }).
+        on( 'focus', function() {
+            ok( true, 'Check: `on(‘focus’)`' )
+        }).
+        on( 'set', function() {
+            ok( true, 'Check: `on(‘set’)`' )
+        })
+
+
+    // Trigger the events.
+    picker.
+        trigger( 'start' ).
+        trigger( 'open' ).
+        trigger( 'close' ).
+        trigger( 'render' ).
+        trigger( 'set' ).
+        trigger( 'blur' ).
+        trigger( 'focus' )
+})
+
+test( 'As a single binding', 8, function() {
+
+    var picker = this.picker
+
+    // Register the events.
+    picker.on({
+        start: function() {
+            ok( true, 'Check: `on(‘start’)`' )
+        },
+        render: function() {
+            ok( true, 'Check: `on(‘render’)`' )
+        },
+        stop: function() {
+            ok( true, 'Check: `on(‘stop’)`' )
+        },
+        open: function() {
+            ok( true, 'Check: `on(‘open’)`' )
+        },
+        close: function() {
+            ok( true, 'Check: `on(‘close’)`' )
+        },
+        blur: function() {
+            ok( true, 'Check: `on(‘blur’)`' )
+        },
+        focus: function() {
+            ok( true, 'Check: `on(‘focus’)`' )
+        },
+        set: function() {
+            ok( true, 'Check: `on(‘set’)`' )
+        }
+    })
+
+
+    // Trigger the events.
+    picker.
+        trigger( 'start' ).
+        trigger( 'open' ).
+        trigger( 'close' ).
+        trigger( 'render' ).
+        trigger( 'set' ).
+        trigger( 'blur' ).
+        trigger( 'focus' )
+})
+
+
+
+
+
+
+
 
 
 
@@ -267,125 +400,6 @@ test( 'Extension events as options', function() {
 // test( 'Hidden suffix', function() {
 //     var picker = this.picker
 //     strictEqual( picker.$node[0].name + '_submit', picker._hidden.name, 'Correct hidden element `name` suffix' )
-// })
-
-
-
-
-
-
-// module( 'Base events', {
-//     setup: function() {
-//     },
-//     teardown: function() {
-//         this.picker.stop()
-//         $DOM.empty()
-//     }
-// })
-
-// test( 'As individual methods', 6, function() {
-
-//     var picker = this.picker
-
-//     // Register the events
-//     picker.
-//         on( 'open', function() {
-//             ok( true, 'Opened' )
-//         }).
-//         on( 'close', function() {
-//             ok( true, 'Closed' )
-//         }).
-//         on( 'render', function() {
-//             ok( true, 'Rendered' )
-//         }).
-//         on( 'set', function() {
-//             ok( true, 'Set' )
-//         }).
-//         on( 'stop', function() {
-//             ok( true, 'Stopped' )
-//         }).
-//         on( 'start', function() {
-//             ok( true, 'Started' )
-//         })
-
-//     picker.
-//         trigger( 'start' ).
-//         trigger( 'open' ).
-//         trigger( 'render' ).
-//         trigger( 'set' )
-// })
-
-// test( 'As multiple methods', 6, function() {
-
-//     var picker = this.picker
-
-//     // Register the events
-//     picker.on({
-//         open: function() {
-//             ok( true, 'Opened' )
-//         },
-//         close: function() {
-//             ok( true, 'Closed' )
-//         },
-//         render: function() {
-//             ok( true, 'Rendered' )
-//         },
-//         set: function() {
-//             ok( true, 'Set' )
-//         },
-//         stop: function() {
-//             ok( true, 'Stopped' )
-//         },
-//         start: function() {
-//             ok( true, 'Started' )
-//         }
-//     })
-
-//     picker.
-//         trigger( 'start' ).
-//         trigger( 'open' ).
-//         trigger( 'render' ).
-//         trigger( 'set' )
-// })
-
-// test( 'Open/close alternate focus', function() {
-
-//     var picker = this.picker,
-//         klasses = Picker.klasses()
-
-//     picker.open( false )
-//     ok( !picker.get( 'open' ) && picker.$node[0].className === klasses.input + ' ' + klasses.active && picker.$root[0].className === klasses.picker + ' ' + klasses.opened && document.activeElement !== picker.$node[0], 'Opened without focus' )
-
-//     picker.close( true )
-//     ok( !picker.get( 'open' ) && picker.$node[0].className === klasses.input && picker.$root[0].className === klasses.picker && document.activeElement === picker.$node[0], 'Closed with focus' )
-// })
-
-
-
-
-
-
-// module( 'Base mouse events', {
-//     setup: function() {
-//         $DOM.append( $INPUT.clone() )
-//         var $input = $DOM.find( 'input' ).pickadate()
-//         this.picker = $input.pickadate( 'picker' )
-//     },
-//     teardown: function() {
-//         this.picker.stop()
-//         $DOM.empty()
-//     }
-// })
-
-// test( 'Open and close', function() {
-
-//     var picker = this.picker
-
-//     picker.$node.click()
-//     ok( picker.get( 'open' ) === true, 'Opened with click in' )
-
-//     $( 'body' ).click()
-//     ok( picker.get( 'open' ) === false, 'Closed with click out' )
 // })
 
 

@@ -239,9 +239,14 @@ Pick.Compose.prototype = {
             // Maintain focus on `document.activeElement` when things are getting picked.
             on( 'mousedown', '[data-pick]', function( event ) { event.preventDefault() }).
 
-            // When something within the root is picked, set the value and close.
+            // When something within the root is picked, set the thing and close.
             on( 'click', '[data-pick]', function() {
-                picker.set( 'select', $(this).data('pick') ).close()
+
+                // Match a “thing” selection formatted as `<name>:<value>`
+                var match = $(this).data('pick').match( /\s*(.+)\s*:\s*(.+)\s*/ )
+
+                // If there’s a match, set it.
+                if ( match ) picker.set( match[1], match[2] )
             }).
 
             // When something within the root is focused, stop from bubbling

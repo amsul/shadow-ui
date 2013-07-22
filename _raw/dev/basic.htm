@@ -24,10 +24,11 @@
         position: relative;
         background: #ddd;
     }
-    .asdfasdfasdf {
+    .content {
         color: green;
         font-size: 24px;
         font-weight: bold;
+        padding: 10px;
     }
 </style>
 <link rel="stylesheet" href="../lib/pick.css">
@@ -40,13 +41,13 @@
     <div class="div div--values">Values</div>
 </section>
 
-<section>
+<!--<section>
     <div class="div div--input">
         <input class="input input--basic" type="text">
     </div>
 </section>
 
-<!--<br><br>
+<br><br>
 
 <a class="anchor" href="#" title="some title">some link</a>
 
@@ -61,9 +62,7 @@
 <script>
     $.fn.pick.extend({
         name: 'dropper',
-        content: function() {
-            return '<div class="asdfasdfasdf" style="padding:10px;">This is the most basic form of a picker.</div>'
-        }
+        content: '<div class="content">This is the most basic form of a picker.</div>'
     })
 
     var $div = $( '.div--basic' ).pick( 'dropper' )
@@ -75,32 +74,26 @@
     $.fn.pick.extend({
         name: 'selector',
         content: function() {
-            return '<div class="asdfasdfasdf" style="padding:10px;">' +
-                'The selected thing is: <u>' + this.get('select') + '</u><br> ' +
-                'and highlighted is <u>' + this.get('highlight') + '</u>.' +
+            var to_select = ~~(Math.random()*100),
+                to_highlight = ~~(Math.random()*100)
+            return '<div class="content">' +
+                'Select: <u>' + this.get('select') + '</u><br>' +
+                'Highlight: <u>' + this.get('highlight') + '</u><hr>' +
+                '<button data-pick="select:' + to_select + '">Set select to ' + to_select + '</button>' +
+                '<button data-pick="highlight:' + to_highlight + '">Set highlight to ' + to_highlight + '</button>' +
             '</div>'
         },
-        dict: {
-            wassup: false,
-            values: {
-                sup: true
-            }
-        }
+        // dict: {
+        //     wassup: false,
+        //     values: {
+        //         sup: true
+        //     }
+        // }
     })
 
     var $div2 = $( '.div--values' ).pick( 'selector' )
     var picker = $div2.pick( 'selector', 'picker' )
     picker.open()
-    picker.set('select', 10)
 
 
-    // $( '.div--input' ).pick( 'dropper' )
-    // picker.render()
-
-    // $( '.div--center' ).pick( 'dropper', {
-    //     align: 'center'
-    // })
-    // $( '.div--right' ).pick( 'dropper', {
-    //     align: 'right'
-    // })
 </script>

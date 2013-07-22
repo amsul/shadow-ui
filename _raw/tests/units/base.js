@@ -1,21 +1,23 @@
 
 
-var $DOM = $( '#qunit-fixture' ),
-    $NODE_DIV = $( '<div/>' )
+var $DOM = $( '#qunit-fixture' )
+var $NODE_DIV = $( '<div/>' )
+var setUpTheWall = function( extension ) {
+    $.fn.pick.extend( extension )
+    var $clone = $NODE_DIV.clone().pick( extension.name )
+    $DOM.html( $clone )
+    return $clone.pick( extension.name, 'picker' )
+}
+var tearDownTheWall = function() {
+    delete Pick._.EXTENSIONS.dropper
+    $DOM.empty()
+}
 
 
 /**
  * Check the existence.
  */
-module( 'Core', {
-    setup: function() {
-        $DOM.html( $NODE_DIV.clone() )
-        this.$node = $DOM.children( 'div' )
-    },
-    teardown: function() {
-        $DOM.empty()
-    }
-})
+module( 'Core' )
 
 test( 'Globals', function() {
     ok( Pick, 'Object: Pick' )
@@ -24,49 +26,161 @@ test( 'Globals', function() {
     ok( $.isFunction( $.fn.pick ), 'Method: Create picker extension' )
 })
 
-test( 'Methods and states', function() {
 
-    // Create an extension object.
-    var extension = {
-        name: 'dropper',
-        content: '<div>This is the most basic form of a pick extension.</div>'
-    }
 
-    // Extend the pick method.
-    $.fn.pick.extend( extension )
+
+
+
+/**
+ * Check the most basic api.
+ */
+module( 'Minimal API', {
+    setup: function() {
+        this.extension = {
+            name: 'dropper',
+            content: '<div>This is the most basic form of a pick extension.</div>'
+        }
+        this.picker = setUpTheWall( this.extension )
+    },
+    teardown: tearDownTheWall
+})
+
+test( 'Extension', function() {
 
     // Confirm it extended appropriately.
-    deepEqual( Pick._.EXTENSIONS.dropper, extension, 'Extend: picker' )
+    deepEqual( Pick._.EXTENSIONS.dropper, this.extension, 'Extend: pick dropper' )
+})
 
+test( 'Start and stop with extension data', function() {
 
-    // ================================================ //
+    var picker = this.picker
+    var $node = picker.$node
 
+    // Confirm the dropper data exists.
+    ok( $node.data( 'pick.dropper' ), 'Exists: pick dropper data' )
 
-    var $node = this.$node.pick( 'dropper' )
-    var picker = $node.pick( 'dropper', 'picker' )
-
-    // Create a pick extension on the element.
-    ok( $node.data( 'pick.dropper' ), 'Create: picker' )
-
-    // Confirm the state updated.
+    // Confirm the picker started.
     strictEqual( picker.is( 'started' ), true, 'Check: started' )
 
     // Destroy a pick extension on the element.
-    picker.stop()
-    strictEqual( $node.data( 'pick.dropper' ), undefined, 'Destroy: picker' )
+    ok( picker.stop(), 'Trigger: stop' )
+    strictEqual( $node.data( 'pick.dropper' ), undefined, 'Destroy: pick dropper data' )
 
-    // Confirm the state updated.
+    // Confirm the picker stopped.
     strictEqual( picker.is( 'started' ), false, 'Check: stopped' )
 
     // Re-create a pick extension on the element.
-    picker.start()
-    ok( $node.data( 'pick.dropper' ), 'Re-create: picker' )
+    ok( picker.start(), 'Trigger: start' )
+    ok( $node.data( 'pick.dropper' ), 'Exists: pick dropper data' )
 
-    // Confirm the state updated.
+    // Confirm the picker started again.
     strictEqual( picker.is( 'started' ), true, 'Check: started' )
-
 })
 
+test( 'Open and close', function() {
+
+    var picker = this.picker
+    var $node = picker.$node
+
+    // Confirm the starting state.
+    strictEqual( picker.is( 'opened' ), false, 'Check: closed' )
+    strictEqual( picker.is( 'focused' ), false, 'Check: unfocused' )
+
+    // Click to open it.
+    ok( $node.trigger( 'click' ), 'Open: node click' )
+    strictEqual( picker.is( 'opened' ), true, 'Check: opened' )
+    strictEqual( picker.is( 'focused' ), true, 'Check: focused' )
+
+    // Click to close it.
+    ok( $DOM.trigger( 'click' ), 'Close: doc click' )
+    strictEqual( picker.is( 'opened' ), false, 'Check: closed' )
+    strictEqual( picker.is( 'focused' ), false, 'Check: unfocused' )
+
+    // Open the picker and confirm the change.
+    ok( picker.open(), 'Trigger: open' )
+    strictEqual( picker.is( 'opened' ), true, 'Check: opened' )
+    strictEqual( picker.is( 'focused' ), false, 'Check: unfocused' )
+
+    // Close the picker and confirm the change.
+    ok( picker.close(), 'Trigger: close' )
+    strictEqual( picker.is( 'opened' ), false, 'Check: closed' )
+    strictEqual( picker.is( 'focused' ), false, 'Check: unfocused' )
+
+    // Open the picker with focus and confirm the change.
+    ok( picker.open( true ), 'Trigger: open with focus' )
+    strictEqual( picker.is( 'opened' ), true, 'Check: opened' )
+    strictEqual( picker.is( 'focused' ), true, 'Check: focused' )
+
+    // Close the picker with focus and confirm the change.
+    ok( picker.close( true ), 'Trigger: close with focus' )
+    strictEqual( picker.is( 'opened' ), false, 'Check: closed' )
+    strictEqual( picker.is( 'focused' ), true, 'Check: focused' )
+})
+
+
+
+
+
+
+/**
+ * Check the basic events.
+ */
+module( 'Base API events', {
+    setup: function() {
+        var mod = this
+        mod.has = {}
+        this.picker = setUpTheWall({
+            name: 'loudmouth',
+            content: '<div>This extension says exactly what it’s doing.</div>',
+            onStart: function() {
+                mod.has.started = true
+            },
+            onRender: function() {
+                mod.has.rendered = true
+            },
+            onOpen: function() {
+                mod.has.opened = true
+            },
+            onClose: function() {
+                mod.has.closed = true
+            },
+            onFocus: function() {
+                mod.has.focused = true
+            },
+            onBlur: function() {
+                mod.has.blurred = true
+            },
+            onSet: function( event ) {
+                mod.has.selected = !!event
+            }
+        })
+    },
+    teardown: tearDownTheWall
+})
+
+test( 'Extension events as defaults', function() {
+
+    var mod = this
+    var picker = this.picker
+
+    strictEqual( mod.has.started, true, 'Check: `onStart`' )
+    strictEqual( mod.has.rendered, true, 'Check: `onRender`' )
+
+    picker.open()
+    strictEqual( mod.has.opened, true, 'Check: `onOpen`' )
+
+    picker.close()
+    strictEqual( mod.has.closed, true, 'Check: `onClose`' )
+
+    picker.focus()
+    strictEqual( mod.has.focused, true, 'Check: `onFocus`' )
+
+    picker.blur()
+    strictEqual( mod.has.blurred, true, 'Check: `onBlur`' )
+
+    picker.set()
+    strictEqual( mod.has.selected, true, 'Check: `onSet`' )
+})
 
 
 
@@ -75,38 +189,9 @@ test( 'Methods and states', function() {
 //    ========================================================================== */
 
 
-// module( 'Base setup', {
-//     setup: function() {
-//         $DOM.append( $INPUT.clone() )
-//         var $input = $DOM.find( 'input' ).pickadate()
-//         this.picker = $input.pickadate( 'picker' )
-//     },
-//     teardown: function() {
-//         this.picker.stop()
-//         $DOM.empty()
-//     }
-// })
-
-// test( 'Input stage and attributes', function() {
-
-//     var input = this.picker.$node[ 0 ]
-
-//     ok( input.type === 'text', 'Type updated' )
-//     ok( input.readOnly === true, 'Readonly set' )
-//     ok( input.value === '', 'No value' )
-//     ok( this.picker.$root.length, 'Root holder exists' )
-//     ok( !this.picker._hidden, 'Hidden input doesn’t exist' )
-// })
-
 // test( 'Picker states', function() {
 
 //     var picker = this.picker
-
-//     ok( picker.get( 'start' ) === true, 'Started' )
-//     ok( picker.get( 'open' ) === false, 'Closed to start with' )
-
-//     picker.open()
-//     ok( picker.get( 'open' ) === true, 'Opened with trigger' )
 
 //     picker.$root.find( 'button' )[0].focus()
 //     ok( picker.get( 'open' ) === true, 'Remains open with focus within' )
@@ -114,28 +199,6 @@ test( 'Methods and states', function() {
 //     picker.$root.click()
 //     ok( picker.get( 'open' ) === true, 'Remains open with click within' )
 
-//     picker.close()
-//     ok( picker.get( 'open' ) === false, 'Closed with trigger' )
-
-//     picker.stop()
-//     ok( picker.get( 'start' ) === false, 'Stopped with trigger' )
-
-//     picker.start()
-//     ok( picker.get( 'start' ) === true, 'Started with trigger' )
-// })
-
-// test( 'Properties', function() {
-
-//     var picker = this.picker
-
-//     ok( picker.get( 'type' ) === 'password', 'Original type is saved' )
-//     ok( picker.get( 'min' ).pick != null, 'Has “min”' )
-//     ok( picker.get( 'max' ).pick != null, 'Has “max”' )
-//     ok( isInteger( picker.get( 'select' ).pick ), 'Has “select”' )
-//     ok( isInteger( picker.get( 'highlight' ).pick ), 'Has “highlight”' )
-//     ok( isInteger( picker.get( 'view' ).pick ), 'Has “view”' )
-//     ok( isInteger( picker.get( 'now' ).pick ), 'Has “now”' )
-//     deepEqual( picker.get( 'disable' ), [], 'Default “disable” collection is empty' )
 // })
 
 
@@ -196,32 +259,6 @@ test( 'Methods and states', function() {
 //         this.picker.stop()
 //         $DOM.empty()
 //     }
-// })
-
-// test( 'As options', function() {
-
-//     var thisModule = this,
-//         picker = thisModule.picker
-
-//     strictEqual( thisModule.started, picker.get( 'start' ) === true, 'Fired: `onStart`' )
-//     strictEqual( thisModule.inputType, 'text', 'Updated input type' )
-//     strictEqual( thisModule.rendered, picker.get( 'start' ) === true, 'Fired: `onRender`' )
-
-//     picker.open()
-//     strictEqual( thisModule.opened, picker.get( 'open' ) === true, 'Fired: `onOpen`' )
-
-//     picker.close()
-//     strictEqual( thisModule.closed, picker.get( 'open' ) === false, 'Fired: `onClose`' )
-
-//     picker.stop()
-//     strictEqual( thisModule.stopped, picker.get( 'start' ) === false, 'Fired: `onStop`' )
-//     strictEqual( thisModule.inputType, $INPUT[ 0 ].type, 'Restored input type' )
-
-//     picker.start()
-//     strictEqual( thisModule.restarted, picker.get( 'start' ) === true, 'Restarted: `onStart`' )
-
-//     picker.set()
-//     deepEqual( thisModule.selected, {}, 'Fired: `onSet`' )
 // })
 
 // test( 'As individual methods', 6, function() {

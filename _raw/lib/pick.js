@@ -157,6 +157,28 @@ var Constructor = (function() {
             instance.is.started = true
 
 
+            // Attach the default extension and settings events.
+            picker.on({
+                start: picker.extension.onStart,
+                render: picker.extension.onRender,
+                stop: picker.extension.onStop,
+                open: picker.extension.onOpen,
+                close: picker.extension.onClose,
+                focus: picker.extension.onFocus,
+                blur: picker.extension.onBlur,
+                set: picker.extension.onSet
+            }).on({
+                start: picker.settings.onStart,
+                render: picker.settings.onRender,
+                stop: picker.settings.onStop,
+                open: picker.settings.onOpen,
+                close: picker.settings.onClose,
+                focus: picker.settings.onFocus,
+                blur: picker.settings.onBlur,
+                set: picker.settings.onSet
+            })
+
+
             // If there’s a format for the hidden input element, create the element
             // using the name of the original input and a suffix. Otherwise set it to undefined.
             picker._hidden = picker.settings.formatSubmit ? '<span>need to do this...</span>' : undefined
@@ -185,7 +207,7 @@ var Constructor = (function() {
                 on( 'mousedown', '[data-pick]', function( event ) { event.preventDefault() }).
 
                 // When something within the root is picked, set the value and close.
-                on( 'click', '[data-pick]', function( event ) {
+                on( 'click', '[data-pick]', function() {
                     picker.set( 'select', $(this).data('pick') ).close()
                 }).
 
@@ -218,25 +240,6 @@ var Constructor = (function() {
 
                 // Store the extension data.
                 data( 'pick.' + picker.extension.name, picker )
-
-
-
-            // Attach the default extension and settings events.
-            picker.on({
-                start: picker.extension.onStart,
-                render: picker.extension.onRender,
-                stop: picker.extension.onStop,
-                open: picker.extension.onOpen,
-                close: picker.extension.onClose,
-                set: picker.extension.onSet
-            }).on({
-                start: picker.settings.onStart,
-                render: picker.settings.onRender,
-                stop: picker.settings.onStop,
-                open: picker.settings.onOpen,
-                close: picker.settings.onClose,
-                set: picker.settings.onSet
-            })
 
 
             // Trigger any queued “start” and “render” events.
@@ -279,7 +282,7 @@ var Constructor = (function() {
             // Update the `started` state.
             instance.is.started = false
 
-            // Trigger the queued “stop” event methods.
+            // Trigger any queued “stop” event methods.
             picker.trigger( 'stop' )
 
             // Then reset all instance methods.
@@ -324,7 +327,7 @@ var Constructor = (function() {
             // Give the picker focus if needed.
             if ( giveFocus ) picker.focus()
 
-            // Trigger the queued “open” events.
+            // Trigger any queued “open” events.
             return picker.trigger( 'open' )
         }, //open
 
@@ -350,7 +353,7 @@ var Constructor = (function() {
             // Remove the picker focus if needed.
             if ( maintainFocus !== true ) picker.blur()
 
-            // Trigger the queued “close” events.
+            // Trigger any queued “close” events.
             return picker.trigger( 'close' )
         }, //close
 
@@ -404,7 +407,7 @@ var Constructor = (function() {
                 }
             })
 
-            // Trigger the queued “focus” events.
+            // Trigger any queued “focus” events.
             return picker.trigger( 'focus' )
         }, //focus
 
@@ -432,7 +435,7 @@ var Constructor = (function() {
             // Unbind the keyboard events.
             $document.off( '.' + instance.id )
 
-            // Trigger the queued “blur” events.
+            // Trigger any queued “blur” events.
             return picker.trigger( 'blur' )
         }, //blur
 
@@ -523,7 +526,31 @@ var Constructor = (function() {
          */
         set: function( thing, value, options ) {
 
-            console.log( thing, value, options )
+            var picker = this,
+                instance = picker.i(),
+
+                thingItem, thingValue, thingDefined,
+                thingIsObject = $.isPlainObject( thing ),
+                thingObject = thingIsObject ? thing : {}
+
+
+            if ( thing ) {
+
+                // If the thing isn’t an object, make it one.
+                if ( !thingIsObject ) thingObject[ thing ] = value
+
+                // Go through the things of items to set.
+                for ( thingItem in thingObject ) {
+
+                    // Grab the value of the thing.
+                    thingValue = thingObject[ thingItem ]
+
+                } //endfor
+            }
+
+
+            // Trigger any queued “set” events and pass the `thingObject`.
+            return picker.trigger( 'set', thingObject )
         }
 
 
@@ -614,21 +641,6 @@ Pick.Compose = function( ELEMENT, EXTENSION, OPTIONS ) {
                         })
                 }
 
-                else {
-
-                    // ...
-                }
-
-
-                $ELEMENT.
-
-                    // If the value changes, update the hidden input with the correct format.
-                    on( 'change.P' + STATE.id, function() {
-                        if ( P._hidden ) {
-                            console.log( 'need to update the hidden value with formatting' )
-                            // P._hidden.value = ELEMENT.value ? PickerConstructor._.trigger( EXTENSION.formats.asString, P.component, [ SETTINGS.formatSubmit, EXTENSION.item.select ] ) : ''
-                        }
-                    })
 
                 // ...
 
@@ -657,30 +669,6 @@ Pick.Compose = function( ELEMENT, EXTENSION, OPTIONS ) {
 
 
             /**
-             * Close the picker.
-             */
-            close: function( giveFocus ) {
-
-
-                // If we need to give focus, do it before changing states.
-                if ( giveFocus === true ) {
-                    // ....ah yes! It would’ve been incomplete without a crazy workaround for IE :|
-                    // The focus is triggered *after* the close has completed - causing it
-                    // to open again. So unbind and rebind the event at the next tick.
-                    $ELEMENT.off( 'focus.P' + STATE.id ).focus()
-                    setTimeout( function() {
-                        $ELEMENT.on( 'focus.P' + STATE.id, focusToOpen )
-                    }, 0 )
-                }
-
-
-                // ...
-
-            }, //close
-
-
-
-            /**
              * Render a new picker within the root
              */
             render: function() {
@@ -688,7 +676,7 @@ Pick.Compose = function( ELEMENT, EXTENSION, OPTIONS ) {
                 // Insert a new component holder in the root.
                 P.$root.html( createWrappedExtension() )
 
-                // Trigger the queued “render” events.
+                // Trigger any queued “render” events.
                 return P.trigger( 'render' )
             }, //render
 
@@ -719,23 +707,9 @@ Pick.Compose = function( ELEMENT, EXTENSION, OPTIONS ) {
              */
             set: function( thing, value, options ) {
 
-                var thingItem, thingValue, thingDefined,
-                    thingIsObject = Pick._.isObject( thing ),
-                    thingObject = thingIsObject ? thing : {}
+                // ....
 
 
-                if ( thing ) {
-
-                    // If the thing isn’t an object, make it one.
-                    if ( !thingIsObject ) {
-                        thingObject[ thing ] = value
-                    }
-
-                    // Go through the things of items to set.
-                    for ( thingItem in thingObject ) {
-
-                        // Grab the value of the thing.
-                        thingValue = thingObject[ thingItem ]
 
                         // Check if the diction exists.
                         if ( thingItem in EXTENSION.dict.values ) {
@@ -773,12 +747,8 @@ Pick.Compose = function( ELEMENT, EXTENSION, OPTIONS ) {
                             }
                         }
 
-                    } //endfor
-                }
 
-
-                // Trigger queued “set” events and pass the `thingObject`.
-                return P.trigger( 'set', thingObject )
+                // ...
             } //set
 
         } //ExtensionInstance.prototype

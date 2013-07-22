@@ -105,7 +105,7 @@ var Constructor = (function() {
         var instance, picker = this
 
         // Make sure we have a usable element.
-        if ( $element[0].nodeName == 'INPUT' || $element[0].nodeName == 'TEXTAREA' ) throw 'Cannot create a picker out of a form field..'
+        if ( $element[0].nodeName == 'INPUT' || $element[0].nodeName == 'TEXTAREA' ) throw 'ComposerError: Cannot create a picker out of a form field..'
 
         // Link up the composition.
         picker.$node = $element
@@ -175,8 +175,8 @@ var Constructor = (function() {
             // Prepare the host element.
             picker.$node.
 
-                // Open up the picker on click.
-                on( 'click.' + instance.id, function( event ) {
+                // Open up the picker on click or focus within.
+                on( 'click.' + instance.id + ' focusin.' + instance.id, function( event ) {
                     event.stopPropagation()
                     picker.open( true )
                 }).
@@ -194,16 +194,6 @@ var Constructor = (function() {
                 // Store the extension data.
                 data( 'pick.' + picker.extension.name, picker )
 
-
-            // Bind events to the doc element.
-            $document.on( 'click.' + instance.id + ' focusin.' + instance.id, function( event ) {
-
-                // If the target of the event is not the element, close the picker.
-                // * Don’t worry about clicks or focusins on the root because those don’t bubble up.
-                //   Also, for Firefox, a click on an `option` element bubbles up directly
-                //   to the doc. So make sure the target wasn't the doc.
-                if ( event.target != picker.$node[0] && event.target != document ) picker.close()
-            })
 
 
             // Attach the default extension and settings events.
@@ -291,6 +281,20 @@ var Constructor = (function() {
 
             // Add the “opened” class to the picker root.
             picker.$root.addClass( picker.klasses.opened )
+
+            // Bind events to the doc element.
+            $document.
+
+                // If the target of a click or focus event is not the element, close the picker.
+                // * Don’t worry about clicks or focusins on the root because those don’t bubble up.
+                //   Also, for Firefox, a click on an `option` element bubbles up directly
+                //   to the doc. So make sure the target wasn't the doc.
+                on( 'click.' + instance.id + ' focusin.' + instance.id, function( event ) {
+                    if ( event.target != picker.$node[0] && event.target != document ) picker.close()
+                }).
+
+                // If a mouseup has reach the doc, close the picker.
+                on( 'mouseup.' + instance.id, function() { picker.close() } )
 
             // Trigger the queued “open” events.
             return picker.trigger( 'open' )
@@ -591,9 +595,6 @@ Pick.Compose = function( ELEMENT, EXTENSION, OPTIONS ) {
                     // Add the “active” class to the element.
                     $ELEMENT.addClass( CLASSES.active )
 
-                    // If it’s an input, pass focus to the element’s jQuery object.
-                    // if ( IS_INPUT ) $ELEMENT.focus()
-
                     // Add the “focused” class to the picker root.
                     P.$root.addClass( CLASSES.focused )
 
@@ -602,7 +603,6 @@ Pick.Compose = function( ELEMENT, EXTENSION, OPTIONS ) {
 
                         // ...
 
-                        on( 'mouseup.P' + STATE.id, P.close ).
                         on( 'keydown.P' + STATE.id, function( event ) {
 
                             var
@@ -888,16 +888,20 @@ Pick._ = {
         var element = options.el || 'div',
             content = options.content,
             klasses = options.klass,
-            attributes = options.attrs
+            attrsObj = $.isPlainObject( options.attrs ) ? options.attrs : {},
+            attributes = '', attr
 
-        // Add the content.
-        content = $.isArray( content ) ? content.join( '' ) : content
+        // Create a string out of the content.
+        content = $.isArray( content ) ? content.join('') : content || ''
 
-        // Set the classname.
-        if ( klasses ) klasses = ' class="' + ( $.isArray( klasses ) ? klasses.join( ' ' ) : klasses ) + '"'
+        // Attach the classes to the attributes object.
+        if ( klasses ) attrsObj['class'] = typeof klasses == 'string' ? klasses : klasses.join(' ')
 
-        // Return the element.
-        return '<' + element + (klasses||'') + '>' + (content||'') + '</' + element + '>'
+        // Concatenate the attributes together.
+        for ( attr in attrsObj ) attributes += ' ' + attr + '="' + attrsObj[attr] + '"'
+
+        // Return the composed element.
+        return '<' + element + attributes + '>' + content + '</' + element + '>'
     },
 
 
@@ -983,17 +987,17 @@ Pick.extend = function( component ) {
 
     // Make sure we have a usable component.
     if ( !component || !component.name ) {
-        throw 'ComponentError: To create a picker extension, the component needs a name.'
+        throw 'ExtensionError: To create a picker extension, the component needs a name.'
     }
 
     // Make sure this component doesn’t already exist.
     if ( Pick._.EXTENSIONS[ component.name ] ) {
-        throw 'ComponentError: A picker extension by this name has already been defined.'
+        throw 'ExtensionError: A picker extension by this name has already been defined.'
     }
 
     // Make sure there is content to be inserted.
     if ( !component.content ) {
-        throw 'ComponentError: The extension needs some content to insert.'
+        throw 'ExtensionError: The extension needs some content to insert.'
     }
 
     // Store the component extension by name.
@@ -1024,7 +1028,7 @@ $.fn.pick = function( name, options, action ) {
 
     // Check if an extension was found.
     if ( !extension ) {
-        throw 'ComponentError: No extension found by the name of “' + name + '”.'
+        throw 'ExtensionError: No extension found by the name of “' + name + '”.'
     }
 
     // If the picker is requested, return the component data.

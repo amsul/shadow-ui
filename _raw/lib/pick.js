@@ -195,6 +195,17 @@ var Constructor = (function() {
                 data( 'pick.' + picker.extension.name, picker )
 
 
+            // Bind events to the doc element.
+            $document.on( 'click.' + instance.id + ' focusin.' + instance.id, function( event ) {
+
+                // If the target of the event is not the element, close the picker.
+                // * Don’t worry about clicks or focusins on the root because those don’t bubble up.
+                //   Also, for Firefox, a click on an `option` element bubbles up directly
+                //   to the doc. So make sure the target wasn't the doc.
+                if ( event.target != picker.$node[0] && event.target != document ) picker.close()
+            })
+
+
             // Attach the default extension and settings events.
             picker.on({
                 start: picker.extension.onStart,
@@ -354,7 +365,7 @@ var Constructor = (function() {
             var picker = this,
                 methodList = picker.i().methods[ name ]
             if ( methodList ) {
-                methodList.map( function( method ) {
+                methodList.forEach( function( method ) {
                     Pick._.trigger( method, picker, [ data ] )
                 })
             }
@@ -386,12 +397,6 @@ var Constructor = (function() {
 
             // var picker = this,
             //     instance = picker.i()
-
-            // // First check if the thing exists within the instance.
-            // return instance[ thing ] != null ? instance[ thing ] :
-
-            //     // Otherwise get the formatted or basic `thing` diction value.
-            //     Pick._.trigger( picker.extension.dict.get, picker, [ thing, options ] ) || picker.extension.dict.values[ thing ]
         }, //get
 
 
@@ -423,47 +428,12 @@ Pick.Compose = function( ELEMENT, EXTENSION, OPTIONS ) {
 
 
     var
-        // The state of the extension.
-        STATE = {
-            id: Math.abs( ~~( Math.random() * 1e9 ) )
-        },
-
-
-        // Merge the defaults and options passed.
-        SETTINGS = $.extend( true, {}, EXTENSION.defaults, OPTIONS ),
-
-
-        // Merge the default classes with the settings and then prefix them.
-        CLASSES = Pick._.prefix( EXTENSION.prefix, $.extend( {}, Pick._.klasses(), SETTINGS.klass ) ),
-
-
-        // Check which type of element we’re binding to.
-        IS_INPUT = ELEMENT.nodeName == 'INPUT',
-
-
-        // Wrap the element into a jQuery object.
-        $ELEMENT = $( ELEMENT ),
-
-
-        // The picker extension instance.
-        ExtensionInstance = function() {
-            EXTENSION.keys = EXTENSION.keys || {}
-            Pick._.trigger( EXTENSION.init, P, [ P ] )
-        },
-
+        // ...
 
         // The extension prototype.
         P = ExtensionInstance.prototype = {
 
-            constructor: ExtensionInstance,
-
-            $node: $ELEMENT,
-
-            extension: EXTENSION,
-
-            settings: SETTINGS,
-
-            klass: CLASSES,
+            // ...
 
 
             /**
@@ -472,14 +442,7 @@ Pick.Compose = function( ELEMENT, EXTENSION, OPTIONS ) {
             start: function() {
 
 
-                // If it’s already started, do nothing.
-                if ( STATE.start ) return P
-
-
-                // Set up the starting states.
-                STATE.methods = {}
-                STATE.start = true
-                STATE.open = false
+                // ...
 
 
                 // Create the picker root with a new wrapped holder and bind the events.
@@ -513,9 +476,7 @@ Pick.Compose = function( ELEMENT, EXTENSION, OPTIONS ) {
                     })
 
 
-                // If there’s a format for the hidden input element, create the element
-                // using the name of the original input plus suffix. Otherwise set it to undefined.
-                P._hidden = SETTINGS.formatSubmit ? '<span>need to do this...</span>' : undefined
+                // ...
 
 
                 // If it’s an input element, prep it.
@@ -572,11 +533,7 @@ Pick.Compose = function( ELEMENT, EXTENSION, OPTIONS ) {
 
                 else {
 
-                    $ELEMENT.
-                        on( 'click.P' + STATE.id, function( event ) {
-                            event.stopPropagation()
-                            P.open( true )
-                        })
+                    // ...
                 }
 
 
@@ -588,44 +545,10 @@ Pick.Compose = function( ELEMENT, EXTENSION, OPTIONS ) {
                             console.log( 'need to update the hidden value with formatting' )
                             // P._hidden.value = ELEMENT.value ? PickerConstructor._.trigger( EXTENSION.formats.asString, P.component, [ SETTINGS.formatSubmit, EXTENSION.item.select ] ) : ''
                         }
-                    }).
+                    })
 
-                    // Add the “element” class.
-                    addClass( CLASSES.element ).
+                // ...
 
-                    // Store the picker data by the extension name.
-                    data( 'pick.' + EXTENSION.name, P )
-
-                    // Insert the root and hidden input based on the type of element.
-                    [ IS_INPUT ? 'after' : 'append' ]( P.$root, P._hidden )
-
-
-                // Bind the default extension and settings events.
-                P.on({
-                    start: EXTENSION.onStart,
-                    render: EXTENSION.onRender,
-                    stop: EXTENSION.onStop,
-                    open: EXTENSION.onOpen,
-                    close: EXTENSION.onClose,
-                    set: EXTENSION.onSet
-                }).on({
-                    start: SETTINGS.onStart,
-                    render: SETTINGS.onRender,
-                    stop: SETTINGS.onStop,
-                    open: SETTINGS.onOpen,
-                    close: SETTINGS.onClose,
-                    set: SETTINGS.onSet
-                })
-
-
-                // If the element has autofocus, open the picker.
-                if ( ELEMENT.autofocus ) {
-                    P.open( true )
-                }
-
-
-                // Trigger queued the “start” and “render” events.
-                return P.trigger( 'start' ).trigger( 'render' )
             }, //start
 
 
@@ -635,22 +558,8 @@ Pick.Compose = function( ELEMENT, EXTENSION, OPTIONS ) {
              */
             stop: function() {
 
-                // If it’s already stopped, do nothing.
-                if ( !STATE.start ) return P
+                // ...
 
-                // Then close the picker.
-                P.close()
-
-                // Remove the hidden field.
-                if ( P._hidden ) {
-                    P._hidden.parentNode.removeChild( P._hidden )
-                }
-
-                // Remove the root.
-                P.$root.remove()
-
-                // Remove the “element” class, unbind the events, and remove the stored data.
-                $ELEMENT.removeClass( CLASSES.element ).off( '.P' + STATE.id ).removeData( EXTENSION.name )
 
                 // Restore the input element state.
                 if ( IS_INPUT ) {
@@ -658,16 +567,8 @@ Pick.Compose = function( ELEMENT, EXTENSION, OPTIONS ) {
                     ELEMENT.readOnly = false
                 }
 
-                // Update the `start` state.
-                STATE.start = false
+                // ...
 
-                // Trigger the queued “stop” events.
-                P.trigger( 'stop' )
-
-                // Reset the extension state methods.
-                STATE.methods = {}
-
-                return P
             }, //stop
 
 
@@ -678,15 +579,7 @@ Pick.Compose = function( ELEMENT, EXTENSION, OPTIONS ) {
             open: function( makeActive ) {
 
 
-                // If it’s not open, update the state.
-                if ( !STATE.open ) {
-
-                    // Set it as open.
-                    STATE.open = true
-
-                    // Add the “opened” class to the picker root.
-                    P.$root.addClass( CLASSES.opened )
-                }
+                // ...
 
 
                 // Check if we need to make the picker active and bind events to close.
@@ -706,15 +599,9 @@ Pick.Compose = function( ELEMENT, EXTENSION, OPTIONS ) {
 
                     // Bind the document events.
                     $document.
-                        on( 'click.P' + STATE.id + ' focusin.P' + STATE.id, function( event ) {
 
-                            // If the target of the event is not the element, close the picker.
-                            // * Don’t worry about clicks or focusins on the root because those don’t bubble up.
-                            //   Also, for Firefox, a click on an `option` element bubbles up directly
-                            //   to the doc. So make sure the target wasn't the doc.
-                            if ( event.target != ELEMENT && event.target != document ) P.close()
+                        // ...
 
-                        }).
                         on( 'mouseup.P' + STATE.id, P.close ).
                         on( 'keydown.P' + STATE.id, function( event ) {
 
@@ -757,8 +644,8 @@ Pick.Compose = function( ELEMENT, EXTENSION, OPTIONS ) {
                         })
                 }
 
-                // Trigger the queued “open” events.
-                return P.trigger( 'open' )
+                // ...
+
             }, //open
 
 
@@ -781,15 +668,7 @@ Pick.Compose = function( ELEMENT, EXTENSION, OPTIONS ) {
                 }
 
 
-                // If it’s open, update the state.
-                if ( STATE.open ) {
-
-                    // Set it as closed.
-                    STATE.open = false
-
-                    // Remove the “opened” class from the picker root.
-                    P.$root.removeClass( CLASSES.opened )
-                }
+                // ...
 
 
                 // Check if we need to de-active the picker.
@@ -808,8 +687,8 @@ Pick.Compose = function( ELEMENT, EXTENSION, OPTIONS ) {
                     $document.off( '.P' + STATE.id )
                 }
 
-                // Trigger the queued “close” events.
-                return P.trigger( 'close' )
+                // ...
+
             }, //close
 
 
@@ -825,56 +704,6 @@ Pick.Compose = function( ELEMENT, EXTENSION, OPTIONS ) {
                 // Trigger the queued “render” events.
                 return P.trigger( 'render' )
             }, //render
-
-
-
-            /**
-             * Bind events on the things.
-             */
-            on: function( thing, method ) {
-
-                var thingName, thingMethod,
-                    thingIsObject = Pick._.isObject( thing ),
-                    thingObject = thingIsObject ? thing : {}
-
-                if ( thing ) {
-
-                    // If the thing isn’t an object, make it one.
-                    if ( !thingIsObject ) {
-                        thingObject[ thing ] = method
-                    }
-
-                    // Go through the things to bind to.
-                    for ( thingName in thingObject ) {
-
-                        // Grab the method of the thing.
-                        thingMethod = thingObject[ thingName ]
-
-                        // Make sure the thing methods collection exists.
-                        STATE.methods[ thingName ] = STATE.methods[ thingName ] || []
-
-                        // Add the method to the relative method collection.
-                        STATE.methods[ thingName ].push( thingMethod )
-                    }
-                }
-
-                return P
-            }, //on
-
-
-
-            /**
-             * Fire off method events.
-             */
-            trigger: function( name, data ) {
-                var methodList = STATE.methods[ name ]
-                if ( methodList ) {
-                    methodList.map( function( method ) {
-                        Pick._.trigger( method, P, [ data ] )
-                    })
-                }
-                return P
-            }, //trigger
 
 
 
@@ -972,44 +801,7 @@ Pick.Compose = function( ELEMENT, EXTENSION, OPTIONS ) {
     /**
      * Wrap the extension content together.
      */
-    function createWrappedExtension() {
-
-        // Create a picker wrapper holder.
-        return Pick._.node( 'div',
-
-            Pick._.node( 'div', '', CLASSES.pointer/*, (function( alignment, measurement ) {
-                    return 'style="' + alignment + ':' + ( measurement ) + 'px;"'
-                })( SETTINGS.align, Math.ceil( ELEMENT.clientWidth / 2 ) - 10 )*/
-            ) +
-
-            // Create a picker wrapper node.
-            Pick._.node( 'div',
-
-                // Create a picker frame.
-                Pick._.node( 'div',
-
-                    // Create a picker box node.
-                    Pick._.node( 'div',
-
-                        // Insert the component’s content.
-                        Pick._.trigger( EXTENSION.content, P ),
-
-                        // The picker box class.
-                        CLASSES.box
-                    ),
-
-                    // Picker wrap class.
-                    CLASSES.wrap
-                ),
-
-                // Picker frame class.
-                CLASSES.frame
-            ),
-
-            // Picker holder class.
-            CLASSES.holder
-        ) //endreturn
-    } //createWrappedExtension
+    function createWrappedExtension() { /* ... */ }
 
 
     // Separated for IE

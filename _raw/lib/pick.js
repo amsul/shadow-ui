@@ -51,6 +51,26 @@ var Constructor = (function() {
                 },
                 keys: {},
                 methods: {},
+                dict: {
+                    values: {
+                        select: 0,
+                        highlight: 0
+                    },
+                    get: function( item, options ) {
+                        var picker = this,
+                            instance = picker.i()
+                        return instance.dict.values[ item ]
+                    },
+                    set: function( item, value, options ) {
+                        var picker = this,
+                            instance = picker.i()
+                        instance.dict.values[ item ] = value
+                        if ( instance.dict.cascades && instance.dict.cascades[ item ] ) {
+                            picker.set( instance.dict.cascades[ item ], value, options )
+                        }
+                        return value
+                    }
+                },
                 template: ( function( el ) {
                     el.innerHTML = createTemplate( klasses, content )
                     return el.children[0]
@@ -203,7 +223,7 @@ var Constructor = (function() {
                 // Any click or mousedown within the root shouldn’t bubble up.
                 on( 'click mousedown', function( event ) { event.stopPropagation() }).
 
-                // Maintain focus when things are getting picked.
+                // Maintain focus on `document.activeElement` when things are getting picked.
                 on( 'mousedown', '[data-pick]', function( event ) { event.preventDefault() }).
 
                 // When something within the root is picked, set the value and close.
@@ -214,8 +234,8 @@ var Constructor = (function() {
                 // When something within the root is focused, stop from bubbling
                 // to the doc and remove the “focused” state from the root.
                 on( 'focusin', function( event ) {
-                    picker.$root.removeClass( picker.klasses.focused )
                     event.stopPropagation()
+                    picker.$root.removeClass( picker.klasses.focused )
                 })
 
 
@@ -223,10 +243,7 @@ var Constructor = (function() {
             picker.$node.
 
                 // Open the picker with focus on a click within.
-                on( 'click.' + instance.id, function( event ) {
-                    event.stopPropagation()
-                    picker.open( true )
-                }).
+                on( 'click.' + instance.id, function() { picker.open( true ) }).
 
                 // Update the hidden value with the correct format.
                 on( 'change.' + instance.id, function() {
@@ -245,6 +262,17 @@ var Constructor = (function() {
             // Trigger any queued “start” and “render” events.
             return picker.trigger( 'start' ).trigger( 'render' )
         }, //start
+
+        render: function() {
+
+            var picker = this,
+                instance = picker.i()
+
+            picker.$root.html( instance.template.innerHTML )
+
+            // Trigger any queued “render” events.
+            return picker.trigger( 'render' )
+        },
 
 
 
@@ -319,10 +347,10 @@ var Constructor = (function() {
                 //   to the doc. So make sure the target wasn't the doc.
                 on( 'click.' + instance.id + ' focusin.' + instance.id, function( event ) {
                     if ( event.target != picker.$node[0] && event.target != document ) picker.close()
-                }).
+                })/*.
 
                 // If a mousedown has reach the doc, close the picker.
-                on( 'mousedown.' + instance.id, function() { picker.close() } )
+                on( 'mousedown.' + instance.id, function() { picker.close() } )*/
 
             // Give the picker focus if needed.
             if ( giveFocus ) picker.focus()
@@ -513,10 +541,11 @@ var Constructor = (function() {
          */
         get: function( thing, options ) {
 
-            console.log( thing, options )
+            var picker = this,
+                instance = picker.i()
 
-            // var picker = this,
-            //     instance = picker.i()
+            // Get the thing using options from the instance `dict`.
+            return Pick._.trigger( instance.dict.get, picker, [ thing, options ] )
         }, //get
 
 
@@ -539,18 +568,21 @@ var Constructor = (function() {
                 // If the thing isn’t an object, make it one.
                 if ( !thingIsObject ) thingObject[ thing ] = value
 
-                // Go through the things of items to set.
-                for ( thingItem in thingObject ) {
+                // Go through the things of items to set if the diction exists.
+                for ( thingItem in thingObject ) if ( thingItem in instance.dict.values ) {
 
                     // Grab the value of the thing.
                     thingValue = thingObject[ thingItem ]
 
+                    // Set the definition of the relevant extension item.
+                    thingDefined = Pick._.trigger( instance.dict.set, picker, [ thingItem, thingValue, options ] )
+
+                    // Trigger any queued “set” events and pass the event.
+                    picker.trigger( 'set', $.Event( thingItem + 'ed', { data: thingObject }) )
                 } //endfor
             }
 
-
-            // Trigger any queued “set” events and pass the `thingObject`.
-            return picker.trigger( 'set', thingObject )
+            return picker
         }
 
 
@@ -570,213 +602,41 @@ var Constructor = (function() {
  */
 Pick.Compose = function( ELEMENT, EXTENSION, OPTIONS ) {
 
+    // ...
 
-    var
+    var P = ExtensionInstance.prototype = {
         // ...
 
-        // The extension prototype.
-        P = ExtensionInstance.prototype = {
+        /**
+         * Set something.
+         */
+        set: function( thing, value, options ) {
+            // ....
+
+                // Check if a change in value is needed.
+                if ( thingItem == 'select' || thingItem == 'highlight' || thingItem == 'clear' ) {
+
+                    // Update the relevant element attribute and broadcast a change.
+                    if ( thingItem != 'highlight' ) {
+                        $ELEMENT.
+                            attr(
+                                IS_INPUT ? 'value' : 'data-value',
+                                thingItem == 'clear' ? '' : thingDefined
+                            ).
+                            trigger( 'change' )
+                    }
+
+                    // Render a new picker to reflect these updates.
+                    P.render()
+                }
 
             // ...
+        } //set
 
+    } //ExtensionInstance.prototype
 
-            /**
-             * Initialize the extension.
-             */
-            start: function() {
+    // ...
 
-
-                // ...
-
-
-                // If it’s an input element, prep it.
-                if ( IS_INPUT ) {
-
-                    // Confirm the focus state.
-                    ELEMENT.autofocus = ELEMENT == document.activeElement
-
-                    // Store the original type.
-                    STATE.type = ELEMENT.type
-
-                    // Remove any user-agent stylings.
-                    ELEMENT.type = 'text'
-
-                    // Make it readonly for two reasons:
-                    // 1) prevent virtual keyboard from popping up,
-                    // 2) only be “picked” values should be allowed.
-                    ELEMENT.readOnly = true
-
-
-                    $ELEMENT.
-
-                        // On focus/click, open the picker and adjust the root “focused” state.
-                        on( 'focus.P' + STATE.id + ' click.P' + STATE.id, focusToOpen ).
-
-                        // Handle keyboard event based on the picker being opened or not.
-                        on( 'keydown.P' + STATE.id, function( event ) {
-
-                            var keycode = event.keyCode,
-
-                                // Check if one of the delete keys was pressed.
-                                isKeycodeDelete = /^(8|46)$/.test( keycode )
-
-                            // For some reason IE clears the input value on “escape”.
-                            if ( keycode == 27 ) {
-                                P.close()
-                                return false
-                            }
-
-                            // Check if `space` or `delete` was pressed or the picker is closed with a key movement.
-                            if ( keycode == 32 || isKeycodeDelete || !STATE.open && EXTENSION.keys[ keycode ] ) {
-
-                                // Prevent it from moving the page and bubbling to doc.
-                                event.preventDefault()
-                                event.stopPropagation()
-
-                                // If `delete` was pressed, clear the values and close the picker.
-                                // Otherwise open the picker.
-                                if ( isKeycodeDelete ) { P.clear().close() }
-                                else { P.open( true ) }
-                            }
-                        })
-                }
-
-
-                // ...
-
-            }, //start
-
-
-
-            /**
-             * Destroy everything.
-             */
-            stop: function() {
-
-                // ...
-
-
-                // Restore the input element state.
-                if ( IS_INPUT ) {
-                    ELEMENT.type = STATE.type
-                    ELEMENT.readOnly = false
-                }
-
-                // ...
-
-            }, //stop
-
-
-
-            /**
-             * Render a new picker within the root
-             */
-            render: function() {
-
-                // Insert a new component holder in the root.
-                P.$root.html( createWrappedExtension() )
-
-                // Trigger any queued “render” events.
-                return P.trigger( 'render' )
-            }, //render
-
-
-
-            /**
-             * Get something.
-             */
-            get: function( thing, options ) {
-
-                // Make sure there’s something to get.
-                thing = thing || 'value'
-
-                // If the value is requested, return it based on the element type.
-                return thing == 'value' ? IS_INPUT ? ELEMENT.value : $ELEMENT.attr( 'data-value' ) :
-
-                    // First check if a picker state exists.
-                    STATE[ thing ] != null ? STATE[ thing ] :
-
-                    // Otherwise get the formatted or basic `thing` diction value.
-                    Pick._.trigger( EXTENSION.dict.get, P, [ thing, options ] ) || EXTENSION.dict.values[ thing ]
-            }, //get
-
-
-
-            /**
-             * Set something.
-             */
-            set: function( thing, value, options ) {
-
-                // ....
-
-
-
-                        // Check if the diction exists.
-                        if ( thingItem in EXTENSION.dict.values ) {
-
-                            // Check if there’s a custom set method.
-                            thingDefined = EXTENSION.dict.set ?
-
-                                // Set the definition of the relevant extension item.
-                                Pick._.trigger( EXTENSION.dict.set, P, [ thingItem, thingValue, options ] ) :
-
-                                // Otherwise directly set the item diction value and cascade through changes.
-                                (function() {
-                                    EXTENSION.dict.values[ thingItem ] = thingValue
-                                    if ( EXTENSION.dict.cascades && EXTENSION.dict.cascades[ thingItem ] ) {
-                                        P.set( EXTENSION.dict.cascades[ thingItem ], thingValue, options )
-                                    }
-                                    return thingValue
-                                })()
-
-                            // Check if a change in value is needed.
-                            if ( thingItem == 'select' || thingItem == 'highlight' || thingItem == 'clear' ) {
-
-                                // Update the relevant element attribute and broadcast a change.
-                                if ( thingItem != 'highlight' ) {
-                                    $ELEMENT.
-                                        attr(
-                                            IS_INPUT ? 'value' : 'data-value',
-                                            thingItem == 'clear' ? '' : thingDefined
-                                        ).
-                                        trigger( 'change' )
-                                }
-
-                                // Render a new picker to reflect these updates.
-                                P.render()
-                            }
-                        }
-
-
-                // ...
-            } //set
-
-        } //ExtensionInstance.prototype
-
-
-
-    /**
-     * Wrap the extension content together.
-     */
-    function createWrappedExtension() { /* ... */ }
-
-
-    // Separated for IE
-    function focusToOpen( event ) {
-
-        // Stop the event from propagating to the doc.
-        event.stopPropagation()
-
-        // If it’s a focus event, add the “focused” class to the root.
-        if ( event.type == 'focus' ) P.$root.addClass( CLASSES.focused )
-
-        // And then finally open the picker.
-        P.open( true )
-    }
-
-
-    // Return a new extension instance.
-    return new ExtensionInstance().start()
 } //Pick.Compose
 
 

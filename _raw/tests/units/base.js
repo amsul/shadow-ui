@@ -2,14 +2,14 @@
 
 var $DOM = $( '#qunit-fixture' )
 var $NODE_DIV = $( '<div/>' )
-var setUpTheWall = function( extension ) {
+var setUpTheWall = function( extension, options ) {
     $.fn.pick.extend( extension )
-    var $clone = $NODE_DIV.clone().pick( extension.name )
+    var $clone = $NODE_DIV.clone().pick( extension.name, options )
     $DOM.html( $clone )
     return $clone.pick( extension.name, 'picker' )
 }
 var tearDownTheWall = function() {
-    delete Pick._.EXTENSIONS.dropper
+    delete Pick._.EXTENSIONS[ this.extension.name ]
     $DOM.empty()
 }
 
@@ -129,7 +129,7 @@ module( 'Base API events', {
     setup: function() {
         var mod = this
         mod.has = {}
-        this.picker = setUpTheWall({
+        this.extension = {
             name: 'loudmouth',
             content: '<div>This extension says exactly what it’s doing.</div>',
             onStart: function() {
@@ -153,7 +153,31 @@ module( 'Base API events', {
             onSet: function( event ) {
                 mod.has.selected = !!event
             }
-        })
+        }
+        this.options = {
+            onStart: function() {
+                mod.has.opts_started = true
+            },
+            onRender: function() {
+                mod.has.opts_rendered = true
+            },
+            onOpen: function() {
+                mod.has.opts_opened = true
+            },
+            onClose: function() {
+                mod.has.opts_closed = true
+            },
+            onFocus: function() {
+                mod.has.opts_focused = true
+            },
+            onBlur: function() {
+                mod.has.opts_blurred = true
+            },
+            onSet: function( event ) {
+                mod.has.opts_selected = !!event
+            }
+        }
+        this.picker = setUpTheWall( this.extension, this.options )
     },
     teardown: tearDownTheWall
 })
@@ -178,8 +202,32 @@ test( 'Extension events as defaults', function() {
     picker.blur()
     strictEqual( mod.has.blurred, true, 'Check: `onBlur`' )
 
-    picker.set()
+    picker.set( 'select' )
     strictEqual( mod.has.selected, true, 'Check: `onSet`' )
+})
+
+test( 'Extension events as options', function() {
+
+    var mod = this
+    var picker = this.picker
+
+    strictEqual( mod.has.opts_started, true, 'Check: `onStart`' )
+    strictEqual( mod.has.opts_rendered, true, 'Check: `onRender`' )
+
+    picker.open()
+    strictEqual( mod.has.opts_opened, true, 'Check: `onOpen`' )
+
+    picker.close()
+    strictEqual( mod.has.opts_closed, true, 'Check: `onClose`' )
+
+    picker.focus()
+    strictEqual( mod.has.opts_focused, true, 'Check: `onFocus`' )
+
+    picker.blur()
+    strictEqual( mod.has.opts_blurred, true, 'Check: `onBlur`' )
+
+    picker.set( 'select' )
+    strictEqual( mod.has.opts_selected, true, 'Check: `onSet`' )
 })
 
 
@@ -228,32 +276,6 @@ test( 'Extension events as defaults', function() {
 
 // module( 'Base events', {
 //     setup: function() {
-//         $DOM.append( $INPUT.clone() )
-//         var thisModule = this,
-//             $input = $DOM.find( 'input' ).pickadate({
-//                 onStart: function() {
-//                     thisModule.started = true
-//                     thisModule.restarted = true
-//                     thisModule.inputType = this.$node[ 0 ].type
-//                 },
-//                 onRender: function() {
-//                     thisModule.rendered = true
-//                 },
-//                 onOpen: function() {
-//                     thisModule.opened = true
-//                 },
-//                 onClose: function() {
-//                     thisModule.closed = true
-//                 },
-//                 onStop: function() {
-//                     thisModule.stopped = true
-//                     thisModule.inputType = this.$node[ 0 ].type
-//                 },
-//                 onSet: function( thing ) {
-//                     thisModule.selected = thing
-//                 }
-//             })
-//         this.picker = $input.pickadate( 'picker' )
 //     },
 //     teardown: function() {
 //         this.picker.stop()

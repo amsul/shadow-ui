@@ -14,9 +14,12 @@
     eqnull: true
  */
 
-(function ( root, doc, picker, $, factory ) {
+(function ( root, $, factory ) {
 
-    // Create the picker factory.
+    var picker = {},
+        doc = root.document
+
+    // Pass picker through the factory.
     factory( picker, $, $( doc ), 'webkitCreateShadowRoot' in doc.body )
 
     // Setup the exports for Node module pattern, AMD, and basic <script> includes.
@@ -24,10 +27,9 @@
         module.exports = picker
     else if ( typeof define == 'function' && define.amd )
         define( picker )
-    else
-        root.Pick = picker
+    else root.Pick = picker
 
-}( this, document, {}, jQuery, function( Pick, $, $document, hasShadowRoot ) {
+}( this, jQuery, function( Pick, $, $document, hasShadowRoot ) {
 
 
 
@@ -173,11 +175,33 @@ var Constructor = (function() {
             }
 
 
+            // Prepare the root element.
+            picker.$root.
+
+                // Any click or mousedown within the root shouldn’t bubble up.
+                on( 'click mousedown', function( event ) { event.stopPropagation() }).
+
+                // Maintain focus when things are getting picked.
+                on( 'mousedown', '[data-pick]', function( event ) { event.preventDefault() }).
+
+                // When something within the root is picked, set the value and close.
+                on( 'click', '[data-pick]', function( event ) {
+                    picker.set( 'select', $(this).data('pick') ).close()
+                }).
+
+                // When something within the root is focused, stop from bubbling
+                // to the doc and remove the “focused” state from the root.
+                on( 'focusin', function( event ) {
+                    picker.$root.removeClass( picker.klasses.focused )
+                    event.stopPropagation()
+                })
+
+
             // Prepare the host element.
             picker.$node.
 
-                // Open up the picker on click or focus within.
-                on( 'click.' + instance.id + ' focusin.' + instance.id, function( event ) {
+                // Open the picker with focus on a click within.
+                on( 'click.' + instance.id, function( event ) {
                     event.stopPropagation()
                     picker.open( true )
                 }).
@@ -294,8 +318,8 @@ var Constructor = (function() {
                     if ( event.target != picker.$node[0] && event.target != document ) picker.close()
                 }).
 
-                // If a mouseup has reach the doc, close the picker.
-                on( 'mouseup.' + instance.id, function() { picker.close() } )
+                // If a mousedown has reach the doc, close the picker.
+                on( 'mousedown.' + instance.id, function() { picker.close() } )
 
             // Give the picker focus if needed.
             if ( giveFocus ) picker.focus()
@@ -324,7 +348,7 @@ var Constructor = (function() {
             picker.$root.removeClass( picker.klasses.opened )
 
             // Remove the picker focus if needed.
-            if ( !maintainFocus === true ) picker.blur()
+            if ( maintainFocus !== true ) picker.blur()
 
             // Trigger the queued “close” events.
             return picker.trigger( 'close' )
@@ -533,40 +557,6 @@ Pick.Compose = function( ELEMENT, EXTENSION, OPTIONS ) {
              * Initialize the extension.
              */
             start: function() {
-
-
-                // ...
-
-
-                // Create the picker root with a new wrapped holder and bind the events.
-                P.$root = $(
-                    Pick._.node( 'div', createWrappedExtension(), CLASSES.picker + ( SETTINGS.align ?
-                        ' ' + Pick._.prefix( EXTENSION.prefix, '--' + SETTINGS.align ) :
-                        '' )
-                    ) ).
-
-                    // Any click or mouseup within the root shouldn’t bubble up.
-                    on( 'click mouseup', function( event ) {
-                        event.stopPropagation()
-                    }).
-
-                    // When something within the root is focused, stop from bubbling
-                    // to the doc and remove the “focused” state from the root.
-                    on( 'focusin', function( event ) {
-                        P.$root.removeClass( CLASSES.focused )
-                        event.stopPropagation()
-                    }).
-
-                    // Maintain focus when things are getting picked.
-                    on( 'mousedown', '[data-pick]', function( event ) {
-                        event.stopPropagation()
-                        event.preventDefault()
-                    }).
-
-                    // When something within the root is picked, set the value.
-                    on( 'click', '[data-pick]', function( event ) {
-                        P.set( 'select', $( this ).data( 'pick' ) ).close()
-                    })
 
 
                 // ...

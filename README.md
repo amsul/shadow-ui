@@ -1,7 +1,17 @@
-# pick v0.1.1 [![pick build status](https://travis-ci.org/amsul/pick.js.png)](https://travis-ci.org/amsul/pick.js)
+# pick.js v0.2.0 [![pick.js build status](https://travis-ci.org/amsul/pick.js.png)](https://travis-ci.org/amsul/pick.js)
 
-Pick things with ease.
+Create custom pickers out of any DOM element while utilizing the power of the Shadow DOM.
 
+Aim for v1.0 is to support the following browsers:
+
+- IE 8+
+- Chrome
+- Safari
+- Firefox
+- Opera
+- Blackberry 6.0+
+- Android 3.2+
+- All other modern browsers
 
 <br>
 

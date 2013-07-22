@@ -44,7 +44,8 @@ var Constructor = (function() {
                 id: 'P' + id,
                 is: {
                     started: false,
-                    opened: false
+                    opened: false,
+                    focused: false
                 },
                 keys: {},
                 methods: {},
@@ -268,7 +269,7 @@ var Constructor = (function() {
         /**
          * Open the picker.
          */
-        open: function() {
+        open: function( giveFocus ) {
 
             var picker = this,
                 instance = picker.i()
@@ -296,6 +297,9 @@ var Constructor = (function() {
                 // If a mouseup has reach the doc, close the picker.
                 on( 'mouseup.' + instance.id, function() { picker.close() } )
 
+            // Give the picker focus if needed.
+            if ( giveFocus ) picker.focus()
+
             // Trigger the queued “open” events.
             return picker.trigger( 'open' )
         }, //open
@@ -305,7 +309,7 @@ var Constructor = (function() {
         /**
          * Close the picker.
          */
-        close: function() {
+        close: function( maintainFocus ) {
 
             var picker = this,
                 instance = picker.i()
@@ -319,9 +323,94 @@ var Constructor = (function() {
             // Remove the “opened” class from the picker root.
             picker.$root.removeClass( picker.klasses.opened )
 
+            // Remove the picker focus if needed.
+            if ( !maintainFocus === true ) picker.blur()
+
             // Trigger the queued “close” events.
             return picker.trigger( 'close' )
         }, //close
+
+
+
+        /**
+         * Focus the picker.
+         */
+        focus: function() {
+
+            var picker = this,
+                instance = picker.i()
+
+            // If it’s already focused, do nothing.
+            if ( instance.is.focused ) return picker
+
+            // Update the `focused` state.
+            instance.is.focused = true
+
+            // Add the “active” class to the element.
+            picker.$node.addClass( picker.klasses.active )
+
+            // Add the “focused” class to the picker root.
+            picker.$root.addClass( picker.klasses.focused )
+
+            // Bind the keyboard events.
+            $document.on( 'keydown.' + instance.id, function( event ) {
+
+                var target = event.target,
+                    keycode = event.keyCode,
+                    keycodeAction = instance.keys[ keycode ]
+
+                // On escape, close the picker and maintain focus.
+                if ( keycode == 27 ) picker.close( true )
+
+                // Check if the picker is active and there is a recorded key action.
+                else if ( instance.is.focused && keycodeAction ) {
+
+                    // Prevent the default action to stop page movement.
+                    event.preventDefault()
+
+                    // Trigger the key action.
+                    if ( keycodeAction ) Pick._.trigger( instance.keys.go, picker, [ keycodeAction ] )
+                }
+
+                // If the target is within the root and “enter” is pressed,
+                // prevent the default action and trigger a click on the target instead.
+                else if ( picker.$root.find( target ).length && keycode == 13 ) {
+                    event.preventDefault()
+                    target.click()
+                }
+            })
+
+            // Trigger the queued “focus” events.
+            return picker.trigger( 'focus' )
+        }, //focus
+
+
+        /**
+         * Blur the picker.
+         */
+        blur: function() {
+
+            var picker = this,
+                instance = picker.i()
+
+            // If it’s already not focused, do nothing.
+            if ( !instance.is.focused ) return picker
+
+            // Update the `focused` state.
+            instance.is.focused = false
+
+            // Remove the “active” class from the element.
+            picker.$node.removeClass( picker.klasses.active )
+
+            // Remove the “focused” class from the picker root.
+            picker.$root.removeClass( picker.klasses.focused )
+
+            // Unbind the keyboard events.
+            $document.off( '.' + instance.id )
+
+            // Trigger the queued “blur” events.
+            return picker.trigger( 'blur' )
+        }, //blur
 
 
 
@@ -577,79 +666,6 @@ Pick.Compose = function( ELEMENT, EXTENSION, OPTIONS ) {
 
 
 
-            /*
-             * Open up the picker.
-             */
-            open: function( makeActive ) {
-
-
-                // ...
-
-
-                // Check if we need to make the picker active and bind events to close.
-                if ( makeActive === true && !STATE.active ) {
-
-                    // Set it as activated.
-                    STATE.active = true
-
-                    // Add the “active” class to the element.
-                    $ELEMENT.addClass( CLASSES.active )
-
-                    // Add the “focused” class to the picker root.
-                    P.$root.addClass( CLASSES.focused )
-
-                    // Bind the document events.
-                    $document.
-
-                        // ...
-
-                        on( 'keydown.P' + STATE.id, function( event ) {
-
-                            var
-                                // Get the keycode.
-                                keycode = event.keyCode,
-
-                                // Translate that to an extension keycode action.
-                                keycodeAction = EXTENSION.keys[ keycode ],
-
-                                // Grab the target.
-                                target = event.target
-
-
-                            // On escape, close the picker and give focus.
-                            if ( keycode == 27 ) {
-                                P.close( true )
-                            }
-
-
-                            // Check if the picker is active and there is a recorded key action.
-                            else if ( STATE.active && keycodeAction ) {
-
-                                // Prevent the default action to stop page movement.
-                                event.preventDefault()
-
-                                // Trigger the key action.
-                                if ( keycodeAction ) {
-                                    Pick._.trigger( EXTENSION.keys.go, P, [ keycodeAction ] )
-                                }
-                            }
-
-
-                            // If the target is within the root and “enter” is pressed,
-                            // prevent the default action and trigger a click on the target instead.
-                            else if ( P.$root.find( target ).length && keycode == 13 ) {
-                                event.preventDefault()
-                                target.click()
-                            }
-                        })
-                }
-
-                // ...
-
-            }, //open
-
-
-
             /**
              * Close the picker.
              */
@@ -667,25 +683,6 @@ Pick.Compose = function( ELEMENT, EXTENSION, OPTIONS ) {
                     }, 0 )
                 }
 
-
-                // ...
-
-
-                // Check if we need to de-active the picker.
-                if ( STATE.active ) {
-
-                    // Set it as de-activated.
-                    STATE.active = false
-
-                    // Remove the “active” class.
-                    $ELEMENT.removeClass( CLASSES.active )
-
-                    // Remove the “focused” class from the picker root.
-                    P.$root.removeClass( CLASSES.focused )
-
-                    // Unbind the document events.
-                    $document.off( '.P' + STATE.id )
-                }
 
                 // ...
 

@@ -39,50 +39,16 @@ var Constructor = (function() {
         // Keep a track of the instances created.
         instances = {},
 
-        // Construct and record an instance.
-        Instance = function( klasses, content ) {
-            var id = new Date().getTime()
-            instances[ id ] = {
-                id: 'P' + id,
-                is: {
-                    started: false,
-                    opened: false,
-                    focused: false
-                },
-                keys: {},
-                methods: {},
-                dict: {
-                    values: {
-                        select: 0,
-                        highlight: 0
-                    },
-                    get: function( item, options ) {
-                        var picker = this,
-                            instance = picker.i()
-                        return instance.dict.values[ item ]
-                    },
-                    set: function( item, value, options ) {
-                        var picker = this,
-                            instance = picker.i()
-                        instance.dict.values[ item ] = value
-                        if ( instance.dict.cascades && instance.dict.cascades[ item ] ) {
-                            picker.set( instance.dict.cascades[ item ], value, options )
-                        }
-                        return value
-                    }
-                },
-                template: ( function( el ) {
-                    el.innerHTML = createTemplate( klasses, content )
-                    return el.children[0]
-                })( document.createElement( 'div' ) )
-            }
-            return instances[ id ]
-        },
+        // Create the template element for an instance.
+        createTemplate = function() {
 
-        createTemplate = function( classNames, extensionContent ) {
+            var picker = this,
+                classNames = picker.klasses,
+                extensionContent = Pick._.trigger( picker.extension.content, picker ),
+                el = document.createElement( 'div' )
 
-            // Create the template root.
-            return Pick._.node({
+            // Create the template root element.
+            el.innerHTML = Pick._.node({
                 klass: classNames.picker,
 
                 // Create a wrapped holder.
@@ -115,8 +81,48 @@ var Constructor = (function() {
                     ]
                 })
             })
+
+            // Return only element child.
+            return el.children[0]
         } //createTemplate
 
+        // Build and record an instance.
+        createInstance = function() {
+
+            var picker = this,
+
+                id = 'P' + new Date().getTime(),
+
+                instance = instances[ id ] = {
+                    id: id,
+                    is: {
+                        started: false,
+                        opened: false,
+                        focused: false
+                    },
+                    keys: {},
+                    methods: {},
+                    dict: {
+                        values: {
+                            select: 0,
+                            highlight: 0
+                        },
+                        get: function( item/*, options*/ ) {
+                            return instance.dict.values[ item ]
+                        },
+                        set: function( item, value, options ) {
+                            instance.dict.values[ item ] = value
+                            if ( instance.dict.cascades && instance.dict.cascades[ item ] ) {
+                                picker.set( instance.dict.cascades[ item ], value, options )
+                            }
+                            return value
+                        }
+                    },
+                    template: Pick._.trigger( createTemplate, picker )
+                }
+
+            return function() { return id }
+        } //createInstance
 
 
 
@@ -125,7 +131,7 @@ var Constructor = (function() {
      */
     function PickComposer( $element, extension, options ) {
 
-        var instance, picker = this
+        var picker = this
 
         // Make sure we have a usable element.
         if ( $element[0].nodeName == 'INPUT' || $element[0].nodeName == 'TEXTAREA' ) throw 'ComposerError: Cannot create a picker out of a form field..'
@@ -142,10 +148,7 @@ var Constructor = (function() {
         picker.klasses = Pick._.prefix( extension.prefix, $.extend( {}, Pick._.klasses(), picker.settings.klass ) )
 
         // Initialize the instance with an extension.
-        instance = new Instance( picker.klasses, Pick._.trigger( picker.extension.content, picker ) )
-
-        // Create a method to retrieve the instance.
-        picker.i = function() { return instance }
+        picker.i = Pick._.trigger( createInstance, picker )
 
         // Start up the picker.
         picker.start()
@@ -153,7 +156,7 @@ var Constructor = (function() {
 
 
     /**
-     * The extension prototype.
+     * The extension composer prototype.
      */
     PickComposer.prototype = {
 
@@ -166,7 +169,7 @@ var Constructor = (function() {
         start: function() {
 
             var picker = this,
-                instance = picker.i()
+                instance = instances[ picker.i() ]
 
 
             // If it’s already started, do nothing.
@@ -266,7 +269,7 @@ var Constructor = (function() {
         render: function() {
 
             var picker = this,
-                instance = picker.i()
+                instance = instances[ picker.i() ]
 
             picker.$root.html( instance.template.innerHTML )
 
@@ -282,7 +285,7 @@ var Constructor = (function() {
         stop: function() {
 
             var picker = this,
-                instance = picker.i()
+                instance = instances[ picker.i() ]
 
             // If it’s already stopped, do nothing.
             if ( !instance.is.started ) return picker
@@ -327,7 +330,7 @@ var Constructor = (function() {
         open: function( giveFocus ) {
 
             var picker = this,
-                instance = picker.i()
+                instance = instances[ picker.i() ]
 
             // If it’s already open, do nothing.
             if ( instance.is.opened ) return picker
@@ -347,10 +350,7 @@ var Constructor = (function() {
                 //   to the doc. So make sure the target wasn't the doc.
                 on( 'click.' + instance.id + ' focusin.' + instance.id, function( event ) {
                     if ( event.target != picker.$node[0] && event.target != document ) picker.close()
-                })/*.
-
-                // If a mousedown has reach the doc, close the picker.
-                on( 'mousedown.' + instance.id, function() { picker.close() } )*/
+                })
 
             // Give the picker focus if needed.
             if ( giveFocus ) picker.focus()
@@ -367,7 +367,7 @@ var Constructor = (function() {
         close: function( maintainFocus ) {
 
             var picker = this,
-                instance = picker.i()
+                instance = instances[ picker.i() ]
 
             // If it’s already closed, do nothing.
             if ( !instance.is.opened ) return picker
@@ -393,7 +393,7 @@ var Constructor = (function() {
         focus: function() {
 
             var picker = this,
-                instance = picker.i()
+                instance = instances[ picker.i() ]
 
             // If it’s already focused, do nothing.
             if ( instance.is.focused ) return picker
@@ -446,7 +446,7 @@ var Constructor = (function() {
         blur: function() {
 
             var picker = this,
-                instance = picker.i()
+                instance = instances[ picker.i() ]
 
             // If it’s already not focused, do nothing.
             if ( !instance.is.focused ) return picker
@@ -478,7 +478,7 @@ var Constructor = (function() {
                 thingIsObject = $.isPlainObject( thing ),
                 thingObject = thingIsObject ? thing : {},
                 picker = this,
-                instance = picker.i()
+                instance = instances[ picker.i() ]
 
             if ( thing ) {
 
@@ -511,7 +511,7 @@ var Constructor = (function() {
          */
         trigger: function( name, data ) {
             var picker = this,
-                methodList = picker.i().methods[ name ]
+                methodList = instances[ picker.i() ].methods[ name ]
             if ( methodList ) {
                 methodList.forEach( function( method ) {
                     Pick._.trigger( method, picker, [ data ] )
@@ -528,7 +528,7 @@ var Constructor = (function() {
         is: function( thing ) {
 
             var picker = this,
-                instance = picker.i()
+                instance = instances[ picker.i() ]
 
             // Return the instance’s state of the thing.
             return instance.is[ thing ]
@@ -542,7 +542,7 @@ var Constructor = (function() {
         get: function( thing, options ) {
 
             var picker = this,
-                instance = picker.i()
+                instance = instances[ picker.i() ]
 
             // Get the thing using options from the instance `dict`.
             return Pick._.trigger( instance.dict.get, picker, [ thing, options ] )
@@ -556,7 +556,7 @@ var Constructor = (function() {
         set: function( thing, value, options ) {
 
             var picker = this,
-                instance = picker.i(),
+                instance = instances[ picker.i() ],
 
                 thingItem, thingValue, thingDefined,
                 thingIsObject = $.isPlainObject( thing ),

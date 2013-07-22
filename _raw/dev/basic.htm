@@ -65,14 +65,17 @@
 <script>
     $.fn.pick.extend({
         name: 'dropper',
-        content: '<div class="asdfasdfasdf" style="padding:10px;">This is the most basic form of a picker.</div>'
+        content: function() {
+            console.log( this.extension )
+            return '<div class="asdfasdfasdf" style="padding:10px;">This is the most basic form of a picker.</div>'
+        }
     })
 
     var $div = $( '.div--basic' ).pick( 'dropper' )
     var picker = $div.pick( 'dropper', 'picker' )
 
 
-    $( '.div--input' ).pick( 'dropper' )
+    // $( '.div--input' ).pick( 'dropper' )
     // picker.render()
 
     // $( '.div--center' ).pick( 'dropper', {

@@ -32,6 +32,11 @@
 }( this, jQuery, function( Pick, $, $document, hasShadowRoot ) {
 
 
+/**
+ * Link up the package info.
+ */
+Pick.VERSION = '{%= pkg.version %}'
+
 
 
 /**
@@ -43,13 +48,17 @@ var INSTANCES = {}
 /**
  * Build and record a picker instance.
  */
-function createInstance() {
+function createInstance( picker, extension ) {
 
-    var picker = this,
+    if ( !( picker instanceof Pick.Compose ) ) throw 'Need a picker composition to create an instance.'
 
-        id = 'P' + new Date().getTime(),
+    var id = 'P' + new Date().getTime(),
+
+        regDictKeys = new RegExp( '(\\[[^\\[]*\\])|(' + ( extension.formats ? Object.keys( extension.formats ).join('|') + '|' : '' ) + '.)', 'g' ),
 
         instance = INSTANCES[ id ] = {
+            name: id,
+            content: '',
             id: id,
             is: {
                 started: false,
@@ -58,28 +67,45 @@ function createInstance() {
             },
             keys: {},
             methods: {},
-            dict: {
-                values: {
-                    select: 0,
-                    highlight: 0
-                },
-                cascades: {
-                    select: 'highlight'
-                },
-                get: function( item/*, options*/ ) {
-                    return instance.dict.values[ item ]
-                },
-                set: function( item, value, options ) {
-                    instance.dict.values[ item ] = value
-                    if ( instance.dict.cascades[ item ] ) {
-                        picker.set( instance.dict.cascades[ item ], value, options )
-                    }
-                    return value
+            values: {
+                select: 0,
+                highlight: 0
+            },
+            cascades: {
+                select: 'highlight'
+            },
+            formats: null,
+            get: function( item, format ) {
+                var value = instance.values[ item ]
+                if ( format && instance.formats ) {
+                    return composeFormattingArray( format ).map( function( format ) {
+                        return Pick._.trigger( format, null, [ value ] )
+                    }).join( '' )
                 }
+                return value
+            },
+            set: function( item, value, options ) {
+                instance.values[ item ] = value
+                if ( instance.cascades[ item ] ) {
+                    picker.set( instance.cascades[ item ], value, options )
+                }
+                return value
             }
+        }, //instance
+
+        composeFormattingArray = function( string ) {
+            return string.split( regDictKeys ).reduce( function( array, value ) {
+                if ( value ) array.push(
+                    value in instance.formats ? instance.formats[ value ] :
+                    value.match( /^\[.*]$/ ) ? value.replace( /^\[(.*)]$/, '$1' ) :
+                    value
+                )
+                return array
+            }, [] )
         }
 
-    return instance
+    // Extend the instance with the extension.
+    return $.extend( true, instance, extension )
 } //createInstance
 
 
@@ -88,8 +114,7 @@ function createInstance() {
  */
 function createTemplate( picker ) {
 
-    var classNames = picker.klasses,
-        extensionContent = Pick._.trigger( picker.extension.content, picker )
+    var classNames = picker.klasses
 
     // Create the template root element.
     return Pick._.node({
@@ -116,7 +141,7 @@ function createTemplate( picker ) {
                             klass: classNames.box,
 
                             // Attach the extension content.
-                            content: extensionContent
+                            content: Pick._.trigger( picker.extension.content, picker )
                         })
                     })
                 })
@@ -124,6 +149,14 @@ function createTemplate( picker ) {
         })
     })
 } //createTemplate
+
+
+/**
+ * Get the instance of a picker by ID.
+ */
+function getInstance( picker ) {
+    return INSTANCES[ picker.i() ]
+}
 
 
 
@@ -148,14 +181,11 @@ Pick.Compose = function( $element, extension, options ) {
     // Merge the default classes with the settings and then prefix them.
     picker.klasses = Pick._.prefix( extension.prefix, $.extend( {}, Pick._.klasses(), picker.settings.klass ) )
 
-    // Initialize the instance with an extension.
-    instance = Pick._.trigger( createInstance, picker )
+    // Create an instance using the picker and extension.
+    instance = createInstance( picker, extension )
 
     // Create a method to get the instance id.
     picker.i = function() { return instance.id }
-
-    // Extend the instance `dict` with the extension.
-    $.extend( true, instance.dict, extension.dict )
 
     // Start up the picker.
     picker.start()
@@ -178,7 +208,7 @@ Pick.Compose.prototype = {
 
         var template,
             picker = this,
-            instance = INSTANCES[ picker.i() ]
+            instance = getInstance( picker )
 
 
         // If it’s already started, do nothing.
@@ -305,7 +335,7 @@ Pick.Compose.prototype = {
     stop: function() {
 
         var picker = this,
-            instance = INSTANCES[ picker.i() ]
+            instance = getInstance( picker )
 
         // If it’s already stopped, do nothing.
         if ( !instance.is.started ) return picker
@@ -350,7 +380,7 @@ Pick.Compose.prototype = {
     open: function( giveFocus ) {
 
         var picker = this,
-            instance = INSTANCES[ picker.i() ]
+            instance = getInstance( picker )
 
         // If it’s already open, do nothing.
         if ( instance.is.opened ) return picker
@@ -387,7 +417,7 @@ Pick.Compose.prototype = {
     close: function( maintainFocus ) {
 
         var picker = this,
-            instance = INSTANCES[ picker.i() ]
+            instance = getInstance( picker )
 
         // If it’s already closed, do nothing.
         if ( !instance.is.opened ) return picker
@@ -413,7 +443,7 @@ Pick.Compose.prototype = {
     focus: function() {
 
         var picker = this,
-            instance = INSTANCES[ picker.i() ]
+            instance = getInstance( picker )
 
         // If it’s already focused, do nothing.
         if ( instance.is.focused ) return picker
@@ -466,7 +496,7 @@ Pick.Compose.prototype = {
     blur: function() {
 
         var picker = this,
-            instance = INSTANCES[ picker.i() ]
+            instance = getInstance( picker )
 
         // If it’s already not focused, do nothing.
         if ( !instance.is.focused ) return picker
@@ -498,7 +528,7 @@ Pick.Compose.prototype = {
             thingIsObject = $.isPlainObject( thing ),
             thingObject = thingIsObject ? thing : {},
             picker = this,
-            instance = INSTANCES[ picker.i() ]
+            instance = getInstance( picker )
 
         if ( thing ) {
 
@@ -531,7 +561,7 @@ Pick.Compose.prototype = {
      */
     trigger: function( name, data ) {
         var picker = this,
-            methodList = INSTANCES[ picker.i() ].methods[ name ]
+            methodList = getInstance( picker ).methods[ name ]
         if ( methodList ) {
             methodList.forEach( function( method ) {
                 Pick._.trigger( method, picker, [ data ] )
@@ -548,7 +578,7 @@ Pick.Compose.prototype = {
     is: function( thing ) {
 
         var picker = this,
-            instance = INSTANCES[ picker.i() ]
+            instance = getInstance( picker )
 
         // Return the instance’s state of the thing.
         return instance.is[ thing ]
@@ -562,10 +592,10 @@ Pick.Compose.prototype = {
     get: function( thing, options ) {
 
         var picker = this,
-            instance = INSTANCES[ picker.i() ]
+            instance = getInstance( picker )
 
-        // Get the thing using options from the instance `dict`.
-        return Pick._.trigger( instance.dict.get, picker, [ thing, options ] )
+        // Get the thing using options from the instance.
+        return Pick._.trigger( instance.get, picker, [ thing, options ] )
     }, //get
 
 
@@ -576,7 +606,7 @@ Pick.Compose.prototype = {
     set: function( thing, value, options ) {
 
         var picker = this,
-            instance = INSTANCES[ picker.i() ],
+            instance = getInstance( picker ),
 
             isNewRequired, thingItem, thingValue, thingDefined,
             thingIsObject = $.isPlainObject( thing ),
@@ -588,14 +618,14 @@ Pick.Compose.prototype = {
             // If the thing isn’t an object, make it one.
             if ( !thingIsObject ) thingObject[ thing ] = value
 
-            // Go through the things of items to set if the diction exists.
-            for ( thingItem in thingObject ) if ( thingItem in instance.dict.values ) {
+            // Go through the things of items to set with corresponding instance values.
+            for ( thingItem in thingObject ) if ( thingItem in instance.values ) {
 
                 // Grab the value of the thing.
                 thingValue = thingObject[ thingItem ]
 
                 // Set the definition of the relevant extension item.
-                thingDefined = Pick._.trigger( instance.dict.set, picker, [ thingItem, thingValue, options ] )
+                thingDefined = Pick._.trigger( instance.set, picker, [ thingItem, thingValue, options ] )
 
                 // Trigger any queued “set” events and pass the event.
                 picker.trigger( 'set', $.Event( thingItem + 'ed', { data: thingObject }) )
@@ -675,6 +705,9 @@ Pick._ = {
      */
     node: function( options ) {
 
+        // Make sure we have usable options.
+        if ( !$.isPlainObject( options ) ) options = {}
+
         var element = options.el || 'div',
             content = options.content,
             klasses = options.klass,
@@ -696,28 +729,25 @@ Pick._ = {
 
 
     /**
-     * Create a range to be iterated over.
+     * Create a loop to be iterated over.
      */
-    range: function( rangeObject ) {
+    loop: function( range, iterator ) {
 
-        var
-            // Create the range list string.
-            rangeList = '',
-
-            // The counter starts from the `min`.
-            counter = Pick._.trigger( rangeObject.min, rangeObject )
-
+        var result = '',
+            min = Pick._.trigger( range.min, range ),
+            max = Pick._.trigger( range.max, range ),
+            i = Pick._.trigger( range.i, range ) || 1
 
         // Loop from the `min` to `max` while incrementing by `i` and
-        // trigger the `item` function to append the result to the list.
-        for ( ; counter <= Pick._.trigger( rangeObject.max, rangeObject, [ counter ] ); counter += rangeObject.i || 1 ) {
-            rangeList += Pick._.trigger( rangeObject.item, rangeObject, [ counter ] )
+        // trigger the iterator while appending to the result.
+        while ( min <= max ) {
+            result += Pick._.trigger( iterator, range, [ min ] ) || ''
+            min += i
         }
 
-
-        // Return the compiled range list string.
-        return rangeList
-    }, //range
+        // Return the concatenated result string.
+        return result
+    }, //loop
 
 
     /**
@@ -783,11 +813,6 @@ Pick.extend = function( component ) {
     // Make sure this component doesn’t already exist.
     if ( Pick._.EXTENSIONS[ component.name ] ) {
         throw 'ExtensionError: A picker extension by this name has already been defined.'
-    }
-
-    // Make sure there is content to be inserted.
-    if ( !component.content ) {
-        throw 'ExtensionError: The extension needs some content to insert.'
     }
 
     // Store the component extension by name.

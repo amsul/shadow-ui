@@ -134,14 +134,87 @@ module( 'API values', {
         this.extension = {
             name: 'selector',
             content: function() {
-                console.log( 'sup' )
+                var to_select = ~~(Math.random()*1000),
+                    to_highlight = ~~(Math.random()*1000)
+                return '<div class="content">' +
+                    'Select: <u>' + this.get('select') + '</u><br>' +
+                    'Highlight: <u>' + this.get('highlight') + '</u><hr>' +
+                    '<button id="select" data-pick="select:' + to_select + '">Set select to ' + to_select + '</button>' +
+                    '<button id="highlight" data-pick="highlight:' + to_highlight + '">Set highlight to ' + to_highlight + '</button>' +
+                '</div>'
             }
         }
-    }/*,
-    teardown: tearDownTheWall*/
+        this.picker = setUpTheWall( this.extension )
+    },
+    teardown: tearDownTheWall
 })
 
-test( 'Extension', function() {
+test( 'Get and set', function() {
+
+    var picker = this.picker
+
+    strictEqual( picker.get( 'select' ), 0, 'Check: default selection' )
+    strictEqual( picker.get( 'highlight' ), 0, 'Check: default highlight' )
+
+    var $highlight = picker.$root.find( '#highlight' )
+    ok( $highlight.click(), 'Click: highlight button' )
+    notStrictEqual( picker.get( 'highlight' ), 0, 'Check: highlight changed' )
+    strictEqual( picker.get( 'select' ), 0, 'Check: select unchanged' )
+
+    var $select = picker.$root.find( '#select' )
+    ok( $select.click(), 'Click: select button' )
+    notStrictEqual( picker.get( 'select' ), 0, 'Check: select changed' )
+    strictEqual( picker.get( 'select' ), picker.get( 'highlight' ), 'Check: highlight updated' )
+})
+
+
+
+
+
+
+/**
+ * Check the formats-based api.
+ */
+module( 'API formats', {
+    setup: function() {
+        this.extension = {
+            name: 'formatter',
+            formats: {
+                lol: 'Laugh Out Loud!',
+                c: function( value ) {
+                    var string = '' + value
+                    for ( var i = value + 1; i < value + 5; i += 1 ) {
+                        string += i
+                    }
+                    return string
+                }
+            }
+        }
+        this.picker = setUpTheWall( this.extension )
+    },
+    teardown: tearDownTheWall
+})
+
+test( 'Get and set with formats', function() {
+
+    var picker = this.picker
+
+    strictEqual( picker.get( 'select', 'lol [That’s kinda funny, lol].' ), 'Laugh Out Loud! That’s kinda funny, lol.', 'Check: abbreviation expansion' )
+    strictEqual( picker.get( 'select', 'c [Let’s count up to c what happens].' ), '01234 Let’s count up to c what happens.', 'Check: value expansion' )
+
+    ok( picker.set( 'select', 9 ), 'Change: selection value' )
+    strictEqual( picker.get( 'select', 'c [Let’s count up to c what happens].' ), '910111213 Let’s count up to c what happens.', 'Check: updated value epansion' )
+})
+
+
+
+
+
+
+/**
+ * Check the custom values api.
+ */
+module( 'API custom values', {
 
 })
 

@@ -38,7 +38,7 @@ test( 'Globals', function() {
 module( 'API minimal', {
     setup: function() {
         this.extension = {
-            name: 'basic',
+            name: 'pick--basic',
             content: '<div>This is the most basic form of a pick extension.</div>'
         }
         this.picker = setUpTheWall( this.extension )
@@ -52,7 +52,7 @@ test( 'Extension', function() {
     deepEqual( this.picker.extension, this.extension, 'Check: instance extension' )
 
     // Confirm it also stored appropriately.
-    deepEqual( Pick._.EXTENSIONS.basic, this.extension, 'Check: collected extension' )
+    deepEqual( Pick._.EXTENSIONS[ 'pick--basic' ], this.extension, 'Check: collected extension' )
 })
 
 test( 'Start and stop with extension data', function() {
@@ -61,21 +61,21 @@ test( 'Start and stop with extension data', function() {
     var $node = picker.$node
 
     // Confirm the data exists.
-    ok( $node.data( 'pick.basic' ), 'Exists: pick data' )
+    ok( $node.data( 'pick.pick--basic' ), 'Exists: pick data' )
 
     // Confirm the picker started.
     strictEqual( picker.is( 'started' ), true, 'Check: started' )
 
     // Destroy a pick extension on the element.
     ok( picker.stop(), 'Trigger: stop' )
-    strictEqual( $node.data( 'pick.basic' ), undefined, 'Destroy: pick data' )
+    strictEqual( $node.data( 'pick.pick--basic' ), undefined, 'Destroy: pick data' )
 
     // Confirm the picker stopped.
     strictEqual( picker.is( 'started' ), false, 'Check: stopped' )
 
     // Re-create a pick extension on the element.
     ok( picker.start(), 'Trigger: start' )
-    ok( $node.data( 'pick.basic' ), 'Exists: pick data' )
+    ok( $node.data( 'pick.pick--basic' ), 'Exists: pick data' )
 
     // Confirm the picker started again.
     strictEqual( picker.is( 'started' ), true, 'Check: started' )
@@ -132,13 +132,13 @@ test( 'Open, close, focus, and blur', function() {
 module( 'API values', {
     setup: function() {
         this.extension = {
-            name: 'values',
+            name: 'pick--values',
             content: function() {
                 var to_select = ~~(Math.random()*1000),
                     to_highlight = ~~(Math.random()*1000)
                 return '<div class="content">' +
-                    'Select: <u>' + this.get('select') + '</u><br>' +
-                    'Highlight: <u>' + this.get('highlight') + '</u><hr>' +
+                    'Select: <u>' + this.picker.get('select') + '</u><br>' +
+                    'Highlight: <u>' + this.picker.get('highlight') + '</u><hr>' +
                     '<button id="select" data-pick="select:' + to_select + '">Set select to ' + to_select + '</button>' +
                     '<button id="highlight" data-pick="highlight:' + to_highlight + '">Set highlight to ' + to_highlight + '</button>' +
                 '</div>'
@@ -178,7 +178,7 @@ test( 'Get and set', function() {
 module( 'API formats', {
     setup: function() {
         this.extension = {
-            name: 'values-formatter',
+            name: 'pick--values-formatter',
             formats: {
                 lol: 'Laugh Out Loud!',
                 c: function( value ) {
@@ -217,7 +217,7 @@ test( 'Get and set with formats', function() {
 module( 'API custom values', {
     setup: function() {
         this.extension = {
-            name: 'values-custom',
+            name: 'pick--values-custom',
             values: {
                 sup: 'not much',
                 highlight: 400
@@ -263,7 +263,16 @@ test( 'Get and set with values and cascades', function() {
 module( 'API custom get/set methods', {
     setup: function() {
         this.extension = {
-            name: 'get-set-custom'
+            name: 'pick--get-set-custom',
+            get: function( thing, options ) {
+                var value = this.values[ thing ]
+                return options === true ? value : String.fromCharCode( 65 + value )
+            },
+            set: function( thing, value/*, options*/ ) {
+                value = value.charCodeAt(0) - 65
+                this.values[ thing ] = value
+                return value
+            }
         }
         this.picker = setUpTheWall( this.extension )
     },
@@ -272,7 +281,15 @@ module( 'API custom get/set methods', {
 
 test( 'Get and set with custom methods', function() {
 
-    console.log( 'sup' )
+    var picker = this.picker
+
+    strictEqual( picker.get( 'highlight' ), 'A', 'Check: custom get' )
+    strictEqual( picker.get( 'highlight', true ), 0, 'Check: custom get with options' )
+
+    ok( picker.set( 'highlight', 'K' ), 'Change: custom set for value' )
+
+    strictEqual( picker.get( 'highlight' ), 'K', 'Check: value updated' )
+    strictEqual( picker.get( 'highlight', true ), 10, 'Check: stored value updated' )
 })
 
 
@@ -287,7 +304,7 @@ module( 'API events', {
         var mod = this
         mod.has = {}
         this.extension = {
-            name: 'loudmouth',
+            name: 'pick--loudmouth',
             content: '<div>This extension says exactly what it’s doing.</div>',
             onStart: function() {
                 mod.has.started = true

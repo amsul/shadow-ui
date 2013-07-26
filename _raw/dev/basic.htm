@@ -34,23 +34,27 @@
 <link rel="stylesheet" href="../lib/pick.css">
 
 <section>
-    <div class="div basic">Basic</div>
+    <div class="div pick--basic">Basic</div>
 </section>
 
 <section>
-    <div class="div values">Values</div>
+    <div class="div pick--values">Values</div>
 </section>
 
 <section>
-    <div class="div values-formatter">Values formatter</div>
+    <div class="div pick--values-formatter">Values formatter</div>
 </section>
 
 <section>
-    <div class="div values-custom">Custom values</div>
+    <div class="div pick--values-custom">Custom values</div>
 </section>
 
 <section>
-    <div class="div get-set-custom">Custom get and set</div>
+    <div class="div pick--get-set-custom">Custom get and set</div>
+</section>
+
+<section>
+    <div class="div pick--keys">Keys trigger</div>
 </section>
 
 <!--<section>
@@ -74,38 +78,38 @@
 <script>
 
     $.fn.pick.extend({
-        name: 'basic',
+        name: 'pick--basic',
         content: '<div class="content">This is the most basic form of a picker.</div>'
     })
 
-    var $div = $( '.basic' ).pick( 'basic' )
+    var $div = $( '.pick--basic' ).pick( 'pick--basic' )
 
 
     ////////////////////////////////////////////////////////////
 
 
     $.fn.pick.extend({
-        name: 'values',
+        name: 'pick--values',
         content: function() {
             var to_select = ~~(Math.random()*1000),
                 to_highlight = ~~(Math.random()*1000)
             return '<div class="content">' +
-                'Select: <u>' + this.get('select') + '</u><br>' +
-                'Highlight: <u>' + this.get('highlight') + '</u><hr>' +
+                'Select: <u>' + this.picker.get('select') + '</u><br>' +
+                'Highlight: <u>' + this.picker.get('highlight') + '</u><hr>' +
                 '<button data-pick="select:' + to_select + '">Set select to ' + to_select + '</button>' +
                 '<button data-pick="highlight:' + to_highlight + '">Set highlight to ' + to_highlight + '</button>' +
             '</div>'
         }
     })
 
-    var $div2 = $( '.values' ).pick( 'values' )
+    var $div2 = $( '.pick--values' ).pick( 'pick--values' )
 
 
     ////////////////////////////////////////////////////////////
 
 
     $.fn.pick.extend({
-        name: 'values-formatter',
+        name: 'pick--values-formatter',
         formats: {
             lol: 'Laugh Out Loud!',
             c: function( value ) {
@@ -118,14 +122,14 @@
         }
     })
 
-    var $div3 = $( '.values-formatter' ).pick( 'values-formatter' )
+    var $div3 = $( '.pick--values-formatter' ).pick( 'pick--values-formatter' )
 
 
     ////////////////////////////////////////////////////////////
 
 
     $.fn.pick.extend({
-        name: 'values-custom',
+        name: 'pick--values-custom',
         values: {
             sup: 'not much',
             highlight: 400
@@ -136,19 +140,40 @@
         }
     })
 
-    var $div4 = $( '.values-custom' ).pick( 'values-custom' )
+    var $div4 = $( '.pick--values-custom' ).pick( 'pick--values-custom' )
 
 
     ////////////////////////////////////////////////////////////
 
 
     $.fn.pick.extend({
-        name: 'get-set-custom'
+        name: 'pick--get-set-custom',
+        get: function( thing, options ) {
+            var value = this.values[ thing ]
+            return options === true ? value : String.fromCharCode( 65 + value )
+        },
+        set: function( thing, value, options ) {
+            value = value.charCodeAt(0) - 65
+            this.values[ thing ] = value
+            return value
+        }
     })
 
-    var $div5 = $( '.get-set-custom' ).pick( 'get-set-custom' )
-    var picker = $div5.pick( 'get-set-custom', 'picker' )
-    picker.open()
+    var $div5 = $( '.pick--get-set-custom' ).pick( 'pick--get-set-custom' )
+    var picker = $div5.pick( 'pick--get-set-custom', 'picker' )
+
+
+    ////////////////////////////////////////////////////////////
+
+
+    $.fn.pick.extend({
+        name: 'pick--keys'
+    })
+
+    var $div6 = $( '.pick--keys' ).pick( 'pick--keys' )
+    var picker = $div6.pick( 'pick--keys', 'picker' )
+
+    picker.open( true )
 
 
 </script>

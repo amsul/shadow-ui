@@ -54,18 +54,39 @@ function createInstance( picker, extension ) {
 
     var id = 'P' + new Date().getTime(),
 
-        regDictKeys = new RegExp( '(\\[[^\\[]*\\])|(' + ( extension.formats ? Object.keys( extension.formats ).join('|') + '|' : '' ) + '.)', 'g' ),
+        regexFormats = new RegExp( '(\\[[^\\[]*\\])|(' + ( extension.formats ? Object.keys( extension.formats ).join('|') + '|' : '' ) + '.)', 'g' ),
 
         instance = INSTANCES[ id ] = {
             name: id,
-            content: '',
             id: id,
+            picker: picker,
+            content: '',
             is: {
                 started: false,
                 opened: false,
                 focused: false
             },
-            keys: {},
+            keys: {
+
+                // Close the picker on “escape”.
+                27: function() { picker.close( true ) },
+
+                // If the target is within the root and “enter” is pressed,
+                // prevent the default action and trigger a click on the target instead.
+                13: function( event ) {
+                    var target = event.tatget
+                    if ( picker.$root.find( target ).length ) {
+                        event.preventDefault()
+                        target.click()
+                    }
+                },
+
+                // Any of the arrow keys should open the picker.
+                37: function() { picker.open() },
+                38: function() { picker.open() },
+                39: function() { picker.open() },
+                40: function() { picker.open() }
+            },
             methods: {},
             values: {
                 select: 0,
@@ -75,26 +96,26 @@ function createInstance( picker, extension ) {
                 select: 'highlight'
             },
             formats: null,
-            get: function( item, format ) {
-                var value = instance.values[ item ]
+            get: function( thing, format ) {
+                var value = instance.values[ thing ]
                 if ( format && instance.formats ) {
-                    return composeFormattingArray( format ).map( function( format ) {
+                    return toFormatsArray( format ).map( function( format ) {
                         return Pick._.trigger( format, null, [ value ] )
                     }).join( '' )
                 }
                 return value
             },
-            set: function( item, value, options ) {
-                instance.values[ item ] = value
-                if ( instance.cascades[ item ] ) {
-                    picker.set( instance.cascades[ item ], value, options )
+            set: function( thing, value, options ) {
+                instance.values[ thing ] = value
+                if ( instance.cascades[ thing ] ) {
+                    picker.set( instance.cascades[ thing ], value, options )
                 }
                 return value
             }
         }, //instance
 
-        composeFormattingArray = function( string ) {
-            return string.split( regDictKeys ).reduce( function( array, value ) {
+        toFormatsArray = function( string ) {
+            return string.split( regexFormats ).reduce( function( array, value ) {
                 if ( value ) array.push(
                     value in instance.formats ? instance.formats[ value ] :
                     value.match( /^\[.*]$/ ) ? value.replace( /^\[(.*)]$/, '$1' ) :
@@ -141,7 +162,7 @@ function createTemplate( picker ) {
                             klass: classNames.box,
 
                             // Attach the extension content.
-                            content: Pick._.trigger( picker.extension.content, picker )
+                            content: Pick._.trigger( picker.extension.content, getInstance( picker ) )
                         })
                     })
                 })
@@ -184,8 +205,8 @@ Pick.Compose = function( $element, extension, options ) {
     // Create an instance using the picker and extension.
     instance = createInstance( picker, extension )
 
-    // Create a method to get the instance id.
-    picker.i = function() { return instance.id }
+    // Create a method to get the instance info.
+    picker.i = function( i ) { return instance[ i || 'id' ] }
 
     // Start up the picker.
     picker.start()
@@ -460,28 +481,16 @@ Pick.Compose.prototype = {
         // Bind the keyboard events.
         $document.on( 'keydown.' + instance.id, function( event ) {
 
-            var target = event.target,
-                keycode = event.keyCode,
-                keycodeAction = instance.keys[ keycode ]
+            var keyAction = instance.keys[ event.keyCode ]
 
-            // On escape, close the picker and maintain focus.
-            if ( keycode == 27 ) picker.close( true )
-
-            // Check if the picker is active and there is a recorded key action.
-            else if ( instance.is.focused && keycodeAction ) {
+            // Check if the picker is focused and there is a key action.
+            if ( instance.is.focused && keyAction ) {
 
                 // Prevent the default action to stop page movement.
                 event.preventDefault()
 
-                // Trigger the key action.
-                if ( keycodeAction ) Pick._.trigger( instance.keys.go, picker, [ keycodeAction ] )
-            }
-
-            // If the target is within the root and “enter” is pressed,
-            // prevent the default action and trigger a click on the target instead.
-            else if ( picker.$root.find( target ).length && keycode == 13 ) {
-                event.preventDefault()
-                target.click()
+                // Trigger the key action within scope of the instance.
+                Pick._.trigger( keyAction, instance, [ event ] )
             }
         })
 
@@ -594,8 +603,8 @@ Pick.Compose.prototype = {
         var picker = this,
             instance = getInstance( picker )
 
-        // Get the thing using options from the instance.
-        return Pick._.trigger( instance.get, picker, [ thing, options ] )
+        // Get the thing using the options within scope of the instance.
+        return Pick._.trigger( instance.get, instance, [ thing, options ] )
     }, //get
 
 
@@ -625,7 +634,7 @@ Pick.Compose.prototype = {
                 thingValue = thingObject[ thingItem ]
 
                 // Set the definition of the relevant extension item.
-                thingDefined = Pick._.trigger( instance.set, picker, [ thingItem, thingValue, options ] )
+                thingDefined = Pick._.trigger( instance.set, instance, [ thingItem, thingValue, options ] )
 
                 // Trigger any queued “set” events and pass the event.
                 picker.trigger( 'set', $.Event( thingItem + 'ed', { data: thingObject }) )

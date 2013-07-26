@@ -38,7 +38,7 @@ test( 'Globals', function() {
 module( 'API minimal', {
     setup: function() {
         this.extension = {
-            name: 'dropper',
+            name: 'basic',
             content: '<div>This is the most basic form of a pick extension.</div>'
         }
         this.picker = setUpTheWall( this.extension )
@@ -52,7 +52,7 @@ test( 'Extension', function() {
     deepEqual( this.picker.extension, this.extension, 'Check: instance extension' )
 
     // Confirm it also stored appropriately.
-    deepEqual( Pick._.EXTENSIONS.dropper, this.extension, 'Check: dropper extension' )
+    deepEqual( Pick._.EXTENSIONS.basic, this.extension, 'Check: collected extension' )
 })
 
 test( 'Start and stop with extension data', function() {
@@ -60,22 +60,22 @@ test( 'Start and stop with extension data', function() {
     var picker = this.picker
     var $node = picker.$node
 
-    // Confirm the dropper data exists.
-    ok( $node.data( 'pick.dropper' ), 'Exists: pick dropper data' )
+    // Confirm the data exists.
+    ok( $node.data( 'pick.basic' ), 'Exists: pick data' )
 
     // Confirm the picker started.
     strictEqual( picker.is( 'started' ), true, 'Check: started' )
 
     // Destroy a pick extension on the element.
     ok( picker.stop(), 'Trigger: stop' )
-    strictEqual( $node.data( 'pick.dropper' ), undefined, 'Destroy: pick dropper data' )
+    strictEqual( $node.data( 'pick.basic' ), undefined, 'Destroy: pick data' )
 
     // Confirm the picker stopped.
     strictEqual( picker.is( 'started' ), false, 'Check: stopped' )
 
     // Re-create a pick extension on the element.
     ok( picker.start(), 'Trigger: start' )
-    ok( $node.data( 'pick.dropper' ), 'Exists: pick dropper data' )
+    ok( $node.data( 'pick.basic' ), 'Exists: pick data' )
 
     // Confirm the picker started again.
     strictEqual( picker.is( 'started' ), true, 'Check: started' )
@@ -132,7 +132,7 @@ test( 'Open, close, focus, and blur', function() {
 module( 'API values', {
     setup: function() {
         this.extension = {
-            name: 'selector',
+            name: 'values',
             content: function() {
                 var to_select = ~~(Math.random()*1000),
                     to_highlight = ~~(Math.random()*1000)
@@ -178,7 +178,7 @@ test( 'Get and set', function() {
 module( 'API formats', {
     setup: function() {
         this.extension = {
-            name: 'formatter',
+            name: 'values-formatter',
             formats: {
                 lol: 'Laugh Out Loud!',
                 c: function( value ) {
@@ -215,7 +215,64 @@ test( 'Get and set with formats', function() {
  * Check the custom values api.
  */
 module( 'API custom values', {
+    setup: function() {
+        this.extension = {
+            name: 'values-custom',
+            values: {
+                sup: 'not much',
+                highlight: 400
+            },
+            cascades: {
+                select: false,
+                sup: 'highlight'
+            }
+        }
+        this.picker = setUpTheWall( this.extension )
+    },
+    teardown: tearDownTheWall
+})
 
+test( 'Get and set with values and cascades', function() {
+
+    var picker = this.picker
+
+    strictEqual( picker.get( 'sup' ), 'not much', 'Check: custom value' )
+
+    strictEqual( picker.get( 'select' ), 0, 'Check: default value' )
+    strictEqual( picker.get( 'highlight' ), 400, 'Check: default override' )
+
+    ok( picker.set( 'select', 50 ), 'Change: default value' )
+
+    strictEqual( picker.get( 'select' ), 50, 'Check: default updated' )
+    strictEqual( picker.get( 'highlight' ), 400, 'Check: cascade override' )
+
+    ok( picker.set( 'sup', 'just chillin’' ), 'Change: custom value' )
+
+    strictEqual( picker.get( 'sup' ), 'just chillin’', 'Check: custom value updated' )
+    strictEqual( picker.get( 'highlight' ), 'just chillin’', 'Check: custom cascade to default' )
+})
+
+
+
+
+
+
+/**
+ * Check the custom get/set methods api.
+ */
+module( 'API custom get/set methods', {
+    setup: function() {
+        this.extension = {
+            name: 'get-set-custom'
+        }
+        this.picker = setUpTheWall( this.extension )
+    },
+    teardown: tearDownTheWall
+})
+
+test( 'Get and set with custom methods', function() {
+
+    console.log( 'sup' )
 })
 
 

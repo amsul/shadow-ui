@@ -34,15 +34,23 @@
 <link rel="stylesheet" href="../lib/pick.css">
 
 <section>
-    <div class="div div--basic">Basic</div>
+    <div class="div basic">Basic</div>
 </section>
 
 <section>
-    <div class="div div--values">Values</div>
+    <div class="div values">Values</div>
 </section>
 
 <section>
-    <div class="div div--values2">Custom values</div>
+    <div class="div values-formatter">Values formatter</div>
+</section>
+
+<section>
+    <div class="div values-custom">Custom values</div>
+</section>
+
+<section>
+    <div class="div get-set-custom">Custom get and set</div>
 </section>
 
 <!--<section>
@@ -64,19 +72,20 @@
 <script src="jquery.js"></script>
 <script src="../lib/pick.js"></script>
 <script>
+
     $.fn.pick.extend({
-        name: 'dropper',
+        name: 'basic',
         content: '<div class="content">This is the most basic form of a picker.</div>'
     })
 
-    var $div = $( '.div--basic' ).pick( 'dropper' )
+    var $div = $( '.basic' ).pick( 'basic' )
 
 
     ////////////////////////////////////////////////////////////
 
 
     $.fn.pick.extend({
-        name: 'selector',
+        name: 'values',
         content: function() {
             var to_select = ~~(Math.random()*1000),
                 to_highlight = ~~(Math.random()*1000)
@@ -89,14 +98,14 @@
         }
     })
 
-    var $div2 = $( '.div--values' ).pick( 'selector' )
+    var $div2 = $( '.values' ).pick( 'values' )
 
 
     ////////////////////////////////////////////////////////////
 
 
     $.fn.pick.extend({
-        name: 'formatter',
+        name: 'values-formatter',
         formats: {
             lol: 'Laugh Out Loud!',
             c: function( value ) {
@@ -109,8 +118,36 @@
         }
     })
 
-    var $div3 = $( '.div--values2' ).pick( 'formatter' )
-    var picker = $div3.pick( 'formatter', 'picker' )
+    var $div3 = $( '.values-formatter' ).pick( 'values-formatter' )
+
+
+    ////////////////////////////////////////////////////////////
+
+
+    $.fn.pick.extend({
+        name: 'values-custom',
+        values: {
+            sup: 'not much',
+            highlight: 400
+        },
+        cascades: {
+            select: false,
+            sup: 'highlight'
+        }
+    })
+
+    var $div4 = $( '.values-custom' ).pick( 'values-custom' )
+
+
+    ////////////////////////////////////////////////////////////
+
+
+    $.fn.pick.extend({
+        name: 'get-set-custom'
+    })
+
+    var $div5 = $( '.get-set-custom' ).pick( 'get-set-custom' )
+    var picker = $div5.pick( 'get-set-custom', 'picker' )
     picker.open()
 
 

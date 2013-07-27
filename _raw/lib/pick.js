@@ -309,7 +309,7 @@ Pick.Compose.prototype = {
                 appendTo( picker.$host )
 
             // The host should act at a wrapper for the input node.
-            picker.$host.on( 'click.' + instance.id, function( event ) {
+            picker.$host.on( 'click.' + instance.id + ' focus.' + instance.id, function( event ) {
                 event.preventDefault()
                 picker.$input.focus()
             })
@@ -531,8 +531,9 @@ Pick.Compose.prototype = {
         // Update the `focused` state.
         instance.is.focused = true
 
-        // Add the “active” class to the host.
-        picker.$host.addClass( picker.klasses.hostActive )
+        // Add the “active” class to the host and then trigger
+        // the focus handler to focus either the host or input.
+        picker.$host.addClass( picker.klasses.hostActive ).trigger( 'focus' )
 
         // Add the “focused” class to the picker root.
         picker.$root.addClass( picker.klasses.rootActive )

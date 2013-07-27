@@ -146,37 +146,32 @@ function createTemplate( picker ) {
 
     var classNames = picker.klasses
 
-    // Create the template root element.
+    // Create the wrapped holder.
     return Pick._.node({
-        klass: classNames.root,
+        klass: classNames.holder,
+        content: [
 
-        // Create a wrapped holder.
-        content: Pick._.node({
-            klass: classNames.holder,
-            content: [
+            // Create the pointer node.
+            Pick._.node({ klass: classNames.pointer }),
 
-                // Create the pointer node.
-                Pick._.node({ klass: classNames.pointer }),
+            // Create the picker frame.
+            Pick._.node({
+                klass: classNames.frame,
 
-                // Create the picker frame.
-                Pick._.node({
-                    klass: classNames.frame,
+                // Create the content wrapper.
+                content: Pick._.node({
+                    klass: classNames.wrap,
 
-                    // Create the content wrapper.
+                    // Create a box node.
                     content: Pick._.node({
-                        klass: classNames.wrap,
+                        klass: classNames.box,
 
-                        // Create a box node.
-                        content: Pick._.node({
-                            klass: classNames.box,
-
-                            // Attach the extension content.
-                            content: Pick._.trigger( picker.extension.content, getInstance( picker ) )
-                        })
+                        // Attach the extension content.
+                        content: Pick._.trigger( picker.extension.content, getInstance( picker ) )
                     })
                 })
-            ]
-        })
+            })
+        ]
     })
 } //createTemplate
 
@@ -334,8 +329,8 @@ Pick.Compose.prototype = {
         }
 
 
-        // Create and insert the template into the dom.
-        template = createTemplate( picker )
+        // Create and insert the root template into the dom.
+        template = Pick._.node({ klass: picker.klasses.root, content: createTemplate( picker ) })
         if ( hasShadowRoot ) {
             var host = picker.$host[0].webkitCreateShadowRoot()
             host.applyAuthorStyles = true
@@ -395,7 +390,7 @@ Pick.Compose.prototype = {
         var picker = this
 
         // Create and insert the template.
-        picker.$root[0].innerHTML = $( createTemplate( picker ) ).html()
+        picker.$root[0].innerHTML = createTemplate( picker )
 
         // Trigger any queued “render” events.
         return picker.trigger( 'render' )

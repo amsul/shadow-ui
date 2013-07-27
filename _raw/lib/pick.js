@@ -31,6 +31,8 @@
 
 }( this, jQuery, function( Pick, $, $document, hasShadowRoot ) {
 
+'use strict';
+
 
 /**
  * Link up the package info.
@@ -89,6 +91,7 @@ function createInstance( picker, extension ) {
             },
             methods: {},
             values: {
+                value: '',
                 select: 0,
                 highlight: 0
             },
@@ -100,31 +103,36 @@ function createInstance( picker, extension ) {
             get: function( thing, format ) {
                 var value = instance.values[ thing ]
                 if ( format && instance.formats ) {
-                    return toFormatsArray( format ).map( function( format ) {
-                        return Pick._.trigger( format, null, [ value ] )
+                    return instance.toFormatArray( format ).map( function( formatting ) {
+                        return Pick._.trigger( formatting, null, [ value ] )
                     }).join( '' )
                 }
                 return value
             },
             set: function( thing, value, options ) {
-                instance.values[ thing ] = value
+                instance.values[ thing ] = typeof value == 'string' && value.match( /^\d+$/ ) ? ~~value : value
                 if ( instance.cascades[ thing ] ) {
                     picker.set( instance.cascades[ thing ], value, options )
                 }
                 return value
+            },
+            toFormatArray: function( string ) {
+                if ( !instance.formats ) throw 'The picker extension needs a `formats` option.'
+                return ( string || '' ).split( regexFormats ).reduce( function( array, value ) {
+                    if ( value ) array.push(
+                        value in instance.formats ? instance.formats[ value ] :
+                        value.match( /^\[.*]$/ ) ? value.replace( /^\[(.*)]$/, '$1' ) :
+                        value
+                    )
+                    return array
+                }, [] )
+            },
+            toFormatString: function( format, value ) {
+                return instance.toFormatArray( format ).map( function( formatting ) {
+                    return Pick._.trigger( formatting, null, [ value ] )
+                }).join( '' )
             }
-        }, //instance
-
-        toFormatsArray = function( string ) {
-            return string.split( regexFormats ).reduce( function( array, value ) {
-                if ( value ) array.push(
-                    value in instance.formats ? instance.formats[ value ] :
-                    value.match( /^\[.*]$/ ) ? value.replace( /^\[(.*)]$/, '$1' ) :
-                    value
-                )
-                return array
-            }, [] )
-        }
+        } //instance
 
     // Extend the instance with the extension.
     return $.extend( true, instance, extension )
@@ -190,7 +198,7 @@ Pick.Compose = function( $element, extension, options ) {
     var instance, picker = this
 
     // Make sure we have a usable element.
-    if ( $element[0].nodeName == 'INPUT' || $element[0].nodeName == 'TEXTAREA' ) throw 'ComposerError: Cannot create a picker out of a form field..'
+    if ( $element[0].nodeName == 'INPUT' || $element[0].nodeName == 'TEXTAREA' ) throw 'Cannot create a picker out of a form field.'
 
     // Merge the defaults and options passed.
     picker.settings = $.extend( true, {}, extension.defaults, options )
@@ -201,9 +209,7 @@ Pick.Compose = function( $element, extension, options ) {
     // Link up the host and input.
     picker.$host = $element
     picker.$input = extension.input ?
-        $( '<input class="' + picker.klasses.input + '" type="' + extension.input + '">' ).
-            on( 'focus', function() { picker.$input.addClass( picker.klasses.inputActive ) }).
-            appendTo( $element ) :
+        $( '<input class="' + picker.klasses.input + '" type="' + extension.input + '">' ) :
         undefined
 
     // Keep a reference to the extension and options.
@@ -275,45 +281,6 @@ Pick.Compose.prototype = {
         picker._hidden = picker.settings.formatSubmit ? '<span>need to do this...</span>' : undefined
 
 
-        // Create and insert the template into the dom.
-        template = createTemplate( picker )
-        if ( hasShadowRoot ) {
-            var host = picker.$host[0].webkitCreateShadowRoot()
-            host.applyAuthorStyles = true
-            host.innerHTML = Pick._.node({ el: 'content' }) + template
-            picker.$root = $( host.childNodes[1] )
-        }
-        else {
-            picker.$root = $( template )
-            picker.$host.append( picker.$root )
-        }
-
-
-        // Prepare the root element.
-        picker.$root.
-
-            // When something within the root is focused, open the picker.
-            on( 'focusin', function() { picker.open( true ) }).
-
-            // Any click and focus events within the root shouldn’t bubble.
-            on( 'click focusin focusout', function( event ) {
-                event.stopPropagation()
-            }).
-
-            // Maintain focus on `document.activeElement` when things are getting picked.
-            on( 'mousedown', '[data-pick]', function( event ) { event.preventDefault() }).
-
-            // When something within the root is picked, set the thing.
-            on( 'click', '[data-pick]', function() {
-
-                // Match a “thing” selection formatted as `<name>:<value>`
-                var match = $( this ).data( 'pick' ).match( /\s*(.+)\s*:\s*(.+)\s*/ )
-
-                // If there’s a match, set it.
-                if ( match ) picker.set( match[1], match[2] )
-            })
-
-
         // Prepare the host element.
         picker.$host.
 
@@ -339,11 +306,17 @@ Pick.Compose.prototype = {
         // If there’s an input node element, prepare it.
         if ( picker.$input ) {
 
-            // Prevent mousedowns within the picker from bubbling up.
-            picker.$root.on( 'mousedown', function( event ) { event.stopPropagation() })
+            // Bind the input events, set the value, and add it to the dom.
+            picker.$input.
+                on({
+                    focus: function() { picker.$input.addClass( picker.klasses.inputActive ) },
+                    change: function() { instance.set( 'value', picker.$input[0].value ) }
+                }).
+                val( instance.values.value ).
+                appendTo( picker.$host )
 
             // The host should act at a wrapper for the input node.
-            picker.$host.on( 'mousedown.' + instance.id, function( event ) {
+            picker.$host.on( 'click.' + instance.id, function( event ) {
                 event.preventDefault()
                 picker.$input.focus()
             })
@@ -351,8 +324,47 @@ Pick.Compose.prototype = {
 
         // Otherwise make the host “tab-able”.
         else {
-            picker.$host.attr( 'tabindex', 0 )
+            picker.$host[0].tabIndex = 0
         }
+
+
+        // Create and insert the template into the dom.
+        template = createTemplate( picker )
+        if ( hasShadowRoot ) {
+            var host = picker.$host[0].webkitCreateShadowRoot()
+            host.applyAuthorStyles = true
+            host.innerHTML = Pick._.node({ el: 'content' }) + template
+            picker.$root = $( host.childNodes[1] )
+        }
+        else {
+            picker.$root = $( template )
+            picker.$host.append( picker.$root )
+        }
+
+
+        // Prepare the root element.
+        picker.$root.
+
+            // When something within the root is focused, open the picker.
+            on( 'focusin', function() { picker.open( true ) }).
+
+            // Any click and focus events within the root shouldn’t bubble.
+            on( 'click mousedown focusin focusout', function( event ) {
+                event.stopPropagation()
+            }).
+
+            // Maintain focus on `document.activeElement` when things are getting picked.
+            on( 'mousedown', '[data-pick]', function( event ) { event.preventDefault() }).
+
+            // When something within the root is picked, set the thing.
+            on( 'click', '[data-pick]', function() {
+
+                // Match a “thing” selection formatted as `<name>:<value>`
+                var match = $( this ).data( 'pick' ).match( /\s*(.+)\s*:\s*(.+)\s*/ )
+
+                // If there’s a match, set it.
+                if ( match ) picker.set( match[1], match[2] )
+            })
 
 
         // Trigger any queued “start” and “render” events.
@@ -369,7 +381,7 @@ Pick.Compose.prototype = {
         var picker = this
 
         // Create and insert the template.
-        picker.$root.html( createTemplate( picker ) )
+        picker.$root[0].innerHTML = $( createTemplate( picker ) ).html()
 
         // Trigger any queued “render” events.
         return picker.trigger( 'render' )
@@ -467,7 +479,7 @@ Pick.Compose.prototype = {
             })
 
         // Give the picker focus if needed.
-        if ( giveFocus ) picker.focus()
+        if ( giveFocus === true ) picker.focus()
 
         // Trigger any queued “open” events.
         return picker.trigger( 'open' )
@@ -486,14 +498,18 @@ Pick.Compose.prototype = {
         // If it’s already closed, do nothing.
         if ( !instance.is.opened ) return picker
 
+        // If we need to keep focus, do so before changing states.
+        if ( maintainFocus === true ) {
+            if ( picker.$input ) picker.$input.focus()
+            else picker.$host.focus()
+        }
+        else picker.blur()
+
         // Update the `opened` state.
         instance.is.opened = false
 
         // Remove the “opened” class from the picker root.
         picker.$root.removeClass( picker.klasses.rootOpened )
-
-        // Remove the picker focus if needed.
-        if ( maintainFocus !== true ) picker.blur()
 
         // Trigger any queued “close” events.
         return picker.trigger( 'close' )
@@ -660,7 +676,7 @@ Pick.Compose.prototype = {
         var picker = this,
             instance = getInstance( picker ),
 
-            isNewRequired, thingItem, thingValue, thingDefined,
+            thingItem, thingValue, thingDefined,
             thingIsObject = $.isPlainObject( thing ),
             thingObject = thingIsObject ? thing : {}
 
@@ -676,18 +692,22 @@ Pick.Compose.prototype = {
                 // Grab the value of the thing.
                 thingValue = thingObject[ thingItem ]
 
-                // Set the definition of the relevant extension item.
+                // Set the definition of the relevant instance item.
                 thingDefined = Pick._.trigger( instance.set, instance, [ thingItem, thingValue, options ] )
 
                 // Trigger any queued “set” events and pass the event.
-                picker.trigger( 'set', $.Event( 'change_' + thingItem, { data: thingObject }) )
+                picker.trigger( 'set', $.Event( 'set:' + thingItem, { data: thingObject }) )
 
-                // Flip the flag to render when complete.
-                isNewRequired = true
+                // Check to update the input value and broadcast a change.
+                if ( picker.$input && thingItem == 'select' || thingItem == 'clear' ) {
+                    picker.$input.
+                        val(
+                            thingItem == 'clear' ? '' :
+                            Pick._.trigger( instance.toFormatString, instance, [ picker.settings.format, picker.get( 'select' ) ] )
+                        ).
+                        trigger( 'change' )
+                }
             } //endfor
-
-            // Render a new picker to reflect any changes.
-            if ( isNewRequired ) picker.render()
         }
 
         return picker
@@ -742,13 +762,12 @@ Pick._ = {
      */
     prefix: function( prefix, klasses ) {
         var bemPrefixify = function( klass ) {
-            return ( klass ? prefix + ( klass.match( /^-/ ) ? '' : '__' ) + klass : prefix )
+            return klass ? prefix + ( klass.match( /^-/ ) ? '' : '__' ) + klass : prefix
         }
         prefix = prefix || 'picker'
         if ( $.isPlainObject( klasses ) ) {
             for ( var klass in klasses ) {
-                className = klasses[ klass ]
-                klasses[ klass ] = bemPrefixify( className )
+                klasses[ klass ] = bemPrefixify( klasses[ klass ] )
             }
             return klasses
         }
@@ -863,12 +882,12 @@ Pick.extend = function( component ) {
 
     // Make sure we have a usable component.
     if ( !component || !component.name ) {
-        throw 'ExtensionError: To create a picker extension, the component needs a name.'
+        throw 'To create a picker extension, the component needs a name.'
     }
 
     // Make sure this component doesn’t already exist.
     if ( Pick._.EXTENSIONS[ component.name ] ) {
-        throw 'ExtensionError: A picker extension by this name has already been defined.'
+        throw 'A picker extension by this name has already been defined.'
     }
 
     // Store the component extension by name.
@@ -899,7 +918,7 @@ $.fn.pick = function( name, options, action ) {
 
     // Check if an extension was found.
     if ( !extension ) {
-        throw 'ExtensionError: No extension found by the name of “' + name + '”.'
+        throw 'No extension found by the name of “' + name + '”.'
     }
 
     // If the picker is requested, return the component data.

@@ -99,6 +99,11 @@
                 '<button data-pick="select:' + to_select + '">Set select to ' + to_select + '</button>' +
                 '<button data-pick="highlight:' + to_highlight + '">Set highlight to ' + to_highlight + '</button>' +
             '</div>'
+        },
+        onSet: function( event ) {
+            if ( 'highlight' in event.data || 'select' in event.data ) {
+                this.render()
+            }
         }
     })
 
@@ -183,11 +188,34 @@
     $.fn.pick.extend({
         name: 'pick--input',
         input: 'text',
-        content: '<p>hi there!</p>'
+        formats: {
+            yyyy: function( value ) {
+                return new Date( 2013, 7, value ).toString().substring( 0, 15 )
+            }
+        },
+        content: function() {
+            var string = '',
+                selected = this.values.select
+            for ( var i = 0; i < 10; i += 1 ) {
+                var is = selected === i ? '<b><u>' + i + '</u></b>' : i
+                string += '<button data-pick="select:' + i + '">' + is + '</button>'
+            }
+            return string
+        },
+        onSet: function( event ) {
+            var picker = this
+            if ( 'select' in event.data ) {
+                // picker.render()
+                // picker.$root.find( '[data-pick="select:' + event.data.select + '"]' ).focus()
+            }
+        }
     })
 
-    var $div7 = $( '.pick--input' ).pick( 'pick--input' )
+    var $div7 = $( '.pick--input' ).pick( 'pick--input', {
+        format: 'yyyy'
+    })
     var picker = $div7.pick( 'pick--input', 'picker' )
+    // picker.open(true)
 
 
 </script>

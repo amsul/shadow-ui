@@ -205,8 +205,8 @@
         onSet: function( event ) {
             var picker = this
             if ( 'select' in event.data ) {
-                // picker.render()
-                // picker.$root.find( '[data-pick="select:' + event.data.select + '"]' ).focus()
+                picker.render()
+                picker.$root.find( '[data-pick="select:' + event.data.select + '"]' ).focus()
             }
         }
     })

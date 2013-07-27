@@ -289,6 +289,12 @@ Pick.Compose.prototype = {
                 picker.open( true )
             }).
 
+            // Prevent focus out of the host from bubbling up
+            // so that a loss of focus within doesn’t close the picker.
+            on( 'focusout.' + instance.id, function( event ) {
+                event.stopPropagation()
+            }).
+
             // Update the hidden value with the correct format.
             on( 'change.' + instance.id, function() {
                 if ( picker._hidden ) {
@@ -349,12 +355,20 @@ Pick.Compose.prototype = {
             on( 'focusin', function() { picker.open( true ) }).
 
             // Any click and focus events within the root shouldn’t bubble.
-            on( 'click mousedown focusin focusout', function( event ) {
+            on( 'click mousedown', function( event ) {
                 event.stopPropagation()
             }).
 
             // Maintain focus on `document.activeElement` when things are getting picked.
             on( 'mousedown', '[data-pick]', function( event ) { event.preventDefault() }).
+
+            // When “enter” is pressed on a pick-able thing, trigger a click instead.
+            on( 'keydown', '[data-pick]', function( event ) {
+                if ( event.keyCode == 13 ) {
+                    event.preventDefault()
+                    this.click()
+                }
+            }).
 
             // When something within the root is picked, set the thing.
             on( 'click', '[data-pick]', function() {
@@ -459,23 +473,17 @@ Pick.Compose.prototype = {
         // Bind events to the doc element.
         $document.
 
-            // If a document click or focusin event is not on the host or node, close the picker.
-            // * Don’t worry about clicks or focusins on the root because those don’t bubble up.
-            //   Also, for Firefox, a click on an `option` element bubbles up directly
+            // When a click or focus event is not on the host, input, or root, close the picker.
+            // * Note: for Firefox, a click on an `option` element bubbles up directly
             //   to the doc. So make sure the target wasn't the doc.
-            on( 'click.' + instance.id + ' focusin.' + instance.id, function( event ) {
+            on( 'click.' + instance.id + ' focusin.' + instance.id + ' focusout.' + instance.id, function( event ) {
                 var target = event.target
                 if (
                     picker.$host[0] != target &&
                     ( !picker.$input || picker.$input[0] != target ) &&
+                    !picker.$root.find( target ).length &&
                     $document[0] != target
                 ) picker.close()
-            }).
-
-            // When a focusout event reaches the document, close the picker.
-            // * Don’t worry about focusouts within the root because those don’t bubble up.
-            on( 'focusout.' + instance.id, function( event ) {
-                if ( !picker.$input || picker.$input[0] != event.target ) picker.close()
             })
 
         // Give the picker focus if needed.
@@ -695,9 +703,6 @@ Pick.Compose.prototype = {
                 // Set the definition of the relevant instance item.
                 thingDefined = Pick._.trigger( instance.set, instance, [ thingItem, thingValue, options ] )
 
-                // Trigger any queued “set” events and pass the event.
-                picker.trigger( 'set', $.Event( 'set:' + thingItem, { data: thingObject }) )
-
                 // Check to update the input value and broadcast a change.
                 if ( picker.$input && thingItem == 'select' || thingItem == 'clear' ) {
                     picker.$input.
@@ -707,6 +712,9 @@ Pick.Compose.prototype = {
                         ).
                         trigger( 'change' )
                 }
+
+                // Trigger any queued “set” events and pass the event.
+                picker.trigger( 'set', $.Event( 'set:' + thingItem, { data: thingObject }) )
             } //endfor
         }
 

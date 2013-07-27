@@ -6,7 +6,7 @@
 \*------------------------------------*/
 
 /**
- * The host that `Pick` has extended.
+ * The extended picker host element.
  */
 .picker-host {}
 
@@ -16,28 +16,21 @@
     box-shadow: 0 0 0 2px #0089ec;
 }
 
-/* The host state while the picker is open. */
+/* The host state while the picker is actively focused. */
 .picker-host--active {}
 
 
+    /**
+     * The input node that carries the picker value.
+     */
+    .picker-host__input {}
 
-/*------------------------------------*\
-    $INPUT
-\*------------------------------------*/
+    /* The input state when it is focused. */
+    .picker-host__input:focus {
+        outline: 0;
+        border-color: #0089ec;
+    }
 
-/**
- * The input node that carries the picker value.
- */
-.picker-input {}
-
-/* The input state when it is focused. */
-.picker-input:focus {
-    outline: 0;
-    box-shadow: 0 0 0 2px #0089ec;
-}
-
-/* The input state while the picker is open. */
-.picker-input--active {}
 
 
 
@@ -65,8 +58,8 @@
 /* Opened picker state. */
 .picker--opened {}
 
-/* Focused picker state. */
-.picker--focused {}
+/* Active picker state. */
+.picker--active {}
 
 
     /**

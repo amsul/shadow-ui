@@ -189,15 +189,16 @@
         name: 'pick--input',
         input: 'text',
         formats: {
-            yyyy: function( value ) {
-                return new Date( 2013, 7, value ).toString().substring( 0, 15 )
+            dd: function( value ) {
+                return '0' + value
             }
         },
         content: function() {
-            var string = '',
+            var is, i = 0,
+                string = '',
                 selected = this.values.select
-            for ( var i = 0; i < 10; i += 1 ) {
-                var is = selected === i ? '<b><u>' + i + '</u></b>' : i
+            for ( ; i < 10; i += 1 ) {
+                is = selected === i ? '<b><u>' + i + '</u></b>' : i
                 string += '<button data-pick="select:' + i + '">' + is + '</button>'
             }
             return string
@@ -206,7 +207,8 @@
             var focusedWithin,
                 picker = this
             if ( 'select' in event.data ) {
-                if ( picker.get( 'activeElement' ) ) focusedWithin = true
+                var activeElement = picker.get( 'activeElement' )
+                if ( activeElement && activeElement != picker.$input[0] ) focusedWithin = true
                 picker.render()
                 if ( focusedWithin ) picker.$root.find( '[data-pick="select:' + event.data.select + '"]' ).focus()
             }
@@ -214,7 +216,7 @@
     })
 
     var $div7 = $( '.pick--input' ).pick( 'pick--input', {
-        format: 'yyyy'
+        format: 'dd'
     })
     var picker = $div7.pick( 'pick--input', 'picker' )
     // picker.open(true)

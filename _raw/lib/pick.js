@@ -92,7 +92,6 @@ function createInstance( picker, extension ) {
             },
             methods: {},
             values: {
-                value: '',
                 select: 0,
                 highlight: 0
             },
@@ -272,11 +271,6 @@ Pick.Compose.prototype = {
         })
 
 
-        // If there’s a format for the hidden input element, create the element
-        // using the name of the original input and a suffix. Otherwise set it to undefined.
-        picker._hidden = picker.settings.formatSubmit ? '<span>need to do this...</span>' : undefined
-
-
         // Prepare the host element.
         picker.$host.
 
@@ -310,11 +304,8 @@ Pick.Compose.prototype = {
 
             // Bind the input events, set the value, and add it to the dom.
             picker.$input.
-                on({
-                    focus: function() { picker.$input.addClass( picker.klasses.inputActive ) },
-                    change: function() { instance.set( 'value', picker.$input[0].value ) }
-                }).
-                val( instance.values.value ).
+                on( 'change', function() { "instance.set( 'value', picker.$input[0].value )"; } ).
+                val( 'instance.values.value' ).
                 appendTo( picker.$host )
 
             // The host should act at a wrapper for the input node.
@@ -328,6 +319,11 @@ Pick.Compose.prototype = {
         else {
             picker.$host[0].tabIndex = 0
         }
+
+
+        // If there’s a format for the hidden input element, create the element
+        // using the name of the original input and a suffix. Otherwise set it to undefined.
+        picker._hidden = picker.settings.formatSubmit ? '<span>need to do this...</span>' : undefined
 
 
         // Create and insert the root template into the dom.
@@ -350,13 +346,13 @@ Pick.Compose.prototype = {
             // When something within the root is focused, open the picker.
             on( 'focusin', function() { picker.open( true ) }).
 
-            // Any click and focus events within the root shouldn’t bubble.
-            on( 'click mousedown', function( event ) {
+            // When things are getting picked, any click events within the
+            // root shouldn’t bubble up, forms shouldn’t be submitted,
+            // and focus should be maintained on the `document.activeElement`.
+            on( 'click mousedown', '[data-pick]', function( event ) {
                 event.stopPropagation()
+                event.preventDefault()
             }).
-
-            // Maintain focus on `document.activeElement` when things are getting picked.
-            on( 'mousedown', '[data-pick]', function( event ) { event.preventDefault() }).
 
             // When “enter” is pressed on a pick-able thing, trigger a click instead.
             on( 'keydown', '[data-pick]', function( event ) {
@@ -535,11 +531,11 @@ Pick.Compose.prototype = {
         // Update the `focused` state.
         instance.is.focused = true
 
-        // Add the “active” class to the element.
+        // Add the “active” class to the host.
         picker.$host.addClass( picker.klasses.hostActive )
 
         // Add the “focused” class to the picker root.
-        picker.$root.addClass( picker.klasses.rootFocused )
+        picker.$root.addClass( picker.klasses.rootActive )
 
         // Bind the keyboard events.
         $document.on( 'keydown.' + instance.id, function( event ) {
@@ -576,11 +572,11 @@ Pick.Compose.prototype = {
         // Update the `focused` state.
         instance.is.focused = false
 
-        // Remove the “active” class from the element.
+        // Remove the “active” class from the host.
         picker.$host.removeClass( picker.klasses.hostActive )
 
         // Remove the “focused” class from the picker root.
-        picker.$root.removeClass( picker.klasses.rootFocused )
+        picker.$root.removeClass( picker.klasses.rootActive )
 
         // Unbind the keyboard events.
         $document.off( '.' + instance.id )
@@ -666,11 +662,13 @@ Pick.Compose.prototype = {
         var picker = this,
             instance = getInstance( picker )
 
-        // If the active element is needed, return the element.
+        // First, check if we need the active element.
         return thing == 'activeElement' ?
 
-            // Check either the shadow or the root element.
-            instance.shadow ? instance.shadow[ thing ] : picker.$root.find( $document[0][ thing ] ) :
+            // Either check the shadow or the root element.
+            instance.shadow ?
+                instance.shadow[ thing ] :
+                picker.$root.find( $document[0][ thing ] )[0] :
 
             // Otherwise get the thing using the options within scope of the instance.
             Pick._.trigger( instance.get, instance, [ thing, options ] )
@@ -748,12 +746,11 @@ Pick._ = {
             host: '-host',
             hostActive: '-host--active',
 
-            input: '-input',
-            inputActive: '-input--active',
+            input: '-host__input',
 
             root: '',
             rootOpened: '--opened',
-            rootFocused: '--focused',
+            rootActive: '--active',
 
             holder: 'holder',
 

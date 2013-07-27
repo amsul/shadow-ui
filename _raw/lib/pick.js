@@ -96,6 +96,7 @@ function createInstance( picker, extension ) {
                 select: 'highlight'
             },
             formats: null,
+            input: null,
             get: function( thing, format ) {
                 var value = instance.values[ thing ]
                 if ( format && instance.formats ) {
@@ -139,7 +140,7 @@ function createTemplate( picker ) {
 
     // Create the template root element.
     return Pick._.node({
-        klass: classNames.picker,
+        klass: classNames.root,
 
         // Create a wrapped holder.
         content: Pick._.node({
@@ -191,16 +192,23 @@ Pick.Compose = function( $element, extension, options ) {
     // Make sure we have a usable element.
     if ( $element[0].nodeName == 'INPUT' || $element[0].nodeName == 'TEXTAREA' ) throw 'ComposerError: Cannot create a picker out of a form field..'
 
-    // Link up the composition.
-    picker.$node = $element
-    picker.extension = extension
-    picker.options = options
-
     // Merge the defaults and options passed.
     picker.settings = $.extend( true, {}, extension.defaults, options )
 
     // Merge the default classes with the settings and then prefix them.
     picker.klasses = Pick._.prefix( extension.prefix, $.extend( {}, Pick._.klasses(), picker.settings.klass ) )
+
+    // Link up the host and input.
+    picker.$host = $element
+    picker.$input = extension.input ?
+        $( '<input class="' + picker.klasses.input + '" type="' + extension.input + '">' ).
+            on( 'focus', function() { picker.$input.addClass( picker.klasses.inputActive ) }).
+            appendTo( $element ) :
+        undefined
+
+    // Keep a reference to the extension and options.
+    picker.extension = extension
+    picker.options = options
 
     // Create an instance using the picker and extension.
     instance = createInstance( picker, extension )
@@ -270,14 +278,14 @@ Pick.Compose.prototype = {
         // Create and insert the template into the dom.
         template = createTemplate( picker )
         if ( hasShadowRoot ) {
-            var host = picker.$node[0].webkitCreateShadowRoot()
+            var host = picker.$host[0].webkitCreateShadowRoot()
             host.applyAuthorStyles = true
             host.innerHTML = Pick._.node({ el: 'content' }) + template
-            picker.$root = $( picker.$node[0].webkitShadowRoot.childNodes[1] )
+            picker.$root = $( host.childNodes[1] )
         }
         else {
             picker.$root = $( template )
-            picker.$node.append( picker.$root )
+            picker.$host.append( picker.$root )
         }
 
 
@@ -307,7 +315,7 @@ Pick.Compose.prototype = {
 
 
         // Prepare the host element.
-        picker.$node.
+        picker.$host.
 
             // Open the picker with focus on a click or focus within.
             on( 'click.' + instance.id + ' focusin.' + instance.id, function() {
@@ -321,14 +329,30 @@ Pick.Compose.prototype = {
                 }
             }).
 
-            // Add the “element” class.
-            addClass( picker.klasses.element ).
-
-            // Make the node “tab-able”.
-            attr( 'tabindex', 0 ).
+            // Add the “host” class.
+            addClass( picker.klasses.host ).
 
             // Store the extension data.
             data( 'pick.' + picker.extension.name, picker )
+
+
+        // If there’s an input node element, prepare it.
+        if ( picker.$input ) {
+
+            // Prevent mousedowns within the picker from bubbling up.
+            picker.$root.on( 'mousedown', function( event ) { event.stopPropagation() })
+
+            // The host should act at a wrapper for the input node.
+            picker.$host.on( 'mousedown.' + instance.id, function( event ) {
+                event.preventDefault()
+                picker.$input.focus()
+            })
+        }
+
+        // Otherwise make the host “tab-able”.
+        else {
+            picker.$host.attr( 'tabindex', 0 )
+        }
 
 
         // Trigger any queued “start” and “render” events.
@@ -376,16 +400,21 @@ Pick.Compose.prototype = {
             // picker._hidden.parentNode.removeChild( picker._hidden )
         }
 
+        // Remove the node input element.
+        if ( picker.$input ) {
+            picker.$input.remove()
+        }
+
         // Remove the extension template content.
         if ( hasShadowRoot ) {
-            picker.$node.after( picker.$node.clone() ).remove()
+            picker.$host.after( picker.$host.clone() ).remove()
         }
         else {
             picker.$root.remove()
         }
 
-        // Remove the “element” class, unbind the events, and remove the stored data.
-        picker.$node.removeClass( picker.klasses.element ).off( '.' + instance.id ).removeData( 'pick.' + picker.extension.name )
+        // Remove the “host” class, unbind the events, and remove the stored data.
+        picker.$host.removeClass( picker.klasses.host ).off( '.' + instance.id ).removeData( 'pick.' + picker.extension.name )
 
         // Trigger any queued “stop” event methods.
         picker.trigger( 'stop' )
@@ -413,23 +442,28 @@ Pick.Compose.prototype = {
         instance.is.opened = true
 
         // Add the “opened” class to the picker root.
-        picker.$root.addClass( picker.klasses.opened )
+        picker.$root.addClass( picker.klasses.rootOpened )
 
         // Bind events to the doc element.
         $document.
 
-            // If a document click or focusin event is not on the node, close the picker.
+            // If a document click or focusin event is not on the host or node, close the picker.
             // * Don’t worry about clicks or focusins on the root because those don’t bubble up.
             //   Also, for Firefox, a click on an `option` element bubbles up directly
             //   to the doc. So make sure the target wasn't the doc.
             on( 'click.' + instance.id + ' focusin.' + instance.id, function( event ) {
-                if ( event.target != picker.$node[0] && event.target != $document[0] ) picker.close()
+                var target = event.target
+                if (
+                    picker.$host[0] != target &&
+                    ( !picker.$input || picker.$input[0] != target ) &&
+                    $document[0] != target
+                ) picker.close()
             }).
 
             // When a focusout event reaches the document, close the picker.
             // * Don’t worry about focusouts within the root because those don’t bubble up.
-            on( 'focusout.' + instance.id, function() {
-                picker.close()
+            on( 'focusout.' + instance.id, function( event ) {
+                if ( !picker.$input || picker.$input[0] != event.target ) picker.close()
             })
 
         // Give the picker focus if needed.
@@ -456,7 +490,7 @@ Pick.Compose.prototype = {
         instance.is.opened = false
 
         // Remove the “opened” class from the picker root.
-        picker.$root.removeClass( picker.klasses.opened )
+        picker.$root.removeClass( picker.klasses.rootOpened )
 
         // Remove the picker focus if needed.
         if ( maintainFocus !== true ) picker.blur()
@@ -482,10 +516,10 @@ Pick.Compose.prototype = {
         instance.is.focused = true
 
         // Add the “active” class to the element.
-        picker.$node.addClass( picker.klasses.active )
+        picker.$host.addClass( picker.klasses.hostActive )
 
         // Add the “focused” class to the picker root.
-        picker.$root.addClass( picker.klasses.focused )
+        picker.$root.addClass( picker.klasses.rootFocused )
 
         // Bind the keyboard events.
         $document.on( 'keydown.' + instance.id, function( event ) {
@@ -523,10 +557,10 @@ Pick.Compose.prototype = {
         instance.is.focused = false
 
         // Remove the “active” class from the element.
-        picker.$node.removeClass( picker.klasses.active )
+        picker.$host.removeClass( picker.klasses.hostActive )
 
         // Remove the “focused” class from the picker root.
-        picker.$root.removeClass( picker.klasses.focused )
+        picker.$root.removeClass( picker.klasses.rootFocused )
 
         // Unbind the keyboard events.
         $document.off( '.' + instance.id )
@@ -680,12 +714,16 @@ Pick._ = {
      */
     klasses: function() {
         return {
-            picker: '',
-            opened: '--opened',
-            focused: '--focused',
 
-            element: '-element',
-            active: '-element--active',
+            host: '-host',
+            hostActive: '-host--active',
+
+            input: '-input',
+            inputActive: '-input--active',
+
+            root: '',
+            rootOpened: '--opened',
+            rootFocused: '--focused',
 
             holder: 'holder',
 

@@ -57,11 +57,11 @@
     <div class="div pick--keys">Keys trigger</div>
 </section>
 
-<!--<section>
-    <div class="div div--input">
-        <input class="input input--basic" type="text">
-    </div>
+<section>
+    <div class="div pick--input">Input picker</div>
 </section>
+
+<!--
 
 <br><br>
 
@@ -175,7 +175,19 @@
     })
 
     var $div6 = $( '.pick--keys' ).pick( 'pick--keys' )
-    var picker = $div6.pick( 'pick--keys', 'picker' )
+
+
+    ////////////////////////////////////////////////////////////
+
+
+    $.fn.pick.extend({
+        name: 'pick--input',
+        input: 'text',
+        content: '<p>hi there!</p>'
+    })
+
+    var $div7 = $( '.pick--input' ).pick( 'pick--input' )
+    var picker = $div7.pick( 'pick--input', 'picker' )
 
 
 </script>

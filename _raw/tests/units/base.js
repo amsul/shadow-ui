@@ -58,24 +58,24 @@ test( 'Extension', function() {
 test( 'Start and stop with extension data', function() {
 
     var picker = this.picker
-    var $node = picker.$node
+    var $host = picker.$host
 
     // Confirm the data exists.
-    ok( $node.data( 'pick.pick--basic' ), 'Exists: pick data' )
+    ok( $host.data( 'pick.pick--basic' ), 'Exists: pick data' )
 
     // Confirm the picker started.
     strictEqual( picker.is( 'started' ), true, 'Check: started' )
 
     // Destroy a pick extension on the element.
     ok( picker.stop(), 'Trigger: stop' )
-    strictEqual( $node.data( 'pick.pick--basic' ), undefined, 'Destroy: pick data' )
+    strictEqual( $host.data( 'pick.pick--basic' ), undefined, 'Destroy: pick data' )
 
     // Confirm the picker stopped.
     strictEqual( picker.is( 'started' ), false, 'Check: stopped' )
 
     // Re-create a pick extension on the element.
     ok( picker.start(), 'Trigger: start' )
-    ok( $node.data( 'pick.pick--basic' ), 'Exists: pick data' )
+    ok( $host.data( 'pick.pick--basic' ), 'Exists: pick data' )
 
     // Confirm the picker started again.
     strictEqual( picker.is( 'started' ), true, 'Check: started' )
@@ -84,19 +84,19 @@ test( 'Start and stop with extension data', function() {
 test( 'Open, close, focus, and blur', function() {
 
     var picker = this.picker
-    var $node = picker.$node
+    var $host = picker.$host
 
     // Confirm the starting state.
     strictEqual( picker.is( 'opened' ), false, 'Check: closed' )
     strictEqual( picker.is( 'focused' ), false, 'Check: unfocused' )
 
     // Click to open it.
-    ok( $node.trigger( 'click' ), 'Open: node click' )
+    ok( $host.click(), 'Open: node click' )
     strictEqual( picker.is( 'opened' ), true, 'Check: opened' )
     strictEqual( picker.is( 'focused' ), true, 'Check: focused' )
 
     // Click to close it.
-    ok( $DOM.trigger( 'click' ), 'Close: doc click' )
+    ok( $DOM.click(), 'Close: doc click' )
     strictEqual( picker.is( 'opened' ), false, 'Check: closed' )
     strictEqual( picker.is( 'focused' ), false, 'Check: unfocused' )
 
@@ -318,7 +318,7 @@ test( 'Default bindings', function() {
 
     var picker = this.picker
 
-    ok( picker.$node.focus(), 'Focus: picker node' )
+    ok( picker.$host.focus(), 'Focus: picker node' )
 
     strictEqual( picker.is( 'opened' ), true, 'Check: opened' )
     strictEqual( picker.is( 'focused' ), true, 'Check: focused' )
@@ -328,9 +328,9 @@ test( 'Custom bindings', function() {
 
     var picker = this.picker
 
-    ok( picker.$node.focus(), 'Focus: picker node' )
+    ok( picker.$host.focus(), 'Focus: picker node' )
 
-    ok( picker.$node.trigger( $.Event( 'keydown', { keyCode: 65 } ) ), 'Trigger: keydown event' )
+    ok( picker.$host.trigger( $.Event( 'keydown', { keyCode: 65 } ) ), 'Trigger: keydown event' )
     strictEqual( picker.get( 'highlight' ), 1, 'Check: fired custom binding' )
 })
 

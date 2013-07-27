@@ -297,6 +297,48 @@ test( 'Get and set with custom methods', function() {
 
 
 /**
+ * Check the default key methods.
+ */
+module( 'API keys', {
+    setup: function() {
+        this.extension = {
+            name: 'pick--keys',
+            keys: {
+                65: function( /*event*/ ) {
+                    ++this.values.highlight
+                }
+            }
+        }
+        this.picker = setUpTheWall( this.extension )
+    },
+    teardown: tearDownTheWall
+})
+
+test( 'Default bindings', function() {
+
+    var picker = this.picker
+
+    ok( picker.$node.focus(), 'Focus: picker node' )
+
+    strictEqual( picker.is( 'opened' ), true, 'Check: opened' )
+    strictEqual( picker.is( 'focused' ), true, 'Check: focused' )
+})
+
+test( 'Custom bindings', function() {
+
+    var picker = this.picker
+
+    ok( picker.$node.focus(), 'Focus: picker node' )
+
+    ok( picker.$node.trigger( $.Event( 'keydown', { keyCode: 65 } ) ), 'Trigger: keydown event' )
+    strictEqual( picker.get( 'highlight' ), 1, 'Check: fired custom binding' )
+})
+
+
+
+
+
+/**
  * Check the basic events.
  */
 module( 'API events', {

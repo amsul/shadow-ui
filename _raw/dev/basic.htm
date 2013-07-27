@@ -160,20 +160,22 @@
     })
 
     var $div5 = $( '.pick--get-set-custom' ).pick( 'pick--get-set-custom' )
-    var picker = $div5.pick( 'pick--get-set-custom', 'picker' )
 
 
     ////////////////////////////////////////////////////////////
 
 
     $.fn.pick.extend({
-        name: 'pick--keys'
+        name: 'pick--keys',
+        keys: {
+            65: function( /*event*/ ) {
+                ++this.values.highlight
+            }
+        }
     })
 
     var $div6 = $( '.pick--keys' ).pick( 'pick--keys' )
     var picker = $div6.pick( 'pick--keys', 'picker' )
-
-    // picker.open( true )
 
 
 </script>

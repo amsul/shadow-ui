@@ -20,7 +20,7 @@
         doc = root.document
 
     // Pass picker through the factory.
-    factory( picker, $, $( doc ), 'awebkitCreateShadowRoot' in doc.body )
+    factory( picker, $, $( doc ), 'webkitCreateShadowRoot' in doc.body )
 
     // Setup the exports for Node module pattern, AMD, and basic <script> includes.
     if ( typeof module == 'object' && typeof module.exports == 'object' )
@@ -74,7 +74,7 @@ function createInstance( picker, extension ) {
                 // If the target is within the root and “enter” is pressed,
                 // prevent the default action and trigger a click on the target instead.
                 13: function( event ) {
-                    var target = event.tatget
+                    var target = event.target
                     if ( picker.$root.find( target ).length ) {
                         event.preventDefault()
                         target.click()
@@ -646,7 +646,7 @@ Pick.Compose.prototype = {
                 thingDefined = Pick._.trigger( instance.set, instance, [ thingItem, thingValue, options ] )
 
                 // Trigger any queued “set” events and pass the event.
-                picker.trigger( 'set', $.Event( thingItem + 'ed', { data: thingObject }) )
+                picker.trigger( 'set', $.Event( 'change_' + thingItem, { data: thingObject }) )
 
                 // Flip the flag to render when complete.
                 isNewRequired = true

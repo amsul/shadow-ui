@@ -20,7 +20,7 @@
         doc = root.document
 
     // Pass picker through the factory.
-    factory( picker, $, $( doc ), 'webkitCreateShadowRoot' in doc.body )
+    factory( picker, $, $( doc ), 'awebkitCreateShadowRoot' in doc.body )
 
     // Setup the exports for Node module pattern, AMD, and basic <script> includes.
     if ( typeof module == 'object' && typeof module.exports == 'object' )
@@ -284,35 +284,35 @@ Pick.Compose.prototype = {
         // Prepare the root element.
         picker.$root.
 
-            // Any click or mousedown within the root shouldn’t bubble up.
-            on( 'click mousedown', function( event ) { event.stopPropagation() }).
+            // When something within the root is focused, open the picker.
+            on( 'focusin', function() { picker.open( true ) }).
+
+            // Any click and focus events within the root shouldn’t bubble.
+            on( 'click focusin focusout', function( event ) {
+                event.stopPropagation()
+            }).
 
             // Maintain focus on `document.activeElement` when things are getting picked.
             on( 'mousedown', '[data-pick]', function( event ) { event.preventDefault() }).
 
-            // When something within the root is picked, set the thing and close.
+            // When something within the root is picked, set the thing.
             on( 'click', '[data-pick]', function() {
 
                 // Match a “thing” selection formatted as `<name>:<value>`
-                var match = $(this).data('pick').match( /\s*(.+)\s*:\s*(.+)\s*/ )
+                var match = $( this ).data( 'pick' ).match( /\s*(.+)\s*:\s*(.+)\s*/ )
 
                 // If there’s a match, set it.
                 if ( match ) picker.set( match[1], match[2] )
-            }).
-
-            // When something within the root is focused, stop from bubbling
-            // to the doc and remove the “focused” state from the root.
-            on( 'focusin', function( event ) {
-                event.stopPropagation()
-                picker.$root.removeClass( picker.klasses.focused )
             })
 
 
         // Prepare the host element.
         picker.$node.
 
-            // Open the picker with focus on a click within.
-            on( 'click.' + instance.id, function() { picker.open( true ) }).
+            // Open the picker with focus on a click or focus within.
+            on( 'click.' + instance.id + ' focusin.' + instance.id, function() {
+                picker.open( true )
+            }).
 
             // Update the hidden value with the correct format.
             on( 'change.' + instance.id, function() {
@@ -323,6 +323,9 @@ Pick.Compose.prototype = {
 
             // Add the “element” class.
             addClass( picker.klasses.element ).
+
+            // Make the node “tab-able”.
+            attr( 'tabindex', 0 ).
 
             // Store the extension data.
             data( 'pick.' + picker.extension.name, picker )
@@ -415,12 +418,18 @@ Pick.Compose.prototype = {
         // Bind events to the doc element.
         $document.
 
-            // If the target of a click or focus event is not the element, close the picker.
+            // If a document click or focusin event is not on the node, close the picker.
             // * Don’t worry about clicks or focusins on the root because those don’t bubble up.
             //   Also, for Firefox, a click on an `option` element bubbles up directly
             //   to the doc. So make sure the target wasn't the doc.
             on( 'click.' + instance.id + ' focusin.' + instance.id, function( event ) {
                 if ( event.target != picker.$node[0] && event.target != $document[0] ) picker.close()
+            }).
+
+            // When a focusout event reaches the document, close the picker.
+            // * Don’t worry about focusouts within the root because those don’t bubble up.
+            on( 'focusout.' + instance.id, function() {
+                picker.close()
             })
 
         // Give the picker focus if needed.

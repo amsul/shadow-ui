@@ -63,6 +63,7 @@ function createInstance( picker, extension ) {
             id: id,
             picker: picker,
             content: '',
+            shadow: null,
             is: {
                 started: false,
                 opened: false,
@@ -332,10 +333,10 @@ Pick.Compose.prototype = {
         // Create and insert the root template into the dom.
         template = Pick._.node({ klass: picker.klasses.root, content: createTemplate( picker ) })
         if ( hasShadowRoot ) {
-            var host = picker.$host[0].webkitCreateShadowRoot()
-            host.applyAuthorStyles = true
-            host.innerHTML = Pick._.node({ el: 'content' }) + template
-            picker.$root = $( host.childNodes[1] )
+            instance.shadow = picker.$host[0].webkitCreateShadowRoot()
+            instance.shadow.applyAuthorStyles = true
+            instance.shadow.innerHTML = Pick._.node({ el: 'content' }) + template
+            picker.$root = $( instance.shadow.childNodes[1] )
         }
         else {
             picker.$root = $( template )
@@ -644,7 +645,7 @@ Pick.Compose.prototype = {
 
 
     /**
-     * Get a state of the picker or extension.
+     * Check a state of the picker instance.
      */
     is: function( thing ) {
 
@@ -665,8 +666,14 @@ Pick.Compose.prototype = {
         var picker = this,
             instance = getInstance( picker )
 
-        // Get the thing using the options within scope of the instance.
-        return Pick._.trigger( instance.get, instance, [ thing, options ] )
+        // If the active element is needed, return the element.
+        return thing == 'activeElement' ?
+
+            // Check either the shadow or the root element.
+            instance.shadow ? instance.shadow[ thing ] : picker.$root.find( $document[0][ thing ] ) :
+
+            // Otherwise get the thing using the options within scope of the instance.
+            Pick._.trigger( instance.get, instance, [ thing, options ] )
     }, //get
 
 

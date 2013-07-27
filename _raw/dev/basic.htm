@@ -203,10 +203,12 @@
             return string
         },
         onSet: function( event ) {
-            var picker = this
+            var focusedWithin,
+                picker = this
             if ( 'select' in event.data ) {
+                if ( picker.get( 'activeElement' ) ) focusedWithin = true
                 picker.render()
-                picker.$root.find( '[data-pick="select:' + event.data.select + '"]' ).focus()
+                if ( focusedWithin ) picker.$root.find( '[data-pick="select:' + event.data.select + '"]' ).focus()
             }
         }
     })

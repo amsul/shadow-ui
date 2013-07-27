@@ -116,7 +116,7 @@ function createInstance( picker, extension ) {
 
         toFormatsArray = function( string ) {
             return string.split( regexFormats ).reduce( function( array, value ) {
-                if ( value ) array.push(
+                if ( value ) array.push(
                     value in instance.formats ? instance.formats[ value ] :
                     value.match( /^\[.*]$/ ) ? value.replace( /^\[(.*)]$/, '$1' ) :
                     value
@@ -147,7 +147,7 @@ function createTemplate( picker ) {
             content: [
 
                 // Create the pointer node.
-                Pick._.node({ klass: classNames.pointer }),
+                Pick._.node({ klass: classNames.pointer }),
 
                 // Create the picker frame.
                 Pick._.node({
@@ -272,7 +272,7 @@ Pick.Compose.prototype = {
         if ( hasShadowRoot ) {
             var host = picker.$node[0].webkitCreateShadowRoot()
             host.applyAuthorStyles = true
-            host.innerHTML = Pick._.node({ el: 'content' }) + template
+            host.innerHTML = Pick._.node({ el: 'content' }) + template
             picker.$root = $( picker.$node[0].webkitShadowRoot.childNodes[1] )
         }
         else {
@@ -285,10 +285,10 @@ Pick.Compose.prototype = {
         picker.$root.
 
             // Any click or mousedown within the root shouldn’t bubble up.
-            on( 'click mousedown', function( event ) { event.stopPropagation() }).
+            on( 'click mousedown', function( event ) { event.stopPropagation() }).
 
             // Maintain focus on `document.activeElement` when things are getting picked.
-            on( 'mousedown', '[data-pick]', function( event ) { event.preventDefault() }).
+            on( 'mousedown', '[data-pick]', function( event ) { event.preventDefault() }).
 
             // When something within the root is picked, set the thing and close.
             on( 'click', '[data-pick]', function() {
@@ -312,7 +312,7 @@ Pick.Compose.prototype = {
         picker.$node.
 
             // Open the picker with focus on a click within.
-            on( 'click.' + instance.id, function() { picker.open( true ) }).
+            on( 'click.' + instance.id, function() { picker.open( true ) }).
 
             // Update the hidden value with the correct format.
             on( 'change.' + instance.id, function() {
@@ -420,7 +420,7 @@ Pick.Compose.prototype = {
             //   Also, for Firefox, a click on an `option` element bubbles up directly
             //   to the doc. So make sure the target wasn't the doc.
             on( 'click.' + instance.id + ' focusin.' + instance.id, function( event ) {
-                if ( event.target != picker.$node[0] && event.target != document ) picker.close()
+                if ( event.target != picker.$node[0] && event.target != $document[0] ) picker.close()
             })
 
         // Give the picker focus if needed.
@@ -637,7 +637,7 @@ Pick.Compose.prototype = {
                 thingDefined = Pick._.trigger( instance.set, instance, [ thingItem, thingValue, options ] )
 
                 // Trigger any queued “set” events and pass the event.
-                picker.trigger( 'set', $.Event( thingItem + 'ed', { data: thingObject }) )
+                picker.trigger( 'set', $.Event( thingItem + 'ed', { data: thingObject }) )
 
                 // Flip the flag to render when complete.
                 isNewRequired = true

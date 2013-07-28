@@ -91,7 +91,7 @@ function createInstance( picker, extension ) {
                 40: function() { picker.open() }
             },
             methods: {},
-            values: {
+            dict: {
                 select: 0,
                 highlight: 0
             },
@@ -100,8 +100,9 @@ function createInstance( picker, extension ) {
             },
             formats: null,
             input: null,
+            value: null,
             get: function( thing, format ) {
-                var value = instance.values[ thing ]
+                var value = instance.dict[ thing ]
                 if ( format && instance.formats ) {
                     return instance.toFormatArray( format ).map( function( formatting ) {
                         return Pick._.trigger( formatting, null, [ value ] )
@@ -110,7 +111,7 @@ function createInstance( picker, extension ) {
                 return value
             },
             set: function( thing, value, options ) {
-                instance.values[ thing ] = typeof value == 'string' && value.match( /^\d+$/ ) ? ~~value : value
+                instance.dict[ thing ] = typeof value == 'string' && value.match( /^\d+$/ ) ? ~~value : value
                 if ( instance.cascades[ thing ] ) {
                     picker.set( instance.cascades[ thing ], value, options )
                 }
@@ -204,7 +205,7 @@ Pick.Compose = function( $element, extension, options ) {
     // Link up the host and input.
     picker.$host = $element
     picker.$input = extension.input ?
-        $( '<input class="' + picker.klasses.input + '" type="' + extension.input + '">' ) :
+        $( '<input class="' + picker.klasses.input + '" type="' + extension.input + '" readonly>' ) :
         undefined
 
     // Keep a reference to the extension and options.
@@ -305,11 +306,11 @@ Pick.Compose.prototype = {
             // Bind the input events, set the value, and add it to the dom.
             picker.$input.
                 on( 'change', function() { "instance.set( 'value', picker.$input[0].value )"; } ).
-                val( 'instance.values.value' ).
+                val( instance.value ).
                 appendTo( picker.$host )
 
-            // The host should act at a wrapper for the input node.
-            picker.$host.on( 'click.' + instance.id + ' focus.' + instance.id, function( event ) {
+            // The host should act as a “label” wrapper for the input node.
+            picker.$host.on( 'click.' + instance.id, function( event ) {
                 event.preventDefault()
                 picker.$input.focus()
             })
@@ -453,6 +454,9 @@ Pick.Compose.prototype = {
         var picker = this,
             instance = getInstance( picker )
 
+        // Give the picker focus if needed.
+        if ( giveFocus === true ) picker.focus()
+
         // If it’s already open, do nothing.
         if ( instance.is.opened ) return picker
 
@@ -477,9 +481,6 @@ Pick.Compose.prototype = {
                     $document[0] != target
                 ) picker.close()
             })
-
-        // Give the picker focus if needed.
-        if ( giveFocus === true ) picker.focus()
 
         // Trigger any queued “open” events.
         return picker.trigger( 'open' )
@@ -532,8 +533,8 @@ Pick.Compose.prototype = {
         instance.is.focused = true
 
         // Add the “active” class to the host and then trigger
-        // the focus handler to focus either the host or input.
-        picker.$host.addClass( picker.klasses.hostActive ).trigger( 'focus' )
+        // the click or focus handler to pass focus to the host or input.
+        picker.$host.addClass( picker.klasses.hostActive ).trigger( picker.$input ? 'click' : 'focus' )
 
         // Add the “focused” class to the picker root.
         picker.$root.addClass( picker.klasses.rootActive )
@@ -695,8 +696,8 @@ Pick.Compose.prototype = {
             // If the thing isn’t an object, make it one.
             if ( !thingIsObject ) thingObject[ thing ] = value
 
-            // Go through the things of items to set with corresponding instance values.
-            for ( thingItem in thingObject ) if ( thingItem in instance.values ) {
+            // Go through the things of items to set with the corresponding diction.
+            for ( thingItem in thingObject ) if ( thingItem in instance.dict ) {
 
                 // Grab the value of the thing.
                 thingValue = thingObject[ thingItem ]

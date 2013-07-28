@@ -38,15 +38,15 @@
 </section>
 
 <section>
-    <div class="div pick--values">Values</div>
+    <div class="div pick--dict">Dictions</div>
 </section>
 
 <section>
-    <div class="div pick--values-formatter">Values formatter</div>
+    <div class="div pick--dict-formatter">Dictions formatter</div>
 </section>
 
 <section>
-    <div class="div pick--values-custom">Custom values</div>
+    <div class="div pick--dict-custom">Custom dict</div>
 </section>
 
 <section>
@@ -89,7 +89,7 @@
 
 
     $.fn.pick.extend({
-        name: 'pick--values',
+        name: 'pick--dict',
         content: function() {
             var to_select = ~~(Math.random()*1000),
                 to_highlight = ~~(Math.random()*1000)
@@ -107,14 +107,14 @@
         }
     })
 
-    var $div2 = $( '.pick--values' ).pick( 'pick--values' )
+    var $div2 = $( '.pick--dict' ).pick( 'pick--dict' )
 
 
     ////////////////////////////////////////////////////////////
 
 
     $.fn.pick.extend({
-        name: 'pick--values-formatter',
+        name: 'pick--dict-formatter',
         formats: {
             lol: 'Laugh Out Loud!',
             c: function( value ) {
@@ -127,15 +127,15 @@
         }
     })
 
-    var $div3 = $( '.pick--values-formatter' ).pick( 'pick--values-formatter' )
+    var $div3 = $( '.pick--dict-formatter' ).pick( 'pick--dict-formatter' )
 
 
     ////////////////////////////////////////////////////////////
 
 
     $.fn.pick.extend({
-        name: 'pick--values-custom',
-        values: {
+        name: 'pick--dict-custom',
+        dict: {
             sup: 'not much',
             highlight: 400
         },
@@ -145,7 +145,7 @@
         }
     })
 
-    var $div4 = $( '.pick--values-custom' ).pick( 'pick--values-custom' )
+    var $div4 = $( '.pick--dict-custom' ).pick( 'pick--dict-custom' )
 
 
     ////////////////////////////////////////////////////////////
@@ -154,12 +154,12 @@
     $.fn.pick.extend({
         name: 'pick--get-set-custom',
         get: function( thing, options ) {
-            var value = this.values[ thing ]
+            var value = this.dict[ thing ]
             return options === true ? value : String.fromCharCode( 65 + value )
         },
         set: function( thing, value, options ) {
             value = value.charCodeAt(0) - 65
-            this.values[ thing ] = value
+            this.dict[ thing ] = value
             return value
         }
     })
@@ -174,7 +174,7 @@
         name: 'pick--keys',
         keys: {
             65: function( /*event*/ ) {
-                ++this.values.highlight
+                ++this.dict.highlight
             }
         }
     })
@@ -188,6 +188,7 @@
     $.fn.pick.extend({
         name: 'pick--input',
         input: 'text',
+        value: 'wassup',
         formats: {
             dd: function( value ) {
                 return '0' + value
@@ -196,7 +197,7 @@
         content: function() {
             var is, i = 0,
                 string = '',
-                selected = this.values.select
+                selected = this.dict.select
             for ( ; i < 10; i += 1 ) {
                 is = selected === i ? '<b><u>' + i + '</u></b>' : i
                 string += '<button data-pick="select:' + i + '">' + is + '</button>'

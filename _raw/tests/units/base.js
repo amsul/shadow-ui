@@ -127,12 +127,12 @@ test( 'Open, close, focus, and blur', function() {
 
 
 /**
- * Check the values-based api.
+ * Check the dict-based api.
  */
-module( 'API values', {
+module( 'API dict', {
     setup: function() {
         this.extension = {
-            name: 'pick--values',
+            name: 'pick--dict',
             content: function() {
                 var to_select = ~~(Math.random()*1000),
                     to_highlight = ~~(Math.random()*1000)
@@ -178,7 +178,7 @@ test( 'Get and set', function() {
 module( 'API formats', {
     setup: function() {
         this.extension = {
-            name: 'pick--values-formatter',
+            name: 'pick--dict-formatter',
             formats: {
                 lol: 'Laugh Out Loud!',
                 c: function( value ) {
@@ -212,13 +212,13 @@ test( 'Get and set with formats', function() {
 
 
 /**
- * Check the custom values api.
+ * Check the custom dict api.
  */
-module( 'API custom values', {
+module( 'API custom dict', {
     setup: function() {
         this.extension = {
-            name: 'pick--values-custom',
-            values: {
+            name: 'pick--dict-custom',
+            dict: {
                 sup: 'not much',
                 highlight: 400
             },
@@ -232,7 +232,7 @@ module( 'API custom values', {
     teardown: tearDownTheWall
 })
 
-test( 'Get and set with values and cascades', function() {
+test( 'Get and set with dict and cascades', function() {
 
     var picker = this.picker
 
@@ -265,12 +265,12 @@ module( 'API custom get/set methods', {
         this.extension = {
             name: 'pick--get-set-custom',
             get: function( thing, options ) {
-                var value = this.values[ thing ]
+                var value = this.dict[ thing ]
                 return options === true ? value : String.fromCharCode( 65 + value )
             },
             set: function( thing, value/*, options*/ ) {
                 value = value.charCodeAt(0) - 65
-                this.values[ thing ] = value
+                this.dict[ thing ] = value
                 return value
             }
         }
@@ -305,7 +305,7 @@ module( 'API keys', {
             name: 'pick--keys',
             keys: {
                 65: function( /*event*/ ) {
-                    ++this.values.highlight
+                    ++this.dict.highlight
                 }
             }
         }

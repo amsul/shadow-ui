@@ -56,7 +56,21 @@ function createInstance( picker, extension ) {
 
     var id = 'P' + new Date().getTime(),
 
-        regexFormats = new RegExp( '(\\[[^\\[]*\\])|(' + ( extension.formats ? Object.keys( extension.formats ).join('|') + '|' : '' ) + '.)', 'g' ),
+        regexFormats = new RegExp(
+
+            // Match any [escaped] characters.
+            '(\\[[^\\[]*\\])|(' +
+
+            // Match any formatting characters.
+            ( extension.formats ?
+                Object.keys( extension.formats ).
+                    sort(function(a,b) { return b.length > a.length }).
+                    join('|') + '|' :
+                ''
+            ) +
+
+            // Match all other characters.
+            '.)', 'g' ),
 
         instance = INSTANCES[ id ] = {
             name: id,
@@ -101,10 +115,10 @@ function createInstance( picker, extension ) {
             formats: null,
             input: null,
             value: null,
-            get: function( thing, format ) {
+            get: function( thing, options ) {
                 var value = instance.dict[ thing ]
-                if ( format && instance.formats ) {
-                    return instance.toFormatArray( format ).map( function( formatting ) {
+                if ( options && options.format && instance.formats ) {
+                    return instance.toFormatArray( options.format ).map( function( formatting ) {
                         return Pick._.trigger( formatting, null, [ value ] )
                     }).join( '' )
                 }
@@ -202,11 +216,8 @@ Pick.Compose = function( $element, extension, options ) {
     // Merge the default classes with the settings and then prefix them.
     picker.klasses = Pick._.prefix( extension.prefix, $.extend( {}, Pick._.klasses(), picker.settings.klass ) )
 
-    // Link up the host and input.
+    // Link up the host.
     picker.$host = $element
-    picker.$input = extension.input ?
-        $( '<input class="' + picker.klasses.input + '" type="' + extension.input + '" readonly>' ) :
-        undefined
 
     // Keep a reference to the extension and options.
     picker.extension = extension
@@ -286,13 +297,6 @@ Pick.Compose.prototype = {
                 event.stopPropagation()
             }).
 
-            // Update the hidden value with the correct format.
-            on( 'change.' + instance.id, function() {
-                if ( picker._hidden ) {
-                    console.log( 'need to update the hidden value with formatting' )
-                }
-            }).
-
             // Add the “host” class.
             addClass( picker.klasses.host ).
 
@@ -300,31 +304,50 @@ Pick.Compose.prototype = {
             data( 'pick.' + picker.extension.name, picker )
 
 
-        // If there’s an input node element, prepare it.
-        if ( picker.$input ) {
+        // If we need an input element, prepare it within the host.
+        if ( picker.settings.input ) {
 
-            // Bind the input events, set the value, and add it to the dom.
-            picker.$input.
-                on( 'change', function() { "instance.set( 'value', picker.$input[0].value )"; } ).
-                val( instance.value ).
-                appendTo( picker.$host )
+            // Link up the input.
+            picker.$input = $( '<input ' +
+                'class="' + picker.klasses.input + '" ' +
+                'type="' + picker.settings.input + '" ' +
+                'value="' + ( picker.settings.value || '' ) + '" ' +
+                'readonly>'
+            )
 
-            // The host should act as a “label” wrapper for the input node.
-            picker.$host.on( 'click.' + instance.id, function( event ) {
-                event.preventDefault()
-                picker.$input.focus()
-            })
+            picker.$host.
+
+                // Append the input to the host.
+                append( picker.$input ).
+
+                // The host should act as a “label” wrapper for the input.
+                on( 'click.' + instance.id, function( event ) {
+                    event.preventDefault()
+                    picker.$input.focus()
+                })
         }
 
         // Otherwise make the host “tab-able”.
-        else {
-            picker.$host[0].tabIndex = 0
+        else picker.$host[0].tabIndex = 0
+
+
+        // If there’s a hidden input element, prepare the host and input.
+        if ( picker.settings.formatHidden ) {
+
+            // If there’s a format for the hidden input, create it with the
+            // hidden format and the name of the original input and a suffix.
+            picker._hidden = $( '<input ' +
+                ( picker.settings.value ? 'value="' + picker.get( 'select', { format: picker.settings.formatHidden } ) + '" ' : '' ) +
+                'type=hidden>' )[0]
+
+            // Append the hidden input to the host.
+            picker.$host.append( picker._hidden )
+
+            // Bind the listener to update the hidden input.
+            picker.$input.on( 'change', function() {
+                picker._hidden.value = picker.get( 'select', { format: picker.settings.formatHidden } )
+            })
         }
-
-
-        // If there’s a format for the hidden input element, create the element
-        // using the name of the original input and a suffix. Otherwise set it to undefined.
-        picker._hidden = picker.settings.formatSubmit ? '<span>need to do this...</span>' : undefined
 
 
         // Create and insert the root template into the dom.
@@ -413,24 +436,19 @@ Pick.Compose.prototype = {
         // Close the picker.
         picker.close()
 
-        // Remove the hidden field.
-        if ( picker._hidden ) {
-            console.log( 'need to remove hidden field..' )
-            // picker._hidden.parentNode.removeChild( picker._hidden )
-        }
-
-        // Remove the node input element.
+        // Remove the input element.
         if ( picker.$input ) {
             picker.$input.remove()
         }
 
+        // Remove the hidden input.
+        if ( picker._hidden ) {
+            picker._hidden.parentNode.removeChild( picker._hidden )
+        }
+
         // Remove the extension template content.
-        if ( hasShadowRoot ) {
-            picker.$host.after( picker.$host.clone() ).remove()
-        }
-        else {
-            picker.$root.remove()
-        }
+        if ( hasShadowRoot ) picker.$host.after( picker.$host.clone() ).remove()
+        else picker.$root.remove()
 
         // Remove the “host” class, unbind the events, and remove the stored data.
         picker.$host.removeClass( picker.klasses.host ).off( '.' + instance.id ).removeData( 'pick.' + picker.extension.name )
@@ -664,13 +682,16 @@ Pick.Compose.prototype = {
         var picker = this,
             instance = getInstance( picker )
 
-        // First, check if we need the active element.
-        return thing == 'activeElement' ?
+        // Check if there’s an input element and the value is requested.
+        return picker.$input && thing == 'value' ? picker.$input[0].value :
 
-            // Either check the shadow or the root element.
-            instance.shadow ?
-                instance.shadow[ thing ] :
-                picker.$root.find( $document[0][ thing ] )[0] :
+            // Next, check if we need the active element.
+            thing == 'activeElement' ?
+
+                // Search either the shadow or the root element.
+                instance.shadow ?
+                    instance.shadow[ thing ] :
+                    picker.$root.find( $document[0][ thing ] )[0] :
 
             // Otherwise get the thing using the options within scope of the instance.
             Pick._.trigger( instance.get, instance, [ thing, options ] )

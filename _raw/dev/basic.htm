@@ -187,12 +187,17 @@
 
     $.fn.pick.extend({
         name: 'pick--input',
-        input: 'text',
-        value: 'wassup',
         formats: {
             dd: function( value ) {
                 return '0' + value
+            },
+            ddd: function( value ) {
+                return '00' + value
             }
+        },
+        defaults: {
+            input: 'text',
+            // value: ''
         },
         content: function() {
             var is, i = 0,
@@ -217,7 +222,9 @@
     })
 
     var $div7 = $( '.pick--input' ).pick( 'pick--input', {
-        format: 'dd'
+        format: 'dd',
+        formatHidden: 'ddd',
+        value: '01'
     })
     var picker = $div7.pick( 'pick--input', 'picker' )
     picker.open(true)

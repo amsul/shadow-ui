@@ -78,6 +78,7 @@ function createInstance( picker, extension ) {
             picker: picker,
             content: '',
             shadow: null,
+            init: null,
             is: {
                 started: false,
                 opened: false,
@@ -104,7 +105,6 @@ function createInstance( picker, extension ) {
                 39: function() { picker.open() },
                 40: function() { picker.open() }
             },
-            methods: {},
             bindings: {},
             dict: {
                 select: 0,
@@ -297,7 +297,7 @@ Pick.Compose.prototype = {
         // If we have a starting value to work with, parse it
         // into a format hash and pass it to the `init` method.
         if ( picker.settings.value ) {
-            Pick._.trigger( instance.methods.init, instance, [
+            Pick._.trigger( instance.init, instance, [
                 instance.toFormatHash( picker.settings.format || picker.settings.formatHidden, picker.settings.value )
             ])
         }
@@ -717,16 +717,16 @@ Pick.Compose.prototype = {
         var picker = this,
             instance = getInstance( picker )
 
-        // Check if there’s an input element and the value is requested.
-        return picker.$input && thing == 'value' ? picker.$input[0].value :
+        // Check if the value is requested, get the input’s value.
+        return thing == 'value' ? picker.$input && picker.$input[0].value :
 
-            // Next, check if we need the active element.
-            thing == 'activeElement' ?
+            // If the hidden value is requested, get the hidden input’s value.
+            thing == 'valueHidden' ? picker._hidden && picker._hidden.value :
 
-                // Search either the shadow or the root element.
-                instance.shadow ?
-                    instance.shadow[ thing ] :
-                    picker.$root.find( $document[0][ thing ] )[0] :
+            // If the active element is requested, check the shadow or the root.
+            thing == 'activeElement' ? instance.shadow ?
+                instance.shadow[ thing ] :
+                picker.$root.find( $document[0][ thing ] )[0] :
 
             // Otherwise get the thing using the options within scope of the instance.
             Pick._.trigger( instance.get, instance, [ thing, options ] )

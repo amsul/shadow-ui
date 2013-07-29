@@ -2,13 +2,13 @@
 
 var $DOM = $( '#qunit-fixture' )
 var $NODE_DIV = $( '<div/>' )
-var setUpTheWall = function( extension, options ) {
+var setUpThePicker = function( extension, options ) {
     $.fn.pick.extend( extension )
     var $clone = $NODE_DIV.clone().pick( extension.name, options )
     $DOM.html( $clone )
     return $clone.pick( extension.name, 'picker' )
 }
-var tearDownTheWall = function() {
+var tearDownThePicker = function() {
     this.picker.stop()
     $DOM.empty()
     ;delete Pick._.EXTENSIONS[ this.extension.name ]
@@ -41,9 +41,9 @@ module( 'API minimal', {
             name: 'pick--basic',
             content: '<div>This is the most basic form of a pick extension.</div>'
         }
-        this.picker = setUpTheWall( this.extension )
+        this.picker = setUpThePicker( this.extension )
     },
-    teardown: tearDownTheWall
+    teardown: tearDownThePicker
 })
 
 test( 'Extension', function() {
@@ -144,9 +144,9 @@ module( 'API dict', {
                 '</div>'
             }
         }
-        this.picker = setUpTheWall( this.extension )
+        this.picker = setUpThePicker( this.extension )
     },
-    teardown: tearDownTheWall
+    teardown: tearDownThePicker
 })
 
 test( 'Get and set', function() {
@@ -190,9 +190,9 @@ module( 'API formats', {
                 }
             }
         }
-        this.picker = setUpTheWall( this.extension )
+        this.picker = setUpThePicker( this.extension )
     },
-    teardown: tearDownTheWall
+    teardown: tearDownThePicker
 })
 
 test( 'Get and set with formats', function() {
@@ -227,9 +227,9 @@ module( 'API custom dict', {
                 sup: 'highlight'
             }
         }
-        this.picker = setUpTheWall( this.extension )
+        this.picker = setUpThePicker( this.extension )
     },
-    teardown: tearDownTheWall
+    teardown: tearDownThePicker
 })
 
 test( 'Get and set with dict and cascades', function() {
@@ -274,9 +274,9 @@ module( 'API custom get/set methods', {
                 return value
             }
         }
-        this.picker = setUpTheWall( this.extension )
+        this.picker = setUpThePicker( this.extension )
     },
-    teardown: tearDownTheWall
+    teardown: tearDownThePicker
 })
 
 test( 'Get and set with custom methods', function() {
@@ -297,7 +297,7 @@ test( 'Get and set with custom methods', function() {
 
 
 /**
- * Check the default key methods.
+ * Check the default key methods api.
  */
 module( 'API keys', {
     setup: function() {
@@ -309,9 +309,9 @@ module( 'API keys', {
                 }
             }
         }
-        this.picker = setUpTheWall( this.extension )
+        this.picker = setUpThePicker( this.extension )
     },
-    teardown: tearDownTheWall
+    teardown: tearDownThePicker
 })
 
 test( 'Default bindings', function() {
@@ -332,6 +332,65 @@ test( 'Custom bindings', function() {
 
     ok( picker.$host.trigger( $.Event( 'keydown', { keyCode: 65 } ) ), 'Trigger: keydown event' )
     strictEqual( picker.get( 'highlight' ), 1, 'Check: fired custom binding' )
+})
+
+
+
+
+
+/**
+ * Check the input elements api.
+ */
+module( 'API inputs', {
+    setup: function() {
+        this.extension = {
+            name: 'pick--input',
+            formats: {
+                dd: function( value ) {
+                    return '0' + value
+                },
+                ddd: function( value ) {
+                    return '00' + value
+                }
+            },
+            init: function( formatValueHash ) {
+                if ( 'dd' in formatValueHash ) this.dict.select = ~~formatValueHash.dd
+                if ( 'ddd' in formatValueHash ) this.dict.select = ~~formatValueHash.ddd
+            },
+            defaults: {
+                format: 'dd',
+                formatHidden: 'ddd',
+                inputName: 'value_input',
+                inputNameHidden: 'value_input_hidden',
+                value: '06'
+            }
+        }
+        this.picker = setUpThePicker( this.extension )
+    },
+    teardown: tearDownThePicker
+})
+
+test( 'Values', function() {
+
+    var picker = this.picker
+
+    strictEqual( picker.get( 'select' ), 6, 'Check: select updated' )
+    strictEqual( picker.get( 'value' ), '06', 'Check: input value' )
+    strictEqual( picker.get( 'valueHidden' ), '006', 'Check: hidden input value' )
+
+    ok( picker.set( 'select', 9 ), 'Change: select updated' )
+
+    strictEqual( picker.get( 'select' ), 9, 'Check: select updated' )
+    strictEqual( picker.get( 'value' ), '09', 'Check: input value' )
+    strictEqual( picker.get( 'valueHidden' ), '009', 'Check: hidden input value' )
+})
+
+test( 'Names', function() {
+
+    var picker = this.picker
+
+    strictEqual( picker.$input[0].name, 'value_input', 'Check: input name' )
+    strictEqual( picker._hidden.name, 'value_input_hidden', 'Check: hidden input name' )
 })
 
 
@@ -399,9 +458,9 @@ module( 'API events', {
                 mod.has.opts_selected = !!event
             }
         }
-        this.picker = setUpTheWall( this.extension, this.options )
+        this.picker = setUpThePicker( this.extension, this.options )
     },
-    teardown: tearDownTheWall
+    teardown: tearDownThePicker
 })
 
 test( 'As defaults', 8, function() {

@@ -195,11 +195,9 @@
                 return '00' + value
             }
         },
-        methods: {
-            init: function( formatValueHash ) {
-                if ( 'dd' in formatValueHash ) this.dict.select = ~~formatValueHash.dd
-                if ( 'ddd' in formatValueHash ) this.dict.select = ~~formatValueHash.ddd
-            }
+        init: function( formatValueHash ) {
+            if ( 'dd' in formatValueHash ) this.dict.select = ~~formatValueHash.dd
+            if ( 'ddd' in formatValueHash ) this.dict.select = ~~formatValueHash.ddd
         },
         defaults: {
             format: 'dd',

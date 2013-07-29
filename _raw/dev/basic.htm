@@ -195,9 +195,16 @@
                 return '00' + value
             }
         },
+        methods: {
+            init: function( formatValueHash ) {
+                if ( 'dd' in formatValueHash ) this.dict.select = ~~formatValueHash.dd
+                if ( 'ddd' in formatValueHash ) this.dict.select = ~~formatValueHash.ddd
+            }
+        },
         defaults: {
-            input: 'text',
-            // value: ''
+            format: 'dd',
+            formatHidden: 'ddd',
+            value: '06'
         },
         content: function() {
             var is, i = 0,
@@ -221,11 +228,7 @@
         }
     })
 
-    var $div7 = $( '.pick--input' ).pick( 'pick--input', {
-        format: 'dd',
-        formatHidden: 'ddd',
-        value: '01'
-    })
+    var $div7 = $( '.pick--input' ).pick( 'pick--input' )
     var picker = $div7.pick( 'pick--input', 'picker' )
     picker.open(true)
 

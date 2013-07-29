@@ -117,10 +117,9 @@ function createInstance( picker, extension ) {
             value: null,
             get: function( thing, options ) {
                 var value = instance.dict[ thing ]
+                options = typeof options == 'string' ? { format: options } : options
                 if ( options && options.format && instance.formats ) {
-                    return instance.toFormatArray( options.format ).map( function( formatting ) {
-                        return Pick._.trigger( formatting, null, [ value ] )
-                    }).join( '' )
+                    return instance.toFormatString( options.format, value )
                 }
                 return value
             },
@@ -135,7 +134,7 @@ function createInstance( picker, extension ) {
                 if ( !instance.formats ) throw 'The picker extension needs a `formats` option.'
                 return ( string || '' ).split( regexFormats ).reduce( function( array, value ) {
                     if ( value ) array.push(
-                        value in instance.formats ? instance.formats[ value ] :
+                        value in instance.formats ? { f: value } :
                         value.match( /^\[.*]$/ ) ? value.replace( /^\[(.*)]$/, '$1' ) :
                         value
                     )
@@ -144,8 +143,19 @@ function createInstance( picker, extension ) {
             },
             toFormatString: function( format, value ) {
                 return instance.toFormatArray( format ).map( function( formatting ) {
-                    return Pick._.trigger( formatting, null, [ value ] )
+                    return Pick._.trigger( formatting.f ? instance.formats[ formatting.f ] : formatting, instance, [ value ] )
                 }).join( '' )
+            },
+            toFormatHash: function( format, value ) {
+                var object = {}
+                instance.toFormatArray( format ).forEach( function( formatting ) {
+                    var formattingLength = formatting.f ? Pick._.trigger( instance.formats[ formatting.f ], instance, [ value, true ] ) : formatting.length
+                    if ( formatting.f ) {
+                        object[ formatting.f ] = value.substr( 0, formattingLength )
+                    }
+                    value = value.substr( formattingLength )
+                })
+                return object
             }
         } //instance
 
@@ -227,7 +237,7 @@ Pick.Compose = function( $element, extension, options ) {
     instance = createInstance( picker, extension )
 
     // Create a method to get the instance info.
-    picker.i = function( i ) { return instance[ i || 'id' ] }
+    picker.i = function() { return instance.id }
 
     // Start up the picker.
     picker.start()
@@ -261,7 +271,7 @@ Pick.Compose.prototype = {
         instance.is.started = true
 
 
-        // Attach the default extension and settings events.
+        // Register the default extension and settings events.
         picker.on({
             start: picker.extension.onStart,
             render: picker.extension.onRender,
@@ -283,38 +293,27 @@ Pick.Compose.prototype = {
         })
 
 
-        // Prepare the host element.
-        picker.$host.
-
-            // Open the picker with focus on a click or focus within.
-            on( 'click.' + instance.id + ' focusin.' + instance.id, function() {
-                picker.open( true )
-            }).
-
-            // Prevent focus out of the host from bubbling up
-            // so that a loss of focus within doesn’t close the picker.
-            on( 'focusout.' + instance.id, function( event ) {
-                event.stopPropagation()
-            }).
-
-            // Add the “host” class.
-            addClass( picker.klasses.host ).
-
-            // Store the extension data.
-            data( 'pick.' + picker.extension.name, picker )
+        // If we have a starting value to work with, parse it
+        // into a format hash and pass it to the `init` method.
+        if ( picker.settings.value ) {
+            Pick._.trigger( instance.methods.init, instance, [
+                instance.toFormatHash( picker.settings.format || picker.settings.formatHidden, picker.settings.value )
+            ])
+        }
 
 
         // If we need an input element, prepare it within the host.
-        if ( picker.settings.input ) {
+        if ( picker.settings.format ) {
 
             // Link up the input.
-            picker.$input = $( '<input ' +
+            picker.$input = $( '<input ' +
                 'class="' + picker.klasses.input + '" ' +
-                'type="' + picker.settings.input + '" ' +
-                'value="' + ( picker.settings.value || '' ) + '" ' +
+                'name="' + instance.id + '"' +
+                'type=text ' +
                 'readonly>'
             )
 
+            // Adjust the host for the input.
             picker.$host.
 
                 // Append the input to the host.
@@ -323,7 +322,12 @@ Pick.Compose.prototype = {
                 // The host should act as a “label” wrapper for the input.
                 on( 'click.' + instance.id, function( event ) {
                     event.preventDefault()
-                    picker.$input.focus()
+                    picker.$input.trigger( 'focus' )
+                }).
+
+                // Listen for changes to update the input value.
+                on( 'change.' + instance.id, function() {
+                    picker.$input[0].value = picker.get( 'select', { format: picker.settings.format } )
                 })
         }
 
@@ -334,24 +338,28 @@ Pick.Compose.prototype = {
         // If there’s a hidden input element, prepare the host and input.
         if ( picker.settings.formatHidden ) {
 
-            // If there’s a format for the hidden input, create it with the
-            // hidden format and the name of the original input and a suffix.
+            // If there’s a format for the hidden input, create it
+            // with the name of the original input and a suffix.
             picker._hidden = $( '<input ' +
-                ( picker.settings.value ? 'value="' + picker.get( 'select', { format: picker.settings.formatHidden } ) + '" ' : '' ) +
-                'type=hidden>' )[0]
+                'name="' + instance.id + 'suffix' + '"' +
+                'type=hidden>'
+            )[0]
 
-            // Append the hidden input to the host.
-            picker.$host.append( picker._hidden )
+            // Adjust the host for the hidden input.
+            picker.$host.
 
-            // Bind the listener to update the hidden input.
-            picker.$input.on( 'change', function() {
-                picker._hidden.value = picker.get( 'select', { format: picker.settings.formatHidden } )
-            })
+                // Append the hidden input to the host.
+                append( picker._hidden ).
+
+                // Listen for changes to update the hidden value.
+                on( 'change.' + instance.id, function() {
+                    picker._hidden.value = picker.get( 'select', { format: picker.settings.formatHidden } )
+                })
         }
 
 
         // Create and insert the root template into the dom.
-        template = Pick._.node({ klass: picker.klasses.root, content: createTemplate( picker ) })
+        template = Pick._.node({ klass: picker.klasses.root, content: createTemplate( picker ) })
         if ( hasShadowRoot ) {
             instance.shadow = picker.$host[0].webkitCreateShadowRoot()
             instance.shadow.applyAuthorStyles = true
@@ -368,7 +376,7 @@ Pick.Compose.prototype = {
         picker.$root.
 
             // When something within the root is focused, open the picker.
-            on( 'focusin', function() { picker.open( true ) }).
+            on( 'focusin', function() { picker.open( true ) } ).
 
             // When things are getting picked, any click events within the
             // root shouldn’t bubble up, forms shouldn’t be submitted,
@@ -395,6 +403,31 @@ Pick.Compose.prototype = {
                 // If there’s a match, set it.
                 if ( match ) picker.set( match[1], match[2] )
             })
+
+
+        // Prepare the host element.
+        picker.$host.
+
+            // Open the picker with focus on a click or focus within.
+            on( 'click.' + instance.id + ' focusin.' + instance.id, function() {
+                picker.open( true )
+            }).
+
+            // Prevent focus out of the host from bubbling up
+            // so that a loss of focus within doesn’t close the picker.
+            on( 'focusout.' + instance.id, function( event ) {
+                event.stopPropagation()
+            }).
+
+            // Add the “host” class.
+            addClass( picker.klasses.host ).
+
+            // Store the extension data.
+            data( 'pick.' + picker.extension.name, picker ).
+
+            // And finally, trigger the handler for a change event
+            // to update any input or hidden input element values.
+            triggerHandler( 'change.' + instance.id )
 
 
         // Trigger any queued “start” and “render” events.
@@ -473,7 +506,7 @@ Pick.Compose.prototype = {
             instance = getInstance( picker )
 
         // Give the picker focus if needed.
-        if ( giveFocus === true ) picker.focus()
+        if ( giveFocus === true ) picker.trigger( 'focus' )
 
         // If it’s already open, do nothing.
         if ( instance.is.opened ) return picker
@@ -519,8 +552,8 @@ Pick.Compose.prototype = {
 
         // If we need to keep focus, do so before changing states.
         if ( maintainFocus === true ) {
-            if ( picker.$input ) picker.$input.focus()
-            else picker.$host.focus()
+            if ( picker.$input ) picker.$input.trigger( 'focus' )
+            else picker.$host.trigger( 'focus' )
         }
         else picker.blur()
 
@@ -576,6 +609,7 @@ Pick.Compose.prototype = {
         // Trigger any queued “focus” events.
         return picker.trigger( 'focus' )
     }, //focus
+
 
 
     /**
@@ -727,13 +761,8 @@ Pick.Compose.prototype = {
                 thingDefined = Pick._.trigger( instance.set, instance, [ thingItem, thingValue, options ] )
 
                 // Check to update the input value and broadcast a change.
-                if ( picker.$input && thingItem == 'select' || thingItem == 'clear' ) {
-                    picker.$input.
-                        val(
-                            thingItem == 'clear' ? '' :
-                            Pick._.trigger( instance.toFormatString, instance, [ picker.settings.format, picker.get( 'select' ) ] )
-                        ).
-                        trigger( 'change' )
+                if ( thingItem == 'select' || thingItem == 'clear' ) {
+                    picker.$host.trigger( 'change', [ thingItem, thingValue ] )
                 }
 
                 // Trigger any queued “set” events and pass the event.

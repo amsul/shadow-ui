@@ -105,6 +105,7 @@ function createInstance( picker, extension ) {
                 40: function() { picker.open() }
             },
             methods: {},
+            bindings: {},
             dict: {
                 select: 0,
                 highlight: 0
@@ -486,11 +487,11 @@ Pick.Compose.prototype = {
         // Remove the “host” class, unbind the events, and remove the stored data.
         picker.$host.removeClass( picker.klasses.host ).off( '.' + instance.id ).removeData( 'pick.' + picker.extension.name )
 
-        // Trigger any queued “stop” event methods.
+        // Trigger any queued “stop” event callbacks.
         picker.trigger( 'stop' )
 
-        // Then reset all instance methods.
-        instance.methods = {}
+        // Then reset all instance bindings.
+        instance.bindings = {}
 
         return picker
     }, //stop
@@ -506,7 +507,7 @@ Pick.Compose.prototype = {
             instance = getInstance( picker )
 
         // Give the picker focus if needed.
-        if ( giveFocus === true ) picker.trigger( 'focus' )
+        if ( giveFocus === true ) picker.focus()
 
         // If it’s already open, do nothing.
         if ( instance.is.opened ) return picker
@@ -644,7 +645,7 @@ Pick.Compose.prototype = {
     /**
      * Attach callbacks to events.
      */
-    on: function( thing, method ) {
+    on: function( thing, callback ) {
 
         var thingName, thingMethod,
             thingIsObject = $.isPlainObject( thing ),
@@ -656,20 +657,20 @@ Pick.Compose.prototype = {
 
             // If the thing isn’t an object, make it one.
             if ( !thingIsObject ) {
-                thingObject[ thing ] = method
+                thingObject[ thing ] = callback
             }
 
             // Go through the things to bind to.
             for ( thingName in thingObject ) {
 
-                // Grab the method of the thing.
+                // Grab the callback of the thing.
                 thingMethod = thingObject[ thingName ]
 
-                // Make sure the thing methods collection exists.
-                if ( !instance.methods[ thingName ] ) instance.methods[ thingName ] = []
+                // Make sure the thing’s binding collection exists.
+                if ( !instance.bindings[ thingName ] ) instance.bindings[ thingName ] = []
 
-                // Add the method to the relative method collection.
-                instance.methods[ thingName ].push( thingMethod )
+                // Add the callback to the relative binding collection.
+                instance.bindings[ thingName ].push( thingMethod )
             }
         }
 
@@ -679,14 +680,14 @@ Pick.Compose.prototype = {
 
 
     /**
-     * Fire off any instance methods by name.
+     * Fire off any instance bindings by name.
      */
     trigger: function( name, data ) {
         var picker = this,
-            methodList = getInstance( picker ).methods[ name ]
+            methodList = getInstance( picker ).bindings[ name ]
         if ( methodList ) {
-            methodList.forEach( function( method ) {
-                Pick._.trigger( method, picker, [ data ] )
+            methodList.forEach( function( callback ) {
+                Pick._.trigger( callback, picker, [ data ] )
             })
         }
         return picker

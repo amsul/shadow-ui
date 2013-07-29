@@ -309,7 +309,7 @@ Pick.Compose.prototype = {
             // Link up the input.
             picker.$input = $( '<input ' +
                 'class="' + picker.klasses.input + '" ' +
-                'name="' + instance.id + '"' +
+                'name="' + ( picker.settings.inputName || '' ) + '"' +
                 'type=text ' +
                 'readonly>'
             )
@@ -342,7 +342,7 @@ Pick.Compose.prototype = {
             // If there’s a format for the hidden input, create it
             // with the name of the original input and a suffix.
             picker._hidden = $( '<input ' +
-                'name="' + instance.id + 'suffix' + '"' +
+                'name="' + ( picker.settings.inputNameHidden || ( picker.$input ? picker.$input[0].name + '_formatted' : '' ) ) + '"' +
                 'type=hidden>'
             )[0]
 

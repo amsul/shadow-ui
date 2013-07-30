@@ -61,6 +61,10 @@
     <div class="div pick--input">Input picker</div>
 </section>
 
+<section>
+    <div class="div pick--input-date">Input date picker</div>
+</section>
+
 <!--
 
 <br><br>
@@ -229,7 +233,18 @@
     })
 
     var $div7 = $( '.pick--input' ).pick( 'pick--input' )
-    var picker = $div7.pick( 'pick--input', 'picker' )
+
+
+    ////////////////////////////////////////////////////////////
+
+
+    $.fn.pick.extend({
+        name: 'pick--input-date',
+        content: 'next level'
+    })
+
+    var $div8 = $( '.pick--input-date' ).pick( 'pick--input-date' )
+    var picker = $div8.pick( 'pick--input-date', 'picker' )
     picker.open(true)
 
 

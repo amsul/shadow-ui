@@ -64,7 +64,7 @@ function createInstance( picker, extension ) {
             // Match any formatting characters.
             ( extension.formats ?
                 Object.keys( extension.formats ).
-                    sort(function(a,b) { return b.length > a.length }).
+                    sort(function(a,b) { return b.length > a.length ? 1 : -1 }).
                     join('|') + '|' :
                 ''
             ) +
@@ -114,8 +114,6 @@ function createInstance( picker, extension ) {
                 select: 'highlight'
             },
             formats: null,
-            input: null,
-            value: null,
             get: function( thing, options ) {
                 var value = instance.dict[ thing ]
                 options = typeof options == 'string' ? { format: options } : options

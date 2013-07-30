@@ -96,12 +96,6 @@ module.exports = function( grunt ) {
         },
 
 
-        // Lint the files.
-        jshint: {
-            gruntfile: 'Gruntfile.js'
-        },
-
-
         // Minify all the things!
         uglify: {
             options: {
@@ -112,8 +106,19 @@ module.exports = function( grunt ) {
         },
 
 
+        // Lint the files.
+        jshint: {
+            options: {
+                jshintrc: '.jshintrc'
+            },
+            gruntfile: 'Gruntfile.js',
+            all: []
+        },
+
+
         // Unit test the files.
         qunit: {
+            all: [ '<%= dirs.src.tests %>/units/all.htm' ]
         },
 
 
@@ -145,7 +150,7 @@ module.exports = function( grunt ) {
 
     // Register the tasks.
     grunt.registerTask( 'default', [ 'clean', 'copy' ] )
-    // grunt.registerTask( 'travis', [ 'jshint:pickers', 'qunit:pickers' ] )
+    grunt.registerTask( 'travis', [ 'jshint', 'qunit' ] )
 
 } //module.exports
 

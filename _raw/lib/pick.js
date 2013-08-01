@@ -292,15 +292,6 @@ Pick.Compose.prototype = {
         })
 
 
-        // If we have a starting value to work with, parse it
-        // into a format hash and pass it to the `init` method.
-        if ( picker.settings.value ) {
-            Pick._.trigger( instance.init, instance, [
-                instance.toFormatHash( picker.settings.format || picker.settings.formatHidden, picker.settings.value )
-            ])
-        }
-
-
         // If we need an input element, prepare it within the host.
         if ( picker.settings.format ) {
 
@@ -402,6 +393,15 @@ Pick.Compose.prototype = {
                 // If there’s a match, set it.
                 if ( match ) picker.set( match[1], match[2] )
             })
+
+
+        // Trigger the instance’s `init` method while parsing
+        // the starting value into a format-value hash.
+        Pick._.trigger( instance.init, instance, [
+            instance.formats ?
+                instance.toFormatHash( picker.settings.format || picker.settings.formatHidden, picker.settings.value ) :
+                null
+        ])
 
 
         // Prepare the host element.

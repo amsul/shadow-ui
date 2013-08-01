@@ -292,22 +292,14 @@ Pick.Compose.prototype = {
         })
 
 
-        // If we need an input element, prepare it within the host.
+        // If there’s a formatting, prepare the input element.
         if ( picker.settings.format ) {
 
-            // Link up the input.
-            picker.$input = $( '<input ' +
-                'class="' + picker.klasses.input + '" ' +
-                'name="' + ( picker.settings.inputName || '' ) + '"' +
-                'type=text ' +
-                'readonly>'
-            )
+            // Find the input within the host.
+            picker.$input = picker.$host.find( 'input' ).first().addClass( picker.klasses.input )
 
             // Adjust the host for the input.
             picker.$host.
-
-                // Append the input to the host.
-                append( picker.$input ).
 
                 // The host should act as a “label” wrapper for the input.
                 on( 'click.' + instance.id, function( event ) {
@@ -325,13 +317,13 @@ Pick.Compose.prototype = {
         else picker.$host[0].tabIndex = 0
 
 
-        // If there’s a hidden input element, prepare the host and input.
+        // If there’s a hidden formatting, prepare the hidden input.
         if ( picker.settings.formatHidden ) {
 
             // If there’s a format for the hidden input, create it
             // with the name of the original input and a suffix.
             picker._hidden = $( '<input ' +
-                'name="' + ( picker.settings.inputNameHidden || ( picker.$input ? picker.$input[0].name + '_formatted' : '' ) ) + '"' +
+                'name="' + ( picker.$input ? picker.$input[0].name : '' ) + ( picker.settings.suffixHidden || '_formatted' ) + '"' +
                 'type=hidden>'
             )[0]
 
@@ -346,6 +338,15 @@ Pick.Compose.prototype = {
                     picker._hidden.value = picker.get( 'select', { format: picker.settings.formatHidden } )
                 })
         }
+
+
+        // Trigger the instance’s `init` method before creating the root.
+        // If there’s the need, parse the starting value into a format-value hash.
+        Pick._.trigger( instance.init, instance, [
+            instance.formats && picker.$input ?
+                instance.toFormatHash( picker.settings.format, picker.$input[0].value ) :
+                null
+        ])
 
 
         // Create and insert the root template into the dom.
@@ -393,15 +394,6 @@ Pick.Compose.prototype = {
                 // If there’s a match, set it.
                 if ( match ) picker.set( match[1], match[2] )
             })
-
-
-        // Trigger the instance’s `init` method while parsing
-        // the starting value into a format-value hash.
-        Pick._.trigger( instance.init, instance, [
-            instance.formats ?
-                instance.toFormatHash( picker.settings.format || picker.settings.formatHidden, picker.settings.value ) :
-                null
-        ])
 
 
         // Prepare the host element.
@@ -468,9 +460,9 @@ Pick.Compose.prototype = {
         // Close the picker.
         picker.close()
 
-        // Remove the input element.
+        // Clean up the input element.
         if ( picker.$input ) {
-            picker.$input.remove()
+            picker.$input.removeClass( picker.klasses.input )
         }
 
         // Remove the hidden input.

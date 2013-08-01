@@ -2,9 +2,9 @@
 
 var $DOM = $( '#qunit-fixture' )
 var $NODE_DIV = $( '<div/>' )
-var setUpThePicker = function( extension, options ) {
+var setUpThePicker = function( extension, options, $element ) {
     $.fn.pick.extend( extension )
-    var $clone = $NODE_DIV.clone().pick( extension.name, options )
+    var $clone = $NODE_DIV.clone().append( $element ).pick( extension.name, options )
     $DOM.html( $clone )
     return $clone.pick( extension.name, 'picker' )
 }
@@ -360,12 +360,10 @@ module( 'API inputs', {
             defaults: {
                 format: 'dd',
                 formatHidden: 'ddd',
-                inputName: 'value_input',
-                inputNameHidden: 'value_input_hidden',
-                value: '06'
+                suffixHidden: '_hidden'
             }
         }
-        this.picker = setUpThePicker( this.extension )
+        this.picker = setUpThePicker( this.extension, null, $( '<input value="06" name="value_input">' ) )
     },
     teardown: tearDownThePicker
 })

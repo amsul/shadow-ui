@@ -2,16 +2,10 @@
 
 var $DOM = $( '#qunit-fixture' )
 var $NODE_DIV = $( '<div/>' )
-var setUpThePicker = function( extension, options, $element ) {
-    $.fn.pick.extend( extension )
-    var $clone = $NODE_DIV.clone().append( $element ).pick( extension.name, options )
-    $DOM.html( $clone )
-    return $clone.pick( extension.name, 'picker' )
-}
 var tearDownThePicker = function() {
     this.picker.stop()
     $DOM.empty()
-    ;delete Pick._.EXTENSIONS[ this.extension.name ]
+    ;delete Pick._.EXTENSIONS[ this.picker.extension.name ]
 }
 
 
@@ -41,7 +35,9 @@ module( 'API minimal', {
             name: 'pick--basic',
             content: '<div>This is the most basic form of a pick extension.</div>'
         }
-        this.picker = setUpThePicker( this.extension )
+        Pick.extend( this.extension )
+        var $clone = $NODE_DIV.clone().appendTo( $DOM )
+        this.picker = $clone.pick( 'pick--basic' ).pick( 'pick--basic', 'picker' )
     },
     teardown: tearDownThePicker
 })
@@ -127,11 +123,36 @@ test( 'Open, close, focus, and blur', function() {
 
 
 /**
+ * Check the alias name api.
+ */
+module( 'API alias', {
+    setup: function() {
+        Pick.extend({
+            name: 'pick--alias',
+            alias: 'pickAliased'
+        })
+        var $clone = $NODE_DIV.clone().appendTo( $DOM )
+        this.picker = $clone.pickAliased().pickAliased( 'picker' )
+    },
+    teardown: tearDownThePicker
+})
+
+test( 'Alias extension', function() {
+    var picker = this.picker
+    strictEqual( Pick._.EXTENSIONS[ picker.extension.alias ], picker.extension.name, 'Check: extension alias linked' )
+})
+
+
+
+
+
+
+/**
  * Check the dict-based api.
  */
 module( 'API dict', {
     setup: function() {
-        this.extension = {
+        Pick.extend({
             name: 'pick--dict',
             content: function() {
                 var to_select = ~~(Math.random()*1000),
@@ -143,8 +164,9 @@ module( 'API dict', {
                     '<button id="highlight" data-pick="highlight:' + to_highlight + '">Set highlight to ' + to_highlight + '</button>' +
                 '</div>'
             }
-        }
-        this.picker = setUpThePicker( this.extension )
+        })
+        var $clone = $NODE_DIV.clone().appendTo( $DOM )
+        this.picker = $clone.pick( 'pick--dict' ).pick( 'pick--dict', 'picker' )
     },
     teardown: tearDownThePicker
 })
@@ -177,7 +199,7 @@ test( 'Get and set', function() {
  */
 module( 'API formats', {
     setup: function() {
-        this.extension = {
+        Pick.extend({
             name: 'pick--dict-formatter',
             formats: {
                 lol: 'Laugh Out Loud!',
@@ -189,8 +211,9 @@ module( 'API formats', {
                     return string
                 }
             }
-        }
-        this.picker = setUpThePicker( this.extension )
+        })
+        var $clone = $NODE_DIV.clone().appendTo( $DOM )
+        this.picker = $clone.pick( 'pick--dict-formatter' ).pick( 'pick--dict-formatter', 'picker' )
     },
     teardown: tearDownThePicker
 })
@@ -216,7 +239,7 @@ test( 'Get and set with formats', function() {
  */
 module( 'API custom dict', {
     setup: function() {
-        this.extension = {
+        Pick.extend({
             name: 'pick--dict-custom',
             dict: {
                 sup: 'not much',
@@ -226,8 +249,9 @@ module( 'API custom dict', {
                 select: false,
                 sup: 'highlight'
             }
-        }
-        this.picker = setUpThePicker( this.extension )
+        })
+        var $clone = $NODE_DIV.clone().appendTo( $DOM )
+        this.picker = $clone.pick( 'pick--dict-custom' ).pick( 'pick--dict-custom', 'picker' )
     },
     teardown: tearDownThePicker
 })
@@ -262,7 +286,7 @@ test( 'Get and set with dict and cascades', function() {
  */
 module( 'API custom get/set methods', {
     setup: function() {
-        this.extension = {
+        Pick.extend({
             name: 'pick--get-set-custom',
             get: function( thing, options ) {
                 var value = this.dict[ thing ]
@@ -273,8 +297,9 @@ module( 'API custom get/set methods', {
                 this.dict[ thing ] = value
                 return value
             }
-        }
-        this.picker = setUpThePicker( this.extension )
+        })
+        var $clone = $NODE_DIV.clone().appendTo( $DOM )
+        this.picker = $clone.pick( 'pick--get-set-custom' ).pick( 'pick--get-set-custom', 'picker' )
     },
     teardown: tearDownThePicker
 })
@@ -301,15 +326,16 @@ test( 'Get and set with custom methods', function() {
  */
 module( 'API keys', {
     setup: function() {
-        this.extension = {
+        Pick.extend({
             name: 'pick--keys',
             keys: {
                 65: function( /*event*/ ) {
                     ++this.dict.highlight
                 }
             }
-        }
-        this.picker = setUpThePicker( this.extension )
+        })
+        var $clone = $NODE_DIV.clone().appendTo( $DOM )
+        this.picker = $clone.pick( 'pick--keys' ).pick( 'pick--keys', 'picker' )
     },
     teardown: tearDownThePicker
 })
@@ -343,7 +369,7 @@ test( 'Custom bindings', function() {
  */
 module( 'API inputs', {
     setup: function() {
-        this.extension = {
+        Pick.extend({
             name: 'pick--input',
             formats: {
                 dd: function( value ) {
@@ -362,8 +388,9 @@ module( 'API inputs', {
                 formatHidden: 'ddd',
                 suffixHidden: '_hidden'
             }
-        }
-        this.picker = setUpThePicker( this.extension, null, $( '<input value="06" name="value_input">' ) )
+        })
+        var $clone = $NODE_DIV.clone().append( $( '<input value="06" name="value_input">' ) ).appendTo( $DOM )
+        this.picker = $clone.pick( 'pick--input' ).pick( 'pick--input', 'picker' )
     },
     teardown: tearDownThePicker
 })
@@ -402,7 +429,7 @@ module( 'API events', {
     setup: function() {
         var mod = this
         mod.has = {}
-        this.extension = {
+        Pick.extend({
             name: 'pick--loudmouth',
             content: '<div>This extension says exactly what it’s doing.</div>',
             onStart: function() {
@@ -429,7 +456,7 @@ module( 'API events', {
             onSet: function( event ) {
                 mod.has.selected = !!event
             }
-        }
+        })
         this.options = {
             onStart: function() {
                 mod.has.opts_started = true
@@ -456,7 +483,8 @@ module( 'API events', {
                 mod.has.opts_selected = !!event
             }
         }
-        this.picker = setUpThePicker( this.extension, this.options )
+        var $clone = $NODE_DIV.clone().appendTo( $DOM )
+        this.picker = $clone.pick( 'pick--loudmouth', this.options ).pick( 'pick--loudmouth', 'picker' )
     },
     teardown: tearDownThePicker
 })

@@ -538,15 +538,15 @@ Pick.Compose.prototype = {
         var picker = this,
             instance = getInstance( picker )
 
-        // If it’s already closed, do nothing.
-        if ( !instance.is.opened ) return picker
-
         // If we need to keep focus, do so before changing states.
         if ( maintainFocus === true ) {
             if ( picker.$input ) picker.$input.trigger( 'focus' )
             else picker.$host.trigger( 'focus' )
         }
         else picker.blur()
+
+        // If it’s already closed, do nothing.
+        if ( !instance.is.opened ) return picker
 
         // Update the `opened` state.
         instance.is.opened = false
@@ -937,7 +937,10 @@ Pick.extend = function( component ) {
 
     // Make sure this component doesn’t already exist.
     if ( Pick._.EXTENSIONS[ component.name ] ) {
-        throw 'A picker extension by this name has already been defined.'
+        throw 'A picker extension by the name of “' + component.name + '” is already defined.'
+    }
+    if ( Pick._.EXTENSIONS[ component.alias ] ) {
+        throw 'A picker extension by the alias of “' + component.alias + '” is already defined.'
     }
 
     // Store the component extension by name.
@@ -945,6 +948,7 @@ Pick.extend = function( component ) {
 
     // If there’s an alias, create the shorthand link.
     if ( component.alias ) {
+        Pick._.EXTENSIONS[ component.alias ] = component.name
         $.fn[ component.alias ] = function( options, action ) {
             return this.pick( component.name, options, action )
         }

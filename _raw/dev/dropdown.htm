@@ -1,0 +1,102 @@
+<!doctype html>
+
+<meta charset="utf-8">
+
+<style>
+    body {
+        font-family: sans-serif;
+        font-weight: 100;
+        margin: 2em;
+    }
+    section {
+        margin: 2em 0;
+    }
+    input {
+        border: 1px solid #ccc;
+        margin: 0;
+    }
+    input:focus {
+        border-color: #444;
+    }
+    input[type=checkbox] {
+        margin-right: 5px;
+    }
+    .div {
+        text-align: center;
+        position: relative;
+        background: #ddd;
+    }
+    h4 {
+        margin: 0;
+        padding: .5em 0;
+    }
+    .outlet {
+        padding-bottom: .5em;
+    }
+</style>
+<link rel="stylesheet" href="../lib/pick.css">
+
+<section>
+    <div class="div dropdown">
+        <h4>Multiple option dropdown</h4>
+        <div class="outlet"></div>
+    </div>
+</section>
+
+<script src="jquery.js"></script>
+<script src="../lib/pick.js"></script>
+<script>
+
+    function printSelections( selections, options, $outlet ) {
+        $outlet.empty()
+        selections.
+            sort(function( a, b ) { return b > a ? -1 : 1 }).
+            map(function( selection ) {
+                $outlet.append( '&nbsp;<kbd>' + options[ selection ] + '</kbd>&nbsp;' )
+            })
+    }
+
+    Pick.extend({
+        name: 'dropdown',
+        alias: 'dropdown',
+        dict: {
+            options: [ 'All', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten' ],
+            select: [ 0, 3, 4, 5, 10 ]
+        },
+        content: function() {
+            var selections = this.dict.select,
+                options = this.dict.options
+            return Pick._.node({
+                el: 'ul',
+                content: options.map( function( option, index ) {
+                    var isSelected = selections.indexOf( index ) > -1
+                    return Pick._.node({
+                        el: 'li',
+                        content: [
+                            '<label>',
+                                '<input value="' + index + '"' + (isSelected ? ' checked' : '') + ' type=checkbox>',
+                                option,
+                            '</label>'
+                        ]
+                    })
+                })
+            })
+        },
+        init: function() {
+            printSelections( this.dict.select, this.dict.options, this.picker.$host.children( '.outlet' ) )
+        },
+        onStart: function() {
+            var picker = this
+            picker.$root.on( 'change', function( event ) {
+                if ( event.target.checked ) picker.add( 'select', ~~event.target.value )
+                else picker.remove( 'select', ~~event.target.value )
+                printSelections( picker.get( 'select' ), picker.get( 'options' ), picker.$host.children( '.outlet' ) )
+            })
+        }
+    })
+
+    var $div = $( '.dropdown' ).dropdown()
+    var picker = $div.dropdown( 'picker' )
+    picker.open()
+
+</script>

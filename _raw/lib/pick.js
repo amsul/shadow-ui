@@ -263,7 +263,7 @@ Pick.Compose.prototype = {
 
 
         // If it’s already started, do nothing.
-        if ( instance.is.started ) return P
+        if ( instance.is.started ) return picker
 
 
         // Update the `started` state.
@@ -725,7 +725,7 @@ Pick.Compose.prototype = {
 
 
     /**
-     * Set something to the picker or extension.
+     * Set something within the picker or extension.
      */
     set: function( thing, value, options ) {
 
@@ -762,7 +762,47 @@ Pick.Compose.prototype = {
         }
 
         return picker
-    } //set
+    }, //set
+
+
+    /**
+     * Add something within the picker or extension.
+     */
+    add: function( thing, value, options ) {
+
+        var picker = this,
+            instance = getInstance( picker ),
+
+            thingDefined = picker.get( thing )
+
+
+        if ( $.isArray( thingDefined ) && thingDefined.indexOf( value ) < 0 ) {
+            thingDefined.push( value )
+        }
+
+        return picker
+    }, //add
+
+
+    /**
+     * Remove something within the picker or extension.
+     */
+    remove: function( thing, value, options ) {
+
+        var picker = this,
+            instance = getInstance( picker ),
+
+            thingIndex,
+            thingDefined = picker.get( thing )
+
+
+        if ( $.isArray( thingDefined ) ) {
+            thingIndex = thingDefined.indexOf( value )
+            if ( thingIndex > -1 ) thingDefined.splice( thingIndex, 1 )
+        }
+
+        return picker
+    } //remove
 
 } //Pick.Compose.prototype
 
@@ -859,15 +899,15 @@ Pick._ = {
     loop: function( range, iterator ) {
 
         var result = '',
-            min = Pick._.trigger( range.min, range ),
-            max = Pick._.trigger( range.max, range ),
-            i = Pick._.trigger( range.i, range ) || 1
+            index = Pick._.trigger( range.min, range ),
+            terminal = Pick._.trigger( range.max, range ),
+            jump = Pick._.trigger( range.i, range ) || 1
 
-        // Loop from the `min` to `max` while incrementing by `i` and
-        // trigger the iterator while appending to the result.
-        while ( min <= max ) {
-            result += Pick._.trigger( iterator, range, [ min ] ) || ''
-            min += i
+        // Loop from `index` to `terminal` while incrementing by `jump`.
+        // Trigger the iterator callback and append it to the result.
+        while ( index <= terminal ) {
+            result += Pick._.trigger( iterator, range, [ index ] ) || ''
+            index += jump
         }
 
         // Return the concatenated result string.
@@ -948,7 +988,7 @@ Pick.extend = function( component ) {
 
     // If there’s an alias, create the shorthand link.
     if ( component.alias ) {
-        Pick._.EXTENSIONS[ component.alias ] = component.name
+        if ( component.alias != component.name ) Pick._.EXTENSIONS[ component.alias ] = component.name
         $.fn[ component.alias ] = function( options, action ) {
             return this.pick( component.name, options, action )
         }

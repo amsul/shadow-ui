@@ -79,6 +79,7 @@ function createInstance( picker, extension ) {
             content: '',
             shadow: null,
             init: null,
+            ready: null,
             is: {
                 started: false,
                 opened: false,
@@ -270,17 +271,8 @@ Pick.Compose.prototype = {
         instance.is.started = true
 
 
-        // Register the default extension and settings events.
+        // Register the default settings events.
         picker.on({
-            start: picker.extension.onStart,
-            render: picker.extension.onRender,
-            stop: picker.extension.onStop,
-            open: picker.extension.onOpen,
-            close: picker.extension.onClose,
-            focus: picker.extension.onFocus,
-            blur: picker.extension.onBlur,
-            set: picker.extension.onSet
-        }).on({
             start: picker.settings.onStart,
             render: picker.settings.onRender,
             stop: picker.settings.onStop,
@@ -421,6 +413,9 @@ Pick.Compose.prototype = {
             triggerHandler( 'change.' + instance.id )
 
 
+        // Trigger the instance `ready` method.
+        Pick._.trigger( instance.ready, instance )
+
         // Trigger any queued “start” and “render” events.
         return picker.trigger( 'start' ).trigger( 'render' )
     }, //start
@@ -519,6 +514,7 @@ Pick.Compose.prototype = {
                 if (
                     picker.$host[0] != target &&
                     ( !picker.$input || picker.$input[0] != target ) &&
+                    !picker.$host.find( target ).length &&
                     !picker.$root.find( target ).length &&
                     $document[0] != target
                 ) picker.close()

@@ -47,13 +47,14 @@
 <script src="../lib/pick.js"></script>
 <script>
 
-    function printSelections( selections, options, $outlet ) {
-        $outlet.empty()
+    function printSelections( selections, options, $host ) {
+        $outlet = $host.children( '.outlet' ).detach().empty()
         selections.
             sort(function( a, b ) { return b > a ? -1 : 1 }).
             map(function( selection ) {
                 $outlet.append( '&nbsp;<kbd>' + options[ selection ] + '</kbd>&nbsp;' )
             })
+        $host.append( $outlet )
     }
 
     Pick.extend({
@@ -83,20 +84,21 @@
             })
         },
         init: function() {
-            printSelections( this.dict.select, this.dict.options, this.picker.$host.children( '.outlet' ) )
+            printSelections( this.dict.select, this.dict.options, this.picker.$host )
         },
-        onStart: function() {
-            var picker = this
+        ready: function() {
+            var picker = this.picker,
+                diction = this.dict
             picker.$root.on( 'change', function( event ) {
                 if ( event.target.checked ) picker.add( 'select', ~~event.target.value )
                 else picker.remove( 'select', ~~event.target.value )
-                printSelections( picker.get( 'select' ), picker.get( 'options' ), picker.$host.children( '.outlet' ) )
+                printSelections( diction.select, diction.options, picker.$host )
             })
         }
     })
 
     var $div = $( '.dropdown' ).dropdown()
     var picker = $div.dropdown( 'picker' )
-    picker.open()
+    // picker.open(true)
 
 </script>

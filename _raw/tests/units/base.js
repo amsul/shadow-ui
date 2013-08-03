@@ -5,7 +5,7 @@ var $NODE_DIV = $( '<div/>' )
 var tearDownThePicker = function() {
     this.picker.stop()
     $DOM.empty()
-    ;delete Pick._.EXTENSIONS[ this.picker.extension.name ]
+    ;delete Pick._.EXTENSIONS[ this.picker.i.name ]
 }
 
 
@@ -45,7 +45,7 @@ module( 'API minimal', {
 test( 'Extension', function() {
 
     // Confirm the picker instance has the extension.
-    deepEqual( this.picker.extension, this.extension, 'Check: instance extension' )
+    deepEqual( this.picker.r.extension, this.extension, 'Check: instance extension' )
 
     // Confirm it also stored appropriately.
     deepEqual( Pick._.EXTENSIONS[ 'pick--basic' ], this.extension, 'Check: collected extension' )
@@ -139,7 +139,7 @@ module( 'API alias', {
 
 test( 'Alias extension', function() {
     var picker = this.picker
-    strictEqual( Pick._.EXTENSIONS[ picker.extension.alias ], picker.extension.name, 'Check: extension alias linked' )
+    strictEqual( Pick._.EXTENSIONS[ picker.i.alias ], picker.i.name, 'Check: extension alias linked' )
 })
 
 
@@ -432,29 +432,11 @@ module( 'API events', {
         Pick.extend({
             name: 'pick--loudmouth',
             content: '<div>This extension says exactly what it’s doing.</div>',
-            onStart: function() {
-                mod.has.started = true
+            init: function() {
+                mod.has.initialized = true
             },
-            onRender: function() {
-                mod.has.rendered = true
-            },
-            onStop: function() {
-                mod.has.stopped = true
-            },
-            onOpen: function() {
-                mod.has.opened = true
-            },
-            onClose: function() {
-                mod.has.closed = true
-            },
-            onFocus: function() {
-                mod.has.focused = true
-            },
-            onBlur: function() {
-                mod.has.blurred = true
-            },
-            onSet: function( event ) {
-                mod.has.selected = !!event
+            ready: function() {
+                mod.has.readied = true
             }
         })
         this.options = {
@@ -489,34 +471,16 @@ module( 'API events', {
     teardown: tearDownThePicker
 })
 
-test( 'As defaults', 8, function() {
+test( 'Instance events', 2, function() {
 
     var mod = this
     var picker = this.picker
 
-    strictEqual( mod.has.started, true, 'Check: `onStart`' )
-    strictEqual( mod.has.rendered, true, 'Check: `onRender`' )
-
-    picker.open()
-    strictEqual( mod.has.opened, true, 'Check: `onOpen`' )
-
-    picker.close()
-    strictEqual( mod.has.closed, true, 'Check: `onClose`' )
-
-    picker.focus()
-    strictEqual( mod.has.focused, true, 'Check: `onFocus`' )
-
-    picker.blur()
-    strictEqual( mod.has.blurred, true, 'Check: `onBlur`' )
-
-    picker.set( 'select' )
-    strictEqual( mod.has.selected, true, 'Check: `onSet`' )
-
-    picker.stop()
-    strictEqual( mod.has.stopped, true, 'Check: `onStop`' )
+    strictEqual( mod.has.initialized, true, 'Check: `init`' )
+    strictEqual( mod.has.readied, true, 'Check: `ready`' )
 })
 
-test( 'As options', 8, function() {
+test( 'Extension options', 8, function() {
 
     var mod = this
     var picker = this.picker
@@ -543,7 +507,7 @@ test( 'As options', 8, function() {
     strictEqual( mod.has.opts_stopped, true, 'Check: `onStop`' )
 })
 
-test( 'As multiple bindings', 8, function() {
+test( 'Extension multiple bindings', 8, function() {
 
     var picker = this.picker
 
@@ -586,7 +550,7 @@ test( 'As multiple bindings', 8, function() {
         trigger( 'focus' )
 })
 
-test( 'As a single binding', 8, function() {
+test( 'Extension single bindings', 8, function() {
 
     var picker = this.picker
 

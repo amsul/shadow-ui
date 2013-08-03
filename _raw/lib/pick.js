@@ -52,7 +52,7 @@ var INSTANCES = {}
  */
 function createInstance( picker, extension ) {
 
-    if ( !( picker instanceof Pick.Compose ) ) throw 'Need a picker composition to create an instance.'
+    if ( !( picker instanceof PickExtension ) ) throw 'Need a picker composition to create an instance.'
 
     var id = 'P' + new Date().getTime(),
 
@@ -73,10 +73,12 @@ function createInstance( picker, extension ) {
             '.)', 'g' ),
 
         instance = INSTANCES[ id ] = {
-            name: id,
             id: id,
             picker: picker,
+            name: '',
             content: '',
+            alias: null,
+            prefix: null,
             shadow: null,
             init: null,
             ready: null,
@@ -106,6 +108,7 @@ function createInstance( picker, extension ) {
                 39: function() { picker.open() },
                 40: function() { picker.open() }
             },
+            defaults: {},
             bindings: {},
             dict: {
                 select: 0,
@@ -192,7 +195,7 @@ function createTemplate( picker ) {
                         klass: classNames.box,
 
                         // Attach the extension content.
-                        content: Pick._.trigger( picker.extension.content, getInstance( picker ) )
+                        content: Pick._.trigger( picker.i.content, picker.i )
                     })
                 })
             })
@@ -201,43 +204,34 @@ function createTemplate( picker ) {
 } //createTemplate
 
 
-/**
- * Get the instance of a picker by ID.
- */
-function getInstance( picker ) {
-    return INSTANCES[ picker.i() ]
-}
-
-
 
 /**
  * The constructor that composes a pick extension.
  */
-Pick.Compose = function( $element, extension, options ) {
+function PickExtension( $element, extension, options ) {
 
     var instance, picker = this
 
     // Make sure we have a usable element.
     if ( $element[0].nodeName == 'INPUT' || $element[0].nodeName == 'TEXTAREA' ) throw 'Cannot create a picker out of a form field.'
 
-    // Merge the defaults and options passed.
-    picker.settings = $.extend( true, {}, extension.defaults, options )
-
-    // Merge the default classes with the settings and then prefix them.
-    picker.klasses = Pick._.prefix( extension.prefix, $.extend( {}, Pick._.klasses(), picker.settings.klass ) )
-
     // Link up the host.
     picker.$host = $element
 
-    // Keep a reference to the extension and options.
-    picker.extension = extension
-    picker.options = options
+    // Link up the extension and options passed.
+    picker.r = {
+        extension: extension,
+        options: options
+    }
 
     // Create an instance using the picker and extension.
-    instance = createInstance( picker, extension )
+    picker.i = createInstance( picker, extension )
 
-    // Create a method to get the instance info.
-    picker.i = function() { return instance.id }
+    // Create settings by merging the defaults and options passed.
+    picker.settings = $.extend( true, {}, picker.i.defaults, options )
+
+    // Create class names by merging the prefixed defaults with the settings.
+    picker.klasses = Pick._.prefix( picker.i.prefix, $.extend( {}, Pick._.klasses(), picker.settings.klass ) )
 
     // Start up the picker.
     picker.start()
@@ -248,9 +242,9 @@ Pick.Compose = function( $element, extension, options ) {
 /**
  * The extension composer prototype.
  */
-Pick.Compose.prototype = {
+PickExtension.prototype = {
 
-    constructor: Pick.Compose,
+    constructor: PickExtension,
 
 
     /**
@@ -260,7 +254,7 @@ Pick.Compose.prototype = {
 
         var template,
             picker = this,
-            instance = getInstance( picker )
+            instance = picker.i
 
 
         // If it’s already started, do nothing.
@@ -332,13 +326,38 @@ Pick.Compose.prototype = {
         }
 
 
-        // Trigger the instance’s `init` method before creating the root.
+        // Trigger the instance’s `init` method before preparing the host and the root.
         // If there’s the need, parse the starting value into a format-value hash.
         Pick._.trigger( instance.init, instance, [
             instance.formats && picker.$input ?
                 instance.toFormatHash( picker.settings.format, picker.$input[0].value ) :
                 null
         ])
+
+
+        // Prepare the host element.
+        picker.$host.
+
+            // Open the picker with focus on a click or focus within.
+            on( 'click.' + instance.id + ' focusin.' + instance.id, function() {
+                picker.open( true )
+            }).
+
+            // Prevent focus out of the host from bubbling up
+            // so that a loss of focus within doesn’t close the picker.
+            on( 'focusout.' + instance.id, function( event ) {
+                event.stopPropagation()
+            }).
+
+            // Add the “host” class.
+            addClass( picker.klasses.host ).
+
+            // Store the extension data.
+            data( 'pick.' + instance.name, picker ).
+
+            // And finally, trigger the handler for a change event
+            // to update any input or hidden input element values.
+            triggerHandler( 'change.' + instance.id )
 
 
         // Create and insert the root template into the dom.
@@ -388,33 +407,9 @@ Pick.Compose.prototype = {
             })
 
 
-        // Prepare the host element.
-        picker.$host.
-
-            // Open the picker with focus on a click or focus within.
-            on( 'click.' + instance.id + ' focusin.' + instance.id, function() {
-                picker.open( true )
-            }).
-
-            // Prevent focus out of the host from bubbling up
-            // so that a loss of focus within doesn’t close the picker.
-            on( 'focusout.' + instance.id, function( event ) {
-                event.stopPropagation()
-            }).
-
-            // Add the “host” class.
-            addClass( picker.klasses.host ).
-
-            // Store the extension data.
-            data( 'pick.' + picker.extension.name, picker ).
-
-            // And finally, trigger the handler for a change event
-            // to update any input or hidden input element values.
-            triggerHandler( 'change.' + instance.id )
-
-
-        // Trigger the instance `ready` method.
+        // Trigger the instance `ready` method after the host and root are prepared.
         Pick._.trigger( instance.ready, instance )
+
 
         // Trigger any queued “start” and “render” events.
         return picker.trigger( 'start' ).trigger( 'render' )
@@ -444,7 +439,7 @@ Pick.Compose.prototype = {
     stop: function() {
 
         var picker = this,
-            instance = getInstance( picker )
+            instance = picker.i
 
         // If it’s already stopped, do nothing.
         if ( !instance.is.started ) return picker
@@ -470,7 +465,7 @@ Pick.Compose.prototype = {
         else picker.$root.remove()
 
         // Remove the “host” class, unbind the events, and remove the stored data.
-        picker.$host.removeClass( picker.klasses.host ).off( '.' + instance.id ).removeData( 'pick.' + picker.extension.name )
+        picker.$host.removeClass( picker.klasses.host ).off( '.' + instance.id ).removeData( 'pick.' + instance.name )
 
         // Trigger any queued “stop” event callbacks.
         picker.trigger( 'stop' )
@@ -489,7 +484,7 @@ Pick.Compose.prototype = {
     open: function( giveFocus ) {
 
         var picker = this,
-            instance = getInstance( picker )
+            instance = picker.i
 
         // Give the picker focus if needed.
         if ( giveFocus === true ) picker.focus()
@@ -532,7 +527,7 @@ Pick.Compose.prototype = {
     close: function( maintainFocus ) {
 
         var picker = this,
-            instance = getInstance( picker )
+            instance = picker.i
 
         // If we need to keep focus, do so before changing states.
         if ( maintainFocus === true ) {
@@ -562,7 +557,7 @@ Pick.Compose.prototype = {
     focus: function() {
 
         var picker = this,
-            instance = getInstance( picker )
+            instance = picker.i
 
         // If it’s already focused, do nothing.
         if ( instance.is.focused ) return picker
@@ -605,7 +600,7 @@ Pick.Compose.prototype = {
     blur: function() {
 
         var picker = this,
-            instance = getInstance( picker )
+            instance = picker.i
 
         // If it’s already not focused, do nothing.
         if ( !instance.is.focused ) return picker
@@ -637,7 +632,7 @@ Pick.Compose.prototype = {
             thingIsObject = $.isPlainObject( thing ),
             thingObject = thingIsObject ? thing : {},
             picker = this,
-            instance = getInstance( picker )
+            instance = picker.i
 
         if ( thing ) {
 
@@ -670,7 +665,7 @@ Pick.Compose.prototype = {
      */
     trigger: function( name, data ) {
         var picker = this,
-            methodList = getInstance( picker ).bindings[ name ]
+            methodList = picker.i.bindings[ name ]
         if ( methodList ) {
             methodList.forEach( function( callback ) {
                 Pick._.trigger( callback, picker, [ data ] )
@@ -687,7 +682,7 @@ Pick.Compose.prototype = {
     is: function( thing ) {
 
         var picker = this,
-            instance = getInstance( picker )
+            instance = picker.i
 
         // Return the instance’s state of the thing.
         return instance.is[ thing ]
@@ -701,7 +696,7 @@ Pick.Compose.prototype = {
     get: function( thing, options ) {
 
         var picker = this,
-            instance = getInstance( picker )
+            instance = picker.i
 
         // Check if the value is requested, get the input’s value.
         return thing == 'value' ? picker.$input && picker.$input[0].value :
@@ -726,7 +721,7 @@ Pick.Compose.prototype = {
     set: function( thing, value, options ) {
 
         var picker = this,
-            instance = getInstance( picker ),
+            instance = picker.i,
 
             thingItem, thingValue, thingDefined,
             thingIsObject = $.isPlainObject( thing ),
@@ -767,7 +762,7 @@ Pick.Compose.prototype = {
     add: function( thing, value, options ) {
 
         var picker = this,
-            instance = getInstance( picker ),
+            instance = picker.i,
 
             thingDefined = picker.get( thing )
 
@@ -786,7 +781,7 @@ Pick.Compose.prototype = {
     remove: function( thing, value, options ) {
 
         var picker = this,
-            instance = getInstance( picker ),
+            instance = picker.i,
 
             thingIndex,
             thingDefined = picker.get( thing )
@@ -800,12 +795,12 @@ Pick.Compose.prototype = {
         return picker
     } //remove
 
-} //Pick.Compose.prototype
+} //PickExtension.prototype
 
 
 
 /**
- * Picker helper methods.
+ * PickExtension helper methods.
  */
 Pick._ = {
 
@@ -973,10 +968,10 @@ Pick.extend = function( component ) {
 
     // Make sure this component doesn’t already exist.
     if ( Pick._.EXTENSIONS[ component.name ] ) {
-        throw 'A picker extension by the name of “' + component.name + '” is already defined.'
+        throw 'The name “' + component.name + '” is already reserved by a picker extension.'
     }
-    if ( Pick._.EXTENSIONS[ component.alias ] ) {
-        throw 'A picker extension by the alias of “' + component.alias + '” is already defined.'
+    if ( Pick._.EXTENSIONS[ component.alias ] || $.fn[ component.alias ] ) {
+        throw 'The alias “' + component.alias + '” is already reserved by a picker extension or jQuery method.'
     }
 
     // Store the component extension by name.
@@ -1026,7 +1021,7 @@ $.fn.pick = function( name, options, action ) {
     return this.each( function() {
         var $this = $( this )
         if ( !$this.data( 'pick.' + name ) ) {
-            new Pick.Compose( $this, extension, options )
+            new PickExtension( $this, extension, options )
         }
     })
 }

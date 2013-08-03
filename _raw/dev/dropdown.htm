@@ -64,6 +64,19 @@
             options: [ 'All', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten' ],
             select: [ 0, 3, 4, 5, 10 ]
         },
+        init: function() {
+            printSelections( this.dict.select, this.dict.options, this.picker.$host )
+        },
+        ready: function() {
+            var picker = this.picker,
+                diction = this.dict
+            picker.$root.on( 'change', function( event ) {
+                var value = ~~event.target.value
+                if ( event.target.checked ) picker.add( 'select', value )
+                else picker.remove( 'select', value )
+                printSelections( diction.select, diction.options, picker.$host )
+            })
+        },
         content: function() {
             var selections = this.dict.select,
                 options = this.dict.options
@@ -82,23 +95,11 @@
                     })
                 })
             })
-        },
-        init: function() {
-            printSelections( this.dict.select, this.dict.options, this.picker.$host )
-        },
-        ready: function() {
-            var picker = this.picker,
-                diction = this.dict
-            picker.$root.on( 'change', function( event ) {
-                if ( event.target.checked ) picker.add( 'select', ~~event.target.value )
-                else picker.remove( 'select', ~~event.target.value )
-                printSelections( diction.select, diction.options, picker.$host )
-            })
         }
     })
 
     var $div = $( '.dropdown' ).dropdown()
     var picker = $div.dropdown( 'picker' )
-    // picker.open(true)
+    picker.open(true)
 
 </script>

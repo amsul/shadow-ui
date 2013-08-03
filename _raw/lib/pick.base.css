@@ -9,25 +9,29 @@
  * The extended host element.
  */
 .pick-drop-host,
-.pick-modal-host {}
+.pick-modal-host,
+.pick-box-host {}
 
 /* The host state when it is focused. */
 .pick-drop-host:focus,
-.pick-modal-host:focus {
+.pick-modal-host:focus,
+.pick-box-host:focus {
     outline: 0;
     box-shadow: 0 0 0 2px #0089ec;
 }
 
 /* The host state while the picker is actively focused. */
 .pick-drop-host--active,
-.pick-modal-host--active {}
+.pick-modal-host--active,
+.pick-box-host--active {}
 
 
     /**
      * The input node that carries the picker value.
      */
     .pick-drop-host__input,
-    .pick-modal-host__input {
+    .pick-modal-host__input,
+    .pick-box-host__input {
 
         /* Make sure IE shows the correct cursor with the disabled attribute. */
         cursor: default;
@@ -35,7 +39,8 @@
 
     /* The input state when it is focused. */
     .pick-drop-host__input:focus,
-    .pick-modal-host__input:focus {
+    .pick-modal-host__input:focus,
+    .pick-box-host__input:focus {
         outline: 0;
         border-color: #0089ec;
     }
@@ -51,7 +56,8 @@
  * The root of the picker.
  */
 .pick-drop,
-.pick-modal {
+.pick-modal,
+.pick-box {
 
     /* Make sure nothing covers the picker. */
     z-index: 10000;
@@ -64,13 +70,11 @@
 
 
     /**
-     * The content holder of the picker.
+     * The content frame of the picker.
      */
-    .pick-drop__holder,
-    .pick-modal__holder {
-
-        /* Make it full width of the root. */
-        width: 100%;
+    .pick-drop__frame,
+    .pick-modal__frame,
+    .pick-box__frame {
 
         /* This is the only “scrollable” top-level container element. */
         overflow-y: auto;

@@ -37,6 +37,7 @@
 <link rel="stylesheet" href="../lib/pick.base.css">
 <link rel="stylesheet" href="../lib/pick.drop.css">
 <link rel="stylesheet" href="../lib/pick.modal.css">
+<link rel="stylesheet" href="../lib/pick.box.css">
 
 <section>
     <div class="div dropdown">
@@ -44,6 +45,14 @@
         <div class="outlet"></div>
     </div>
 </section>
+
+<section>
+    <div class="div inline-box">
+        <h4>Inline position</h4>
+    </div>
+</section>
+
+<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
 
 <script src="jquery.js"></script>
 <script src="../lib/pick.js"></script>
@@ -103,5 +112,20 @@
     var $div = $( '.dropdown' ).dropdown()
     var picker = $div.dropdown( 'picker' )
     picker.open(true)
+
+
+    ////////////////////////////////////////////////////////////
+
+
+    Pick.extend({
+        name: 'inline-box',
+        alias: 'inlineBox',
+        prefix: 'pick-box',
+        content: '<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>'
+    })
+
+    var $div2 = $( '.inline-box' ).inlineBox()
+    var picker = $div2.inlineBox( 'picker' )
+    // picker.open(true)
 
 </script>

@@ -23,9 +23,6 @@
 
 /**
  * The root of the pick-modal.
- *
- * Note: this element should *not* be styled more than
- * what’s here. Style the `.pick-modal__holder` instead.
  */
 .pick-modal {
 

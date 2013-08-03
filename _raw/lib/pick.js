@@ -174,16 +174,15 @@ function createTemplate( picker ) {
 
     var classNames = picker.klasses
 
-    // Create the wrapped holder.
-    return Pick._.node({
-        klass: classNames.holder,
-        content: [
+    // Create the pointer node.
+    return Pick._.node({ klass: classNames.pointer }) +
 
-            // Create the pointer node.
-            Pick._.node({ klass: classNames.pointer }),
+        // Create the wrapped holder.
+        Pick._.node({
+            klass: classNames.holder,
 
             // Create the picker frame.
-            Pick._.node({
+            content: Pick._.node({
                 klass: classNames.frame,
 
                 // Create the content wrapper.
@@ -199,8 +198,7 @@ function createTemplate( picker ) {
                     })
                 })
             })
-        ]
-    })
+        })
 } //createTemplate
 
 

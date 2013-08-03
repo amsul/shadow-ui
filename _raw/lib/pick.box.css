@@ -1,0 +1,112 @@
+@charset "utf-8";
+
+
+/*------------------------------------*\
+    $PICK-INLINE
+\*------------------------------------*/
+
+/**
+ * The root of the pick-box.
+ */
+.pick-box {}
+
+/* Opened pick-box state. */
+.pick-box--opened {}
+
+/* Active pick-box state. */
+.pick-box--active {}
+
+
+    /**
+     * The content holder of the pick-box.
+     */
+    .pick-box__holder {
+
+        /* Position the holder. */
+        /*position: absolute;*/
+
+        /* Set a width. */
+        /*width: 280px;*/
+
+        /* Hide everything to begin with. */
+        /*max-height: 0;
+        overflow: hidden;
+        opacity: 0;*/
+
+        /* Add a tilt. */
+        /*-webkit-transform: translateY(-1em) perspective(600px) rotateX(25deg);*/
+
+        /* When closing, height and overflow should wait till the animation is done. */
+        /*-webkit-transition: all .2s ease-out, max-height 0 .2s, padding-top 0 .2s;*/
+    }
+
+    /* The opened content holder. */
+    .pick-box--opened .pick-box__holder {
+
+        /* Reveal the content. */
+        /*max-height: 25em;*/
+        /*overflow: visible;*/
+        /*opacity: 1;*/
+
+        /* Add some space for the pointer to fit in. */
+        /*padding-top: 10px;*/
+
+        /* Adjust the tilt. */
+        /*-webkit-transform: translateY(0) perspective(600px) rotateX(0);*/
+
+        /* Immediately open the height and overflow and animate the rest. */
+        /*-webkit-transition: all .2s ease-out, max-height 0, padding-top 0;*/
+    }
+
+
+        /**
+         * The pick-box’s pointer and pseudo-border.
+         */
+        .pick-box__pointer,
+        .pick-box__pointer:after {
+
+            /* Add the base border styling. */
+            /*border: 10px solid transparent;*/
+
+            /* Default position is near the left edge */
+            /*position: absolute;*/
+            /*top: -9px;*/
+            /*left: 10px;*/
+            /*width: 0;*/
+        }
+
+        /* The pointer pseudo-border. */
+        .pick-box__pointer {
+            /*border-bottom-color: #aaa;*/
+        }
+
+        /* The pointer foreground. */
+        .pick-box__pointer:after {
+            /*content: " ";*/
+
+            /* Nudge it back it’s own width. */
+            /*left: -10px;*/
+
+            /* Add the foreground color. */
+            /*border-bottom-color: #f5f5f5;*/
+        }
+
+
+        /**
+         * The frame creates a pick-box boundary.
+         */
+        .pick-box__frame {
+
+            /* Add a background and border. */
+            background: #f5f5f5;
+            border: 1px solid #aaa;
+
+            /* Round the corners. */
+            border-radius: 4px;
+
+            /* Add a drop shadow. */
+            box-shadow: 0 2px 12px 1px rgba(0,0,0,.15);
+        }
+
+
+

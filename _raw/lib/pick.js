@@ -380,20 +380,20 @@ PickExtension.prototype = {
             // When something within the root is focused, open the picker.
             on( 'focusin', function() { picker.open( true ) } ).
 
-            // When things are getting picked, any click events within the
-            // root shouldn’t bubble up, forms shouldn’t be submitted,
-            // and focus should be maintained on the `document.activeElement`.
-            on( 'click mousedown', '[data-pick]', function( event ) {
-                event.stopPropagation()
-                event.preventDefault()
-            }).
-
             // When “enter” is pressed on a pick-able thing, trigger a click instead.
             on( 'keydown', '[data-pick]', function( event ) {
                 if ( event.keyCode == 13 ) {
                     event.preventDefault()
                     this.click()
                 }
+            }).
+
+            // When things are getting picked, any click events within the
+            // root shouldn’t bubble up, forms shouldn’t be submitted,
+            // and focus should be maintained on the `document.activeElement`.
+            on( 'click mousedown', '[data-pick]', function( event ) {
+                event.stopPropagation()
+                event.preventDefault()
             }).
 
             // When something within the root is picked, set the thing.

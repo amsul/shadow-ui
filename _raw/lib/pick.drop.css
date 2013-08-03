@@ -2,58 +2,13 @@
 
 
 /*------------------------------------*\
-    $HOST
-\*------------------------------------*/
-
-/**
- * The extended picker host element.
- */
-.picker-host {}
-
-/* The host state when it is focused. */
-.picker-host:focus {
-    outline: 0;
-    box-shadow: 0 0 0 2px #0089ec;
-}
-
-/* The host state while the picker is actively focused. */
-.picker-host--active {}
-
-
-    /**
-     * The input node that carries the picker value.
-     */
-    .picker-host__input {}
-
-    /* The input state when it is focused. */
-    .picker-host__input:focus {
-        outline: 0;
-        border-color: #0089ec;
-    }
-
-
-
-
-/*------------------------------------*\
-    $BASE
+    $PICK-DROP
 \*------------------------------------*/
 
 /**
  * The root of the picker.
  */
-.picker {
-
-    /* Make sure elements around aren’t affected. */
-    position: absolute;
-
-    /* Make sure nothing covers the picker. */
-    z-index: 10000;
-
-    /* Set the base text stylings. */
-    font-size: 16px;
-    text-align: left;
-    line-height: 1.2;
-}
+.picker {}
 
 /* Opened picker state. */
 .picker--opened {}

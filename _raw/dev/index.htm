@@ -31,7 +31,9 @@
         padding: 10px;
     }
 </style>
-<link rel="stylesheet" href="../lib/pick.css">
+<link rel="stylesheet" href="../lib/pick.base.css">
+<link rel="stylesheet" href="../lib/pick.drop.css">
+<link rel="stylesheet" href="../lib/pick.modal.css">
 
 <section>
     <div class="div pick--basic">Basic</div>
@@ -92,10 +94,13 @@
                 '<button data-pick="highlight:' + to_highlight + '">Set highlight to ' + to_highlight + '</button>' +
             '</div>'
         },
-        onSet: function( event ) {
-            if ( 'highlight' in event.data || 'select' in event.data ) {
-                this.render()
-            }
+        ready: function() {
+            var picker = this.picker
+            picker.on( 'set', function( event ) {
+                if ( 'highlight' in event.data || 'select' in event.data ) {
+                    picker.render()
+                }
+            })
         }
     })
 
@@ -164,6 +169,7 @@
 
     $.fn.pick.extend({
         name: 'pick--keys',
+        prefix: 'pick-modal',
         keys: {
             65: function( /*event*/ ) {
                 ++this.dict.highlight
@@ -179,6 +185,7 @@
 
     $.fn.pick.extend({
         name: 'pick--input',
+        prefix: 'pick-modal',
         formats: {
             dd: function( value ) {
                 return '0' + value
@@ -186,10 +193,6 @@
             ddd: function( value ) {
                 return '00' + value
             }
-        },
-        init: function( formatValueHash ) {
-            if ( 'dd' in formatValueHash ) this.dict.select = ~~formatValueHash.dd
-            if ( 'ddd' in formatValueHash ) this.dict.select = ~~formatValueHash.ddd
         },
         defaults: {
             format: 'dd',
@@ -206,15 +209,21 @@
             }
             return string
         },
-        onSet: function( event ) {
-            var focusedWithin,
-                picker = this
-            if ( 'select' in event.data ) {
-                var activeElement = picker.get( 'activeElement' )
-                if ( activeElement && activeElement != picker.$input[0] ) focusedWithin = true
-                picker.render()
-                if ( focusedWithin ) picker.$root.find( '[data-pick="select:' + event.data.select + '"]' ).focus()
-            }
+        init: function( formatValueHash ) {
+            if ( 'dd' in formatValueHash ) this.dict.select = ~~formatValueHash.dd
+            if ( 'ddd' in formatValueHash ) this.dict.select = ~~formatValueHash.ddd
+        },
+        ready: function() {
+            var picker = this.picker
+            picker.on( 'set', function( event ) {
+                var focusedWithin
+                if ( 'select' in event.data ) {
+                    var activeElement = picker.get( 'activeElement' )
+                    if ( activeElement && activeElement != picker.$input[0] ) focusedWithin = true
+                    picker.render()
+                    if ( focusedWithin ) picker.$root.find( '[data-pick="select:' + event.data.select + '"]' ).focus()
+                }
+            })
         }
     })
 
@@ -226,7 +235,8 @@
 
     $.fn.pick.extend({
         name: 'pick--alias',
-        alias: 'pickAliased'
+        alias: 'pickAliased',
+        prefix: 'pick-modal'
     })
 
     var $div8 = $( '.pick--alias' ).pickAliased()

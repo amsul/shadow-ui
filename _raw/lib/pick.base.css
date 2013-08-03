@@ -6,31 +6,36 @@
 \*------------------------------------*/
 
 /**
- * The extended picker host element.
+ * The extended host element.
  */
-.picker-host {}
+.pick-drop-host,
+.pick-modal-host {}
 
 /* The host state when it is focused. */
-.picker-host:focus {
+.pick-drop-host:focus,
+.pick-modal-host:focus {
     outline: 0;
     box-shadow: 0 0 0 2px #0089ec;
 }
 
 /* The host state while the picker is actively focused. */
-.picker-host--active {}
+.pick-drop-host--active,
+.pick-modal-host--active {}
 
 
     /**
      * The input node that carries the picker value.
      */
-    .picker-host__input {
+    .pick-drop-host__input,
+    .pick-modal-host__input {
 
         /* Make sure IE shows the correct cursor with the disabled attribute. */
         cursor: default;
     }
 
     /* The input state when it is focused. */
-    .picker-host__input:focus {
+    .pick-drop-host__input:focus,
+    .pick-modal-host__input:focus {
         outline: 0;
         border-color: #0089ec;
     }
@@ -39,19 +44,14 @@
 
 
 /*------------------------------------*\
-    $BASE
+    $HOLDER
 \*------------------------------------*/
 
 /**
  * The root of the picker.
- *
- * Note: this element should *not* be styled more than
- * what’s here. Style the `.picker__holder` instead.
  */
-.picker {
-
-    /* Make sure elements around aren’t affected. */
-    position: absolute;
+.pick-drop,
+.pick-modal {
 
     /* Make sure nothing covers the picker. */
     z-index: 10000;
@@ -62,17 +62,12 @@
     line-height: 1.2;
 }
 
-/* Opened picker state. */
-.picker--opened {}
-
-/* Active picker state. */
-.picker--active {}
-
 
     /**
      * The content holder of the picker.
      */
-    .picker__holder {
+    .pick-drop__holder,
+    .pick-modal__holder {
 
         /* Make it full width of the root. */
         width: 100%;
@@ -80,10 +75,6 @@
         /* This is the only “scrollable” top-level container element. */
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
-    }
-
-    /* The opened content holder. */
-    .picker--opened .picker__holder {
     }
 
 

@@ -78,7 +78,7 @@ function createInstance( picker, extension ) {
             name: '',
             content: '',
             alias: null,
-            prefix: null,
+            prefix: 'pick-drop',
             shadow: null,
             init: null,
             ready: null,
@@ -404,6 +404,14 @@ PickExtension.prototype = {
 
                 // If there’s a match, set it.
                 if ( match ) picker.set( match[1], match[2] )
+            }).
+
+            // If a click reaches the root itself, stop bubbling and close it.
+            on( 'click', function( event ) {
+                if ( this == event.target ) {
+                    event.stopPropagation()
+                    picker.close( true )
+                }
             })
 
 
@@ -845,7 +853,7 @@ Pick._ = {
         var bemPrefixify = function( klass ) {
             return klass ? prefix + ( klass.match( /^-/ ) ? '' : '__' ) + klass : prefix
         }
-        prefix = prefix || 'picker'
+        prefix = prefix || ''
         if ( $.isPlainObject( klasses ) ) {
             for ( var klass in klasses ) {
                 klasses[ klass ] = bemPrefixify( klasses[ klass ] )

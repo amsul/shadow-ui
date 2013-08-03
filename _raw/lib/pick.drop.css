@@ -6,27 +6,34 @@
 \*------------------------------------*/
 
 /**
- * The root of the picker.
+ * The root of the pick-drop.
+ *
+ * Note: this element should *not* be styled more than
+ * what’s here. Style the `.pick-drop__holder` instead.
  */
-.picker {}
+.pick-drop {
 
-/* Opened picker state. */
-.picker--opened {}
+    /* Make sure elements around aren’t affected. */
+    position: absolute;
+}
 
-/* Active picker state. */
-.picker--active {}
+/* Opened pick-drop state. */
+.pick-drop--opened {}
+
+/* Active pick-drop state. */
+.pick-drop--active {}
 
 
     /**
-     * The content holder of the picker.
+     * The content holder of the pick-drop.
      */
-    .picker__holder {
+    .pick-drop__holder {
 
         /* Position the holder. */
         position: absolute;
 
         /* Set a width. */
-        width: 270px;
+        width: 280px;
 
         /* Hide everything to begin with. */
         max-height: 0;
@@ -41,7 +48,7 @@
     }
 
     /* The opened content holder. */
-    .picker--opened .picker__holder {
+    .pick-drop--opened .pick-drop__holder {
 
         /* Reveal the content. */
         max-height: 25em;
@@ -60,10 +67,10 @@
 
 
         /**
-         * The picker’s pointer and pseudo-border.
+         * The pick-drop’s pointer and pseudo-border.
          */
-        .picker__pointer,
-        .picker__pointer:after {
+        .pick-drop__pointer,
+        .pick-drop__pointer:after {
 
             /* Add the base border styling. */
             border: 10px solid transparent;
@@ -76,12 +83,12 @@
         }
 
         /* The pointer pseudo-border. */
-        .picker__pointer {
+        .pick-drop__pointer {
             border-bottom-color: #aaa;
         }
 
         /* The pointer foreground. */
-        .picker__pointer:after {
+        .pick-drop__pointer:after {
             content: " ";
 
             /* Nudge it back it’s own width. */
@@ -93,9 +100,9 @@
 
 
         /**
-         * The frame creates a picker boundary.
+         * The frame creates a pick-drop boundary.
          */
-        .picker__frame {
+        .pick-drop__frame {
 
             /* Add a background and border. */
             background: #f5f5f5;
@@ -112,9 +119,9 @@
 
 
 /**
- * The center aligned picker.
+ * The center aligned pick-drop.
  */
-.picker--center {
+.pick-drop--center {
 
     /* Collapse the width. */
     width: 0;
@@ -128,12 +135,12 @@
 }
 
     /* Adjust the holder to the center with a negative margin. */
-    .picker--center .picker__holder {
+    .pick-drop--center .pick-drop__holder {
         margin-left: -135px;
     }
 
         /* Align the pointer to the center with a collapsed width. */
-        .picker--center .picker__pointer {
+        .pick-drop--center .pick-drop__pointer {
             left: 0;
             right: 0;
             margin: 0 auto;
@@ -143,17 +150,17 @@
 
 
 /**
- * The right aligned picker.
+ * The right aligned pick-drop.
  */
-.picker--right {
+.pick-drop--right {
     width: 100%;
     left: auto;
     right: auto;
 }
-    .picker--right .picker__holder {
+    .pick-drop--right .pick-drop__holder {
         right: 0;
     }
-        .picker--right .picker__holder .picker__pointer {
+        .pick-drop--right .pick-drop__holder .pick-drop__pointer {
             left: auto;
             right: 10px;
         }

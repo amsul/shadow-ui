@@ -6,63 +6,66 @@
 \*------------------------------------*/
 
 /**
- * The root of the picker.
+ * The content holder and frame of the pick-modal.
  */
-.picker {}
+.pick-modal,
+.pick-modal__frame {
 
-/* Opened picker state. */
-.picker--opened {}
+    /* Make the holder and frame fullscreen. */
+    bottom: 0;
+    left: 0;
+    right: 0;
 
-/* Active picker state. */
-.picker--active {}
+    /* Nudge everything off-screen to begin with. */
+    top: 100%;
+}
+
+
+/**
+ * The root of the pick-modal.
+ *
+ * Note: this element should *not* be styled more than
+ * what’s here. Style the `.pick-modal__holder` instead.
+ */
+.pick-modal {
+
+    /* Fill the screen and fix the position. */
+    position: fixed;
+
+    /* Fade out the background, then immediately shift the holder out of view. */
+    transition: background .15s ease-out, top 0s .15s;
+}
+
+/* Opened pick-modal state. */
+.pick-modal--opened {
+
+    /* Immediately move the holder to the top edge. */
+    top: 0;
+
+    /* Fade in an overlay. */
+    background: rgba(0,0,0,.32);
+
+    /* Animate in the background. */
+    transition: background .15s ease-out;
+}
+
+/* Active pick-modal state. */
+.pick-modal--active {}
 
 
     /**
-     * The content holder and frame of the picker.
+     * The content holder of the pick-modal.
      */
-    .picker__holder,
-    .picker__frame {
-
-        /* Make the holder and frame fullscreen. */
-        bottom: 0;
-        left: 0;
-        right: 0;
-
-        /* Nudge everything off-screen to begin with. */
-        top: 100%;
-    }
-
-
-    /**
-     * The holder should overlay the entire screen.
-     */
-    .picker__holder {
-
-        /* Fill the screen and fix the position. */
-        position: fixed;
-
-        /* Fade out the background, then immediately shift the holder out of view. */
-        transition: background .15s ease-out, top 0s .15s;
-    }
+    .pick-modal__holder {}
 
     /* The opened content holder. */
-    .picker--opened .picker__holder {
-
-        /* Immediately move the holder to the top edge. */
-        top: 0;
-
-        /* Fade in an overlay. */
-        background: rgba(0,0,0,.32);
-
-        /* Animate in the background. */
-        transition: background .15s ease-out;
-    }
+    .pick-modal--opened .pick-modal__holder {}
 
 
         /**
-         * The frame creates a picker boundary.
+         * The frame creates a pick-modal boundary.
          */
-        .picker__frame {
+        .pick-modal__frame {
 
             position: absolute;
 
@@ -82,7 +85,7 @@
         /* For `small` screens... */
         @media (min-height: 33.875em) {
 
-            .picker__frame {
+            .pick-modal__frame {
 
                 /* Reveal what’s beyond to allow drop shadows, et al. */
                 overflow: visible;
@@ -99,7 +102,7 @@
         /* For `medium` screens... */
         @media (min-height: 40.125em) {
 
-            .picker__frame {
+            .pick-modal__frame {
 
                 /* Move away from the bottom edge. */
                 margin-bottom: 7.5%;
@@ -107,7 +110,7 @@
         }
 
         /* Smoothly move the content to the top edge while fading it in. */
-        .picker--opened .picker__frame {
+        .pick-modal--opened .pick-modal__frame {
 
             /* Move to the top edge. */
             top: 0;
@@ -119,7 +122,7 @@
         /* For `small` screens, move to the bottom edge instead. */
         @media (min-height: 33.875em) {
 
-            .picker--opened .picker__frame {
+            .pick-modal--opened .pick-modal__frame {
                 top: auto;
                 bottom: 0;
             }
@@ -129,7 +132,7 @@
             /**
              * The wrapper helps to vertically align the box contents.
              */
-            .picker__wrap {
+            .pick-modal__wrap {
                 display: table;
                 width: 100%;
                 height: 100%;
@@ -138,7 +141,7 @@
             /* For `small` screens, remove the “middle-aligned” styling */
             @media (min-height: 33.875em) {
 
-                .picker__wrap {
+                .pick-modal__wrap {
                     display: block;
                 }
             }
@@ -147,7 +150,7 @@
                 /**
                  * The box contains all the contents.
                  */
-                .picker__box {
+                .pick-modal__box {
                     background: #fff;
 
                     /* To start with, vertically align to center. */
@@ -158,7 +161,7 @@
                 /* For `tiny` screens, increase the font size a bit. */
                 @media (min-height: 26.5em) {
 
-                    .picker__box {
+                    .pick-modal__box {
                         font-size: 1.25em;
                     }
                 }
@@ -166,7 +169,7 @@
                 /* For `small` screens... */
                 @media (min-height: 33.875em) {
 
-                    .picker__box {
+                    .pick-modal__box {
 
                         /* Remove the “middle-aligned” styling */
                         display: block;
@@ -192,7 +195,7 @@
                 /* For `medium` screens... */
                 @media (min-height: 40.125em) {
 
-                    .picker__box {
+                    .pick-modal__box {
 
                         /* Increase the font size. */
                         font-size: 1.5em;

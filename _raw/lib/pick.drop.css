@@ -42,6 +42,9 @@
      */
     .pick-drop__pointer {
 
+        /* Set a width. */
+        width: 280px;
+
         /* Give room for the pseudo-borders. */
         height: 10px;
 
@@ -58,16 +61,20 @@
         /* Add the base border styling. */
         border: 10px solid transparent;
 
-        /* Default position is near the left edge. */
-        position: absolute;
-        left: 10px;
+        /* Collapse the width to make triangles. */
         width: 0;
+
+        /* Align it to the inner top. */
+        display: inline-block;
+        vertical-align: top;
+        position: relative;
     }
 
     /* The pseudo-border background. */
     .pick-drop__pointer:before {
 
-        /* Nudge it to the edge. */
+        /* Nudge it up and away from left edge. */
+        left: 10px;
         top: -9px;
 
         /* Add the border color. */
@@ -77,7 +84,8 @@
     /* The pseudo-border foreground. */
     .pick-drop__pointer:after {
 
-        /* Nudge it 1px below the edge. */
+        /* Nudge it back to left edge and down 1px below the border. */
+        left: -10px;
         top: -8px;
 
         /* Add the foreground color. */
@@ -97,6 +105,9 @@
         background: #f5f5f5;
         border: 1px solid #aaa;
 
+        /* Play nice with borders. */
+        box-sizing: border-box;
+
         /* Round the corners. */
         border-radius: 4px;
 
@@ -110,7 +121,7 @@
         max-height: 0;
 
         /* When closing, height should wait till the animation is done. */
-        -webkit-transition: all .2s ease-out, max-height 0 .2s;
+        -webkit-transition: max-height 0 .2s;
     }
 
     /* The opened content holder. */
@@ -120,7 +131,7 @@
         max-height: 25em;
 
         /* Immediately open the height and animate the rest. */
-        -webkit-transition: all .2s ease-out, max-height 0;
+        -webkit-transition: max-height 0;
     }
 
 
@@ -142,17 +153,24 @@
     margin: 0 auto;
 }
 
-    /* Adjust the holder to the center with a negative margin. */
+    /* Align the pointer to the center using half it’s width as a negative margin. */
+    .pick-drop--center .pick-drop__pointer {
+        margin-left: -135px;
+        text-align: center;
+    }
+
+    /* Align the pointer pseudo-borders. */
+    .pick-drop--center .pick-drop__pointer:before {
+        left: 5px;
+    }
+    .pick-drop--center .pick-drop__pointer:after {
+        left: -15px;
+    }
+
+    /* Adjust the holder to the center using half it’s width as a negative margin. */
     .pick-drop--center .pick-drop__holder {
         margin-left: -135px;
     }
-
-        /* Align the pointer to the center with a collapsed width. */
-        .pick-drop--center .pick-drop__pointer {
-            left: 0;
-            right: 0;
-            margin: 0 auto;
-        }
 
 
 
@@ -161,17 +179,12 @@
  * The right aligned pick-drop.
  */
 .pick-drop--right {
-    width: 100%;
-    left: auto;
-    right: auto;
+    right: 0;
 }
-    .pick-drop--right .pick-drop__holder {
-        right: 0;
+
+    .pick-drop--right .pick-drop__pointer {
+        text-align: right;
     }
-        .pick-drop--right .pick-drop__holder .pick-drop__pointer {
-            left: auto;
-            right: 10px;
-        }
 
 
 

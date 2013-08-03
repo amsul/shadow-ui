@@ -148,6 +148,32 @@ test( 'Alias extension', function() {
 
 
 /**
+ * Check the class name prefixing api.
+ */
+module( 'API prefix', {
+    setup: function() {
+        Pick.extend({
+            name: 'pick--prefix',
+            prefix: 'prefix-ftw'
+        })
+        var $clone = $NODE_DIV.clone().appendTo( $DOM )
+        this.picker = $clone.pick( 'pick--prefix' ).pick( 'pick--prefix', 'picker' )
+    },
+    teardown: tearDownThePicker
+})
+
+test( 'Prefix class names', function() {
+    var picker = this.picker
+    ok( picker.$root[0].className.match( /^prefix-ftw$/ ), 'Check: prefix root element' )
+    ok( picker.$host[0].className.match( /^prefix-ftw-/ ), 'Check: prefix host element' )
+})
+
+
+
+
+
+
+/**
  * Check the dict-based api.
  */
 module( 'API dict', {

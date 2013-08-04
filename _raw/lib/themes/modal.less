@@ -81,7 +81,7 @@
         }
 
         /* For `small` screens... */
-        @media (min-height: 33.875em) {
+        @media (min-height: @break-small--pick-modal) {
 
             .pick-modal__frame {
 
@@ -98,7 +98,7 @@
         }
 
         /* For `medium` screens... */
-        @media (min-height: 40.125em) {
+        @media (min-height: @break-medium--pick-modal) {
 
             .pick-modal__frame {
 
@@ -118,7 +118,7 @@
         }
 
         /* For `small` screens, move to the bottom edge instead. */
-        @media (min-height: 33.875em) {
+        @media (min-height: @break-small--pick-modal) {
 
             .pick-modal--opened .pick-modal__frame {
                 top: auto;
@@ -137,7 +137,7 @@
             }
 
             /* For `small` screens, remove the “middle-aligned” styling */
-            @media (min-height: 33.875em) {
+            @media (min-height: @break-small--pick-modal) {
 
                 .pick-modal__wrap {
                     display: block;
@@ -157,7 +157,7 @@
                 }
 
                 /* For `tiny` screens, increase the font size a bit. */
-                @media (min-height: 26.5em) {
+                @media (min-height: @break-tiny--pick-modal) {
 
                     .pick-modal__box {
                         font-size: 1.25em;
@@ -165,7 +165,7 @@
                 }
 
                 /* For `small` screens... */
-                @media (min-height: 33.875em) {
+                @media (min-height: @break-small--pick-modal) {
 
                     .pick-modal__box {
 
@@ -191,7 +191,7 @@
                 }
 
                 /* For `medium` screens... */
-                @media (min-height: 40.125em) {
+                @media (min-height: @break-medium--pick-modal) {
 
                     .pick-modal__box {
 

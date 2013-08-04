@@ -24,10 +24,9 @@
     $PICK-MODAL
 \*------------------------------------*/
 /**
- * The content holder and frame of the pick-modal.
+ * The root of the pick-modal.
  */
-.pick-modal,
-.pick-modal__frame {
+.pick-modal {
   /* Make the holder and frame fullscreen. */
 
   bottom: 0;
@@ -36,157 +35,180 @@
   /* Nudge everything off-screen to begin with. */
 
   top: 100%;
-}
-/**
- * The root of the pick-modal.
- */
-.pick-modal {
+  /* Hide it to begin with. */
+
+  opacity: 0;
+  /* Center align the holder. */
+
+  text-align: center;
   /* Fill the screen and fix the position. */
 
   position: fixed;
-  /* Fade out the background, then immediately shift the holder out of view. */
+  /* Give it a translucent overlay. */
 
-  transition: background 0.15s ease-out, top 0s 0.15s;
+  background: rgba(0, 0, 0, 0.32);
+  /* Fade out it out, then immediately shift the holder out of view. */
+
+  transition: opacity 0.2s ease-in, top 0s 0.2s;
 }
 /* Opened pick-modal state. */
 .pick-modal--opened {
   /* Immediately move the holder to the top edge. */
 
   top: 0;
-  /* Fade in an overlay. */
+  /* Ånd then reveal the content. */
 
-  background: rgba(0, 0, 0, 0.32);
-  /* Animate in the background. */
+  opacity: 1;
+  /* Animate in the opacity. */
 
-  transition: background 0.15s ease-out;
+  transition: opacity 0.2s ease-out;
 }
 /* Active pick-modal state. */
 /**
+     * The pointer as a helper to vertically align.
+     */
+/* For greater than `small` screens... */
+@media (min-height: 33.875em) {
+  .pick-modal__pointer {
+    /* Fill up the height without a width. */
+  
+    height: 100%;
+    /* Align it in the middle. */
+  
+    display: inline-block;
+    vertical-align: middle;
+  }
+}
+/**
      * The content holder of the pick-modal.
      */
+.pick-modal__holder {
+  position: relative;
+  /* Re-align the text. */
+
+  text-align: left;
+  /* Fill the width. */
+
+  width: 100%;
+  /* Specify the min & max widths. */
+
+  min-width: 256px;
+  max-width: 666px;
+  /* Center align it if the width is restricted. */
+
+  margin: 0 auto;
+  /* Fill the height. */
+
+  height: 100%;
+  /* Add a background. */
+
+  background: #ffffff;
+  /* Play nice with the widths. */
+
+  box-sizing: border-box;
+  /* Nudge it slightly down. */
+
+  -webkit-transform: translateY(20%);
+  /* Animate the holder out of view a bit faster. */
+
+  -webkit-transition: -webkit-transform 0.15000000000000002s ease-in;
+}
+/* For greater than `tiny` screens... */
+@media (min-height: 26.5em) {
+  .pick-modal__holder {
+    /* Increase the font size a bit. */
+  
+    font-size: 1.25em;
+  }
+}
+/* For greater than `small` screens... */
+@media (min-height: 33.875em) {
+  .pick-modal__holder {
+    /* Increase the font size a bit more */
+  
+    font-size: 1.33em;
+    /* Align it in the vertical bottom. */
+  
+    display: inline-block;
+    vertical-align: bottom;
+    /* Reduce the height to give spacing above. */
+  
+    height: 90%;
+    /* Add the borders. */
+  
+    border: 1px solid #777777;
+    border-top-color: #898989;
+    /* Make ‘em rounded at the top corners */
+  
+    border-radius: 6px 6px 0 0;
+    /* Hide the bottom border this way so margins within don’t collapse */
+  
+    bottom: -1px;
+    /* And finally, add a nice shadow. */
+  
+    box-shadow: 0 12px 36px 16px rgba(0, 0, 0, 0.24);
+  }
+}
+/* For greater than `medium` screens... */
+@media (min-height: 40.125em) {
+  .pick-modal__holder {
+    /* Increase the font size. */
+  
+    font-size: 1.5em;
+    /* Align it in the vertical center. */
+  
+    vertical-align: middle;
+    /* Reduce the height to give spacing below. */
+  
+    height: 80%;
+    /* Round off the corners. */
+  
+    border-radius: 6px;
+    /* Reveal the bottom border. */
+  
+    bottom: 0;
+  }
+}
+/* For smaller than the holder’s `min-width` screens... */
+@media (max-width: 256px) {
+  .pick-modal__holder {
+    /* Make the holder fill-up the entire screen. */
+  
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    /* Remove any borders. */
+  
+    border: 0;
+    /* Straighten off the corners. */
+  
+    border-radius: 0;
+    /* Remove any width restrictions. */
+  
+    min-width: 0;
+    /* Remove any height restrictions. */
+  
+    height: 100%;
+  }
+}
 /* The opened content holder. */
+.pick-modal--opened .pick-modal__holder {
+  /* Bring it back into position. */
+
+  -webkit-transform: translateY(0%);
+  /* Animate the holder in to view a bit slower. */
+
+  -webkit-transition: -webkit-transform 0.15000000000000002s 0.05s ease-out;
+}
 /**
          * The frame creates a pick-modal boundary.
          */
 .pick-modal__frame {
   position: absolute;
-  /* Specify the min & max widths and center align it. */
-
-  margin: 0 auto;
-  min-width: 256px;
-  max-width: 666px;
-  width: 100%;
-  /* For IE9 & 10 to keep it centered. */
-
-  /* Hide it to begin with. */
-
-  opacity: 0;
-  /* Animate the frame in and out of view. */
-
-  transition: all 0.15s ease-out;
-}
-/* For `small` screens... */
-@media (min-height: 33.875em) {
-  .pick-modal__frame {
-    /* Reveal what’s beyond to allow drop shadows, et al. */
-  
-    overflow: visible;
-    /* Align to the bottom edge instead of top. */
-  
-    top: auto;
-    bottom: -100%;
-    /* Prevent it from overflowing over the top edge. */
-  
-    max-height: 80%;
-  }
-}
-/* For `medium` screens... */
-@media (min-height: 40.125em) {
-  .pick-modal__frame {
-    /* Move away from the bottom edge. */
-  
-    margin-bottom: 7.5%;
-  }
-}
-/* Smoothly move the content to the top edge while fading it in. */
-.pick-modal--opened .pick-modal__frame {
-  /* Move to the top edge. */
-
+  left: 0;
   top: 0;
-  /* Ånd then reveal the content. */
-
-  opacity: 1;
-}
-/* For `small` screens, move to the bottom edge instead. */
-@media (min-height: 33.875em) {
-  .pick-modal--opened .pick-modal__frame {
-    top: auto;
-    bottom: 0;
-  }
-}
-/**
-             * The wrapper helps to vertically align the box contents.
-             */
-.pick-modal__wrap {
-  display: table;
-  width: 100%;
-  height: 100%;
-}
-/* For `small` screens, remove the “middle-aligned” styling */
-@media (min-height: 33.875em) {
-  .pick-modal__wrap {
-    display: block;
-  }
-}
-/**
-                 * The box contains all the contents.
-                 */
-.pick-modal__box {
-  background: #fff;
-  /* To start with, vertically align to center. */
-
-  display: table-cell;
-  vertical-align: middle;
-}
-/* For `tiny` screens, increase the font size a bit. */
-@media (min-height: 26.5em) {
-  .pick-modal__box {
-    font-size: 1.25em;
-  }
-}
-/* For `small` screens... */
-@media (min-height: 33.875em) {
-  .pick-modal__box {
-    /* Remove the “middle-aligned” styling */
-  
-    display: block;
-    /* Increase the font size a bit more */
-  
-    font-size: 1.33em;
-    /* Add the borders */
-  
-    border: 1px solid #777777;
-    border-top-color: #898989;
-    /* Hide the bottom border this way so margins within don’t collapse */
-  
-    margin-bottom: -1px;
-    /* Make ‘em rounded at the top corners */
-  
-    border-radius: 6px 6px 0 0;
-    /* And finally, add a nice shadow */
-  
-    box-shadow: 0 12px 36px 16px rgba(0, 0, 0, 0.24);
-  }
-}
-/* For `medium` screens... */
-@media (min-height: 40.125em) {
-  .pick-modal__box {
-    /* Increase the font size. */
-  
-    font-size: 1.5em;
-    /* Reveal all borders and round all corners. */
-  
-    margin-bottom: 0;
-    border-radius: 6px;
-  }
+  right: 0;
+  bottom: 0;
 }

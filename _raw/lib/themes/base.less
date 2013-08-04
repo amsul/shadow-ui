@@ -50,23 +50,23 @@
 
 
 /*------------------------------------*\
-    $HOLDER
+    $BASE
 \*------------------------------------*/
 
 /**
  * The root of the picker.
  */
 .pick-drop,
-.pick-modal,
-.pick-box {
+.pick-box,
+.pick-modal {
 
     /* Make sure nothing covers the picker. */
     z-index: @z-index--root;
 
     /* Set the base text stylings. */
-    text-align: left;
     font-size: @font-size--root;
     line-height: @line-height--root;
+    text-align: left;
 }
 
 
@@ -74,8 +74,8 @@
      * The content frame of the picker.
      */
     .pick-drop__frame,
-    .pick-modal__frame,
-    .pick-box__frame {
+    .pick-box__frame,
+    .pick-modal__frame {
 
         /* This is the only “scrollable” top-level container element. */
         overflow-y: auto;

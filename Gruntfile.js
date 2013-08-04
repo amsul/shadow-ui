@@ -152,7 +152,7 @@ module.exports = function( grunt ) {
                 tasks: [ 'copy:lib', 'jshint:lib' ]
             },
             themes: {
-                files: [ '<%= dirs.src.themes %>' ],
+                files: [ '<%= dirs.src.themes %>/*.less' ],
                 tasks: [ 'less:themes' ]
             },
             tests: {

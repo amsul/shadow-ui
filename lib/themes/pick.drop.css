@@ -64,6 +64,12 @@
 
   position: relative;
   z-index: 1;
+  /* Hide everything to begin with. */
+
+  max-height: 0;
+  /* When closing, height should wait till the animation is done. */
+
+  -webkit-transition: max-height 0 0.2s;
 }
 /* The pseudo-borders. */
 .pick-drop__pointer:before,
@@ -101,6 +107,14 @@
 
   border-bottom-color: #f5f5f5;
 }
+.pick-drop--opened .pick-drop__pointer {
+  /* Reveal the content. */
+
+  max-height: 10px;
+  /* Immediately open the height and animate the rest. */
+
+  -webkit-transition: max-height 0;
+}
 /**
      * The content holder of the pick-drop.
      */
@@ -108,10 +122,10 @@
   /* Set a width. */
 
   width: 280px;
-  /* Add a background and border. */
+  /* Add a background and collapsed border. */
 
   background: #f5f5f5;
-  border: 1px solid #aaaaaa;
+  border: 0 solid #aaaaaa;
   /* Play nice with borders. */
 
   box-sizing: border-box;
@@ -129,16 +143,19 @@
   max-height: 0;
   /* When closing, height should wait till the animation is done. */
 
-  -webkit-transition: max-height 0 0.2s;
+  -webkit-transition: max-height 0 0.2s, border-width 0 0.2s;
 }
 /* The opened content holder. */
 .pick-drop--opened .pick-drop__holder {
+  /* Add width to the border. */
+
+  border-width: 1px;
   /* Reveal the content. */
 
   max-height: 25em;
   /* Immediately open the height and animate the rest. */
 
-  -webkit-transition: max-height 0;
+  -webkit-transition: max-height 0, border-width 0;
 }
 /**
  * The center aligned pick-drop.

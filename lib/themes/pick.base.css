@@ -52,29 +52,29 @@
   border-color: #0089ec;
 }
 /*------------------------------------*\
-    $HOLDER
+    $BASE
 \*------------------------------------*/
 /**
  * The root of the picker.
  */
 .pick-drop,
-.pick-modal,
-.pick-box {
+.pick-box,
+.pick-modal {
   /* Make sure nothing covers the picker. */
 
   z-index: 10000;
   /* Set the base text stylings. */
 
-  text-align: left;
   font-size: 16px;
   line-height: 1.2;
+  text-align: left;
 }
 /**
      * The content frame of the picker.
      */
 .pick-drop__frame,
-.pick-modal__frame,
-.pick-box__frame {
+.pick-box__frame,
+.pick-modal__frame {
   /* This is the only “scrollable” top-level container element. */
 
   overflow-y: auto;

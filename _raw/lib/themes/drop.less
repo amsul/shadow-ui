@@ -52,6 +52,12 @@
         /* Make sure it’s above the holder shadow. */
         position: relative;
         z-index: 1;
+
+        /* Hide everything to begin with. */
+        max-height: 0;
+
+        /* When closing, height should wait till the animation is done. */
+        -webkit-transition: max-height 0 @transition-speed--pick-drop;
     }
 
     /* The pseudo-borders. */
@@ -90,7 +96,16 @@
         top: -(@height-pointer--pick-drop - 2px);
 
         /* Add the foreground color. */
-        border-bottom-color: @background-color--pick-drop;
+        border-bottom-color: @background--pick-drop;
+    }
+
+    .pick-drop--opened .pick-drop__pointer {
+
+        /* Reveal the content. */
+        max-height: @height-pointer--pick-drop;
+
+        /* Immediately open the height and animate the rest. */
+        -webkit-transition: max-height 0;
     }
 
 
@@ -102,9 +117,9 @@
         /* Set a width. */
         width: @width--pick-drop;
 
-        /* Add a background and border. */
-        background: @background-color--pick-drop;
-        border: @border-width--pick-drop solid @border-color--pick-drop;
+        /* Add a background and collapsed border. */
+        background: @background--pick-drop;
+        border: 0 solid @border-color--pick-drop;
 
         /* Play nice with borders. */
         box-sizing: border-box;
@@ -122,17 +137,20 @@
         max-height: 0;
 
         /* When closing, height should wait till the animation is done. */
-        -webkit-transition: max-height 0 @transition-speed--pick-drop;
+        -webkit-transition: max-height 0 @transition-speed--pick-drop, border-width 0 @transition-speed--pick-drop;
     }
 
     /* The opened content holder. */
     .pick-drop--opened .pick-drop__holder {
 
+        /* Add width to the border. */
+        border-width: @border-width--pick-drop;
+
         /* Reveal the content. */
         max-height: @max-height--pick-drop;
 
         /* Immediately open the height and animate the rest. */
-        -webkit-transition: max-height 0;
+        -webkit-transition: max-height 0, border-width 0;
     }
 
 

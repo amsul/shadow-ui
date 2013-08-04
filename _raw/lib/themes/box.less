@@ -1,8 +1,9 @@
 @charset "utf-8";
+@import "_variables.less";
 
 
 /*------------------------------------*\
-    $PICK-INLINE
+    $PICK-BOX
 \*------------------------------------*/
 
 /**
@@ -23,11 +24,11 @@
     .pick-box__holder {
 
         /* Add a background and border. */
-        background: #f5f5f5;
-        border: 1px solid #aaa;
+        background: @background-color--pick-box;
+        border: @border-width--pick-box solid @border-color--pick-box;
 
         /* Round the corners. */
-        border-radius: 4px;
+        border-radius: @border-radius--pick-box;
     }
 
     /* The opened content holder. */

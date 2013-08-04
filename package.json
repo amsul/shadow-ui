@@ -1,8 +1,8 @@
 {
   "name": "pick",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "title": "pick.js",
-  "description": "Create custom pickers out of any DOM element while utilizing the power of the Shadow DOM.",
+  "description": "Create custom pickers out of any DOM element (almost) while utilizing the power of the Shadow DOM.",
   "author": {
     "name": "Amsul",
     "email": "reach@amsul.ca",
@@ -17,11 +17,9 @@
   "keywords": [
     "shadow dom",
     "picker",
+    "dropdown",
     "modal",
     "input",
-    "date",
-    "time",
-    "color",
     "responsive",
     "ui"
   ],

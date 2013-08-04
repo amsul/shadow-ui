@@ -1,198 +1,71 @@
+@charset "utf-8";
 
-/* ==========================================================================
-   $VARIABLES
-   ========================================================================== */
 
+/*------------------------------------*\
+    $VARIABLES
+\*------------------------------------*/
 
 /**
- * Base colors
+ * Colors.
  */
 @blue: #0089ec;
-@blue-hover: #b1dcfb;
-@black: #000;
-@white: #fff;
 
+@border-color--pick-drop: #aaa;
+@background-color--pick-drop: #f5f5f5;
 
-/**
- * Backgrounds
- */
-@bg-white: @white;
-@bg-grey-light: #f2f2f2;
+@border-color--pick-modal: #777;
+@overlay--pick-modal: rgba(0,0,0,.32);
 
+@border-color--pick-box: #aaa;
+@background-color--pick-box: #f5f5f5;
 
-/**
- * Borders
- */
-@border-grey: #777;
-@border-grey-light: #ddd;
-@border-select: darken( @border-grey-light, 15% );
 
 
 /**
- * Buttons
+ * Positionings.
  */
-@clear-red: #e20;
-
+@z-index--root: 10000;
 
 
 
 
 /**
- * Picker base
+ * Text styles.
  */
-
-// Make sure nothing is above the picker.
-@picker-z-index: 10000;
-
-// Animation speeds.
-@speed-animate-in: .15s;
-
-// Focused input border color.
-@input-active-border: @blue;
-
-// Typography.
-@base-font-size: 16px;
-@base-line-height: 1.2;
-
-// Corners.
-@picker-border-radius: 5px;
-
-// Drop shadows.
-@picker-box-shadow: 0 12px 36px 16px rgba(0,0,0,.24);
-@picker-box-shadow-light: 0 6px 18px 1px rgba(0,0,0,.12);
-
-// Breakpoints.
-@breakpoint-tiny: 26.5em; // 424px @ 16px
-@breakpoint-small: 33.875em; // 542px @ 16px
-@breakpoint-medium: 40.125em; // 642px @ 16px
-@breakpoint-large: 46.75em; // 748px @ 16px
+@font-size--root: 16px;
+@line-height--root: 1.2;
 
 
 
 
 /**
- * Date picker options
+ * Animations.
  */
+@transition-speed--pick-drop: .2s;
 
-// The year and weekday labels.
-@year-weekday-label: #999;
-
-// “Today” tag indicators.
-@blue-tag: #0059bc;
-@disabled-tag: #aaa;
-
-// Disabled things.. such as days, month nav, etc.
-@disabled-things-bg: #f5f5f5;
-@disabled-things-text: #ddd;
-@disabled-highlighted-things-bg: #bbb;
-
+@transition-speed--pick-modal: .15s;
 
 
 
 
 /**
- * Theme configurations
+ * Sizes.
  */
+@width--pick-drop: 280px;
+@max-height--pick-drop: 25em;
+@height-pointer--pick-drop: 10px;
+@border-radius--pick-drop: 4px;
+@border-width--pick-drop: 1px;
+@box-shadow--pick-drop: 0 2px 12px 1px rgba(0,0,0,.15);
 
-// The “default” min & max widths.
-@picker-min-width: 256px;
-@picker-max-width: 666px;
+@min-width--pick-modal: 256px;
+@max-width--pick-modal: 666px;
+@border-radius--pick-modal: 6px;
+@border-width--pick-modal: 1px;
+@box-shadow--pick-modal: 0 12px 36px 16px rgba(0,0,0,.24);
 
-// The time picker min & max widths.
-@time-min-width: @picker-min-width;
-@time-max-width: 320px;
-
-// The “classic” theme settings.
-@classic-max-width: @picker-max-width - 200px;
-@classic-min-width: @picker-min-width - 80px;
-@classic-max-height: 25em;
-@classic-box-shadow: 0 6px 18px 1px rgba(0,0,0,.12);
-
-
-
-
-
-
-
-
-/* ==========================================================================
-   $MIXINS
-   ========================================================================== */
-
-/**
- * Common picker item states
- */
-
-// Highlighted.
-.picker-item-highlighted () {
-    background: @blue;
-    color: @white;
-}
-
-// Hovered.
-.picker-item-hovered () {
-    cursor: pointer;
-    color: @black;
-    background: @blue-hover;
-}
-
-// Selected.
-.picker-item-selected () {
-    border-color: @blue;
-}
-
-// Disabled.
-.picker-item-disabled () {
-    background: @disabled-things-bg;
-    border-color: @disabled-things-bg;
-    color: @disabled-things-text;
-    cursor: default;
-}
-
-
-
-
-/**
- * Opacity
- */
-.opacity( @decimal ) {
-    @percent: @decimal * 100;
-    -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=@{percent})";
-    filter: ~"alpha(opacity=@{percent})";
-    -moz-opacity: @decimal;
-         opacity: @decimal;
-}
-
-
-
-/**
- * Vendor prefixes
- */
-.box-shadow ( @rest... ) {
-    -webkit-box-shadow: @rest;
-       -moz-box-shadow: @rest;
-            box-shadow: @rest;
-}
-.box-sizing ( @rest... ) {
-    -webkit-box-sizing: @rest;
-       -moz-box-sizing: @rest;
-            box-sizing: @rest;
-}
-.border-radius ( @rest... ) {
-    -webkit-border-radius: @rest;
-       -moz-border-radius: @rest;
-            border-radius: @rest;
-}
-.transition ( ... ) {
-    -webkit-transition: @arguments;
-       -moz-transition: @arguments;
-            transition: @arguments;
-}
-.transform ( @rest... ) {
-    -webkit-transform: @rest;
-       -moz-transform: @rest;
-            transform: @rest;
-}
+@border-radius--pick-box: 4px;
+@border-width--pick-box: 1px;
 
 
 

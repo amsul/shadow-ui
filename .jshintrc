@@ -3,5 +3,6 @@
     "devel": true,
     "browser": true,
     "asi": true,
-    "unused": true
+    "unused": true,
+    "eqnull": true
 }

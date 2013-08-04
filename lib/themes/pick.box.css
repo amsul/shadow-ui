@@ -1,0 +1,40 @@
+@charset "utf-8";
+/*------------------------------------*\
+    $VARIABLES
+\*------------------------------------*/
+/**
+ * Colors.
+ */
+/**
+ * Positionings.
+ */
+/**
+ * Text styles.
+ */
+/**
+ * Animations.
+ */
+/**
+ * Sizes.
+ */
+/*------------------------------------*\
+    $PICK-BOX
+\*------------------------------------*/
+/**
+ * The root of the pick-box.
+ */
+/* Opened pick-box state. */
+/* Active pick-box state. */
+/**
+     * The content holder of the pick-box.
+     */
+.pick-box__holder {
+  /* Add a background and border. */
+
+  background: #f5f5f5;
+  border: 1px solid #aaaaaa;
+  /* Round the corners. */
+
+  border-radius: 4px;
+}
+/* The opened content holder. */

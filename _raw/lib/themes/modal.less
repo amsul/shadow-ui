@@ -1,4 +1,5 @@
 @charset "utf-8";
+@import "_variables.less";
 
 
 /*------------------------------------*\
@@ -30,7 +31,7 @@
     position: fixed;
 
     /* Fade out the background, then immediately shift the holder out of view. */
-    transition: background .15s ease-out, top 0s .15s;
+    transition: background @transition-speed--pick-modal ease-out, top 0s @transition-speed--pick-modal;
 }
 
 /* Opened pick-modal state. */
@@ -40,10 +41,10 @@
     top: 0;
 
     /* Fade in an overlay. */
-    background: rgba(0,0,0,.32);
+    background: @overlay--pick-modal;
 
     /* Animate in the background. */
-    transition: background .15s ease-out;
+    transition: background @transition-speed--pick-modal ease-out;
 }
 
 /* Active pick-modal state. */
@@ -68,15 +69,15 @@
 
             /* Specify the min & max widths and center align it. */
             margin: 0 auto;
-            min-width: 256px;
-            max-width: 666px;
+            min-width: @min-width--pick-modal;
+            max-width: @max-width--pick-modal;
             width: 100%; /* For IE9 & 10 to keep it centered. */
 
             /* Hide it to begin with. */
             opacity: 0;
 
             /* Animate the frame in and out of view. */
-            transition: all .15s ease-out;
+            transition: all @transition-speed--pick-modal ease-out;
         }
 
         /* For `small` screens... */
@@ -175,17 +176,17 @@
                         font-size: 1.33em;
 
                         /* Add the borders */
-                        border: 1px solid #777;
-                        border-top-color: #888;
+                        border: @border-width--pick-modal solid @border-color--pick-modal;
+                        border-top-color: lighten( @border-color--pick-modal, 7% );
 
                         /* Hide the bottom border this way so margins within don’t collapse */
-                        margin-bottom: -1px;
+                        margin-bottom: -@border-width--pick-modal;
 
                         /* Make ‘em rounded at the top corners */
-                        border-radius: 6px 6px 0 0;
+                        border-radius: @border-radius--pick-modal @border-radius--pick-modal 0 0;
 
                         /* And finally, add a nice shadow */
-                        box-shadow: 0 12px 36px 16px rgba(0,0,0,.24);
+                        box-shadow: @box-shadow--pick-modal;
                     }
                 }
 
@@ -198,8 +199,8 @@
                         font-size: 1.5em;
 
                         /* Reveal all borders and round all corners. */
-                        border-bottom-width: 1px;
-                        border-radius: 6px;
+                        margin-bottom: 0;
+                        border-radius: @border-radius--pick-modal;
                     }
                 }
 

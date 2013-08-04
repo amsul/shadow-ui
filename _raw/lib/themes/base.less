@@ -1,45 +1,86 @@
-
-/* ==========================================================================
-   $BASE-PICKER
-   ========================================================================== */
-
+@charset "utf-8";
 @import "_variables.less";
 
 
-/**
- * Note: the root picker element should __NOT__ be styled
- * more than what’s here. Style the `.picker__holder` instead.
- */
-.picker {
+/*------------------------------------*\
+    $HOST
+\*------------------------------------*/
 
-    // The base font stylings.
-    font-size: @base-font-size;
+/**
+ * The extended host element.
+ */
+.pick-drop-host,
+.pick-modal-host,
+.pick-box-host {}
+
+/* The host state when it is focused. */
+.pick-drop-host:focus,
+.pick-modal-host:focus,
+.pick-box-host:focus {
+    outline: 0;
+    box-shadow: 0 0 0 2px @blue;
+}
+
+/* The host state while the picker is actively focused. */
+.pick-drop-host--active,
+.pick-modal-host--active,
+.pick-box-host--active {}
+
+
+    /**
+     * The input node that carries the picker value.
+     */
+    .pick-drop-host__input,
+    .pick-modal-host__input,
+    .pick-box-host__input {
+
+        /* Make sure IE shows the correct cursor with the disabled attribute. */
+        cursor: default;
+    }
+
+    /* The input state when it is focused. */
+    .pick-drop-host__input:focus,
+    .pick-modal-host__input:focus,
+    .pick-box-host__input:focus {
+        outline: 0;
+        border-color: @blue;
+    }
+
+
+
+
+/*------------------------------------*\
+    $HOLDER
+\*------------------------------------*/
+
+/**
+ * The root of the picker.
+ */
+.pick-drop,
+.pick-modal,
+.pick-box {
+
+    /* Make sure nothing covers the picker. */
+    z-index: @z-index--root;
+
+    /* Set the base text stylings. */
     text-align: left;
-    line-height: @base-line-height;
-    color: @black;
-
-    // The picker shouldn’t affect or be affected by elements around it.
-    position: absolute;
-    z-index: @picker-z-index;
+    font-size: @font-size--root;
+    line-height: @line-height--root;
 }
 
 
-/**
- * When the picker is opened, the input element is “activated”.
- */
-.picker__input.picker__input--active {
-    border-color: @input-active-border;
-}
+    /**
+     * The content frame of the picker.
+     */
+    .pick-drop__frame,
+    .pick-modal__frame,
+    .pick-box__frame {
 
-
-/**
- * The holder is the only “scrollable” top-level container element.
- */
-.picker__holder {
-    width: 100%;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-}
+        /* This is the only “scrollable” top-level container element. */
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
 
 
 

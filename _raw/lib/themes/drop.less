@@ -1,4 +1,5 @@
 @charset "utf-8";
+@import "_variables.less";
 
 
 /*------------------------------------*\
@@ -20,7 +21,7 @@
     -webkit-transform: translateY(-1em) perspective(600px) rotateX(25deg);
 
     /* Make it a smooth transition. */
-    -webkit-transition: all .2s ease-out;
+    -webkit-transition: all @transition-speed--pick-drop ease-out;
 }
 
 /* Opened pick-drop state. */
@@ -43,14 +44,14 @@
     .pick-drop__pointer {
 
         /* Set a width. */
-        width: 280px;
+        width: @width--pick-drop;
 
         /* Give room for the pseudo-borders. */
-        height: 10px;
+        height: @height-pointer--pick-drop;
 
         /* Make sure it’s above the holder shadow. */
         position: relative;
-        z-index: 10;
+        z-index: 1;
     }
 
     /* The pseudo-borders. */
@@ -59,7 +60,7 @@
         content: " ";
 
         /* Add the base border styling. */
-        border: 10px solid transparent;
+        border: @height-pointer--pick-drop solid transparent;
 
         /* Collapse the width to make triangles. */
         width: 0;
@@ -75,10 +76,10 @@
 
         /* Nudge it up and away from left edge. */
         left: 10px;
-        top: -9px;
+        top: -(@height-pointer--pick-drop - 1px);
 
         /* Add the border color. */
-        border-bottom-color: #aaa;
+        border-bottom-color: @border-color--pick-drop;
     }
 
     /* The pseudo-border foreground. */
@@ -86,10 +87,10 @@
 
         /* Nudge it back to left edge and down 1px below the border. */
         left: -10px;
-        top: -8px;
+        top: -(@height-pointer--pick-drop - 2px);
 
         /* Add the foreground color. */
-        border-bottom-color: #f5f5f5;
+        border-bottom-color: @background-color--pick-drop;
     }
 
 
@@ -99,20 +100,20 @@
     .pick-drop__holder {
 
         /* Set a width. */
-        width: 280px;
+        width: @width--pick-drop;
 
         /* Add a background and border. */
-        background: #f5f5f5;
-        border: 1px solid #aaa;
+        background: @background-color--pick-drop;
+        border: @border-width--pick-drop solid @border-color--pick-drop;
 
         /* Play nice with borders. */
         box-sizing: border-box;
 
         /* Round the corners. */
-        border-radius: 4px;
+        border-radius: @border-radius--pick-drop;
 
         /* Add a drop shadow. */
-        box-shadow: 0 2px 12px 1px rgba(0,0,0,.15);
+        box-shadow: @box-shadow--pick-drop;
 
         /* Hide overflowing content. */
         overflow: hidden;
@@ -121,14 +122,14 @@
         max-height: 0;
 
         /* When closing, height should wait till the animation is done. */
-        -webkit-transition: max-height 0 .2s;
+        -webkit-transition: max-height 0 @transition-speed--pick-drop;
     }
 
     /* The opened content holder. */
     .pick-drop--opened .pick-drop__holder {
 
         /* Reveal the content. */
-        max-height: 25em;
+        max-height: @max-height--pick-drop;
 
         /* Immediately open the height and animate the rest. */
         -webkit-transition: max-height 0;
@@ -155,21 +156,21 @@
 
     /* Align the pointer to the center using half it’s width as a negative margin. */
     .pick-drop--center .pick-drop__pointer {
-        margin-left: -135px;
+        margin-left: -(@width--pick-drop/2);
         text-align: center;
     }
 
     /* Align the pointer pseudo-borders. */
     .pick-drop--center .pick-drop__pointer:before {
-        left: 5px;
+        left: @height-pointer--pick-drop/2;
     }
     .pick-drop--center .pick-drop__pointer:after {
-        left: -15px;
+        left: -(@height-pointer--pick-drop/2 + @height-pointer--pick-drop);
     }
 
     /* Adjust the holder to the center using half it’s width as a negative margin. */
     .pick-drop--center .pick-drop__holder {
-        margin-left: -135px;
+        margin-left: -(@width--pick-drop/2);
     }
 
 

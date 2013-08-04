@@ -38,18 +38,23 @@ module.exports = function( grunt ) {
             src: {
                 raw: '_raw',
                 lib: '_raw/lib',
+                themes: '_raw/lib/themes',
                 tests: '_raw/tests'
             },
             dest: {
-                lib: 'dest/lib',
-                tests: '_raw/tests'
+                lib: 'lib',
+                themes: 'lib/themes',
+                tests: 'tests'
             }
         },
 
 
         // Clean the destination files and directories.
         clean: {
-            pkg: [ '<%= dirs.dest.lib %>', '<%= pkg.name %>.jquery.json', '*.md' ]
+            lib: [ '<%= dirs.dest.lib %>' ],
+            themes: [ '<%= dirs.dest.themes %>' ],
+            tests: [ '<%= dirs.dest.tests %>' ],
+            pkg: [ '<%= pkg.name %>.jquery.json', '*.md' ]
         },
 
 
@@ -69,10 +74,16 @@ module.exports = function( grunt ) {
                     { 'CONTRIBUTING.md': '<%= dirs.src.raw %>/CONTRIBUTING.md' }
                 ]
             },
+            lib: {
+                expand: true,
+                cwd: '<%= dirs.src.lib %>',
+                src: [ '*.js' ],
+                dest: '<%= dirs.dest.lib %>'
+            },
             tests: {
                 expand: true,
                 cwd: '<%= dirs.src.tests %>',
-                src: [ '*' ],
+                src: [ '*', '*/**' ],
                 dest: '<%= dirs.dest.tests %>'
             }
         },
@@ -82,6 +93,14 @@ module.exports = function( grunt ) {
         less: {
             options: {
                 style: 'expanded'
+            },
+            themes: {
+                files: {
+                    '<%= dirs.dest.themes %>/<%= pkg.name %>.base.css': '<%= dirs.src.themes %>/base.less',
+                    '<%= dirs.dest.themes %>/<%= pkg.name %>.box.css': '<%= dirs.src.themes %>/box.less',
+                    '<%= dirs.dest.themes %>/<%= pkg.name %>.drop.css': '<%= dirs.src.themes %>/drop.less',
+                    '<%= dirs.dest.themes %>/<%= pkg.name %>.modal.css': '<%= dirs.src.themes %>/modal.less'
+                }
             }
         },
 
@@ -112,7 +131,7 @@ module.exports = function( grunt ) {
                 jshintrc: '.jshintrc'
             },
             gruntfile: 'Gruntfile.js',
-            all: []
+            lib: [ '<%= dirs.dest.lib %>/*.js' ]
         },
 
 
@@ -124,6 +143,22 @@ module.exports = function( grunt ) {
 
         // Watch the project files.
         watch: {
+            pkg: {
+                files: [ '<%= dirs.src.raw %>/*md' ],
+                tasks: [ 'copy:pkg' ]
+            },
+            lib: {
+                files: [ '<%= dirs.src.lib %>/*.js' ],
+                tasks: [ 'copy:lib', 'jshint:lib' ]
+            },
+            themes: {
+                files: [ '<%= dirs.src.themes %>' ],
+                tasks: [ 'less:themes' ]
+            },
+            tests: {
+                files: [ '<%= dirs.src.tests %>' ],
+                tasks: [ 'copy:tests' ]
+            },
             gruntfile: {
                 files: [ 'Gruntfile.js' ],
                 tasks: [ 'jshint:gruntfile', 'default' ]
@@ -134,8 +169,8 @@ module.exports = function( grunt ) {
         // Any extra data needed in rendering static files.
         meta: {
 
-            // The sanitized github repo url.
-            gitrepo_url: packageJSON.repository.url.replace( /.git$/, '' ),
+            // The clean github repo url.
+            repo_url: packageJSON.repository.url.replace( /.git$/, '' ),
 
             // Get the min & gzip size of a text file.
             fileSize: function( content ) {
@@ -149,7 +184,8 @@ module.exports = function( grunt ) {
 
 
     // Register the tasks.
-    grunt.registerTask( 'default', [ 'clean', 'copy' ] )
+    grunt.registerTask( 'default', [ 'clean', 'copy', 'less' ] )
+    grunt.registerTask( 'strict', [ 'clean', 'copy', 'less', 'jshint', 'qunit' ] )
     grunt.registerTask( 'travis', [ 'jshint', 'qunit' ] )
 
 } //module.exports

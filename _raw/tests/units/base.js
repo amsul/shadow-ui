@@ -372,7 +372,8 @@ module( 'API custom dict', {
             name: 'pick--dict-custom',
             dict: {
                 sup: 'not much',
-                highlight: 400
+                highlight: 400,
+                lucky_ones: [ 0, 3, 4, 5, 10 ]
             },
             cascades: {
                 select: false,
@@ -403,6 +404,21 @@ test( 'Get and set with dict and cascades', function() {
 
     strictEqual( picker.get( 'sup' ), 'just chillin’', 'Check: custom value updated' )
     strictEqual( picker.get( 'highlight' ), 'just chillin’', 'Check: custom cascade to default' )
+})
+
+test( 'Add and remove with dict collections', function() {
+
+    var picker = this.picker
+
+    deepEqual( picker.get( 'lucky_ones' ), [ 0, 3, 4, 5, 10 ], 'Check: initial value' )
+
+    ok( picker.add( 'lucky_ones', 2 ), 'Change: updated collection' )
+
+    deepEqual( picker.get( 'lucky_ones' ), [ 0, 3, 4, 5, 10, 2 ], 'Check: added new item' )
+
+    ok( picker.remove( 'lucky_ones', 3 ), 'Change: updated collection' )
+
+    deepEqual( picker.get( 'lucky_ones' ), [ 0, 4, 5, 10, 2 ], 'Check: removed item' )
 })
 
 

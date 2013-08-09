@@ -46,7 +46,7 @@ function createInstance( picker, extension ) {
 
     if ( !( picker instanceof PickExtension ) ) throw 'Need a picker composition to create an instance.'
 
-    var id = 'P' + new Date().getTime(),
+    var id = 'P' + Math.floor( Math.random() * 1e9 ),
 
         regexFormats = new RegExp(
 
@@ -270,11 +270,12 @@ PickExtension.prototype = {
         })
 
 
-        // Check if there’s already an input element.
+        // If there’s an input element, create a host.
         if ( picker.$input ) {
 
-            // Create a host element to hold the picker root.
-            picker.$host = $( '<div/>' )
+            // Create a host element to hold the picker root and bind
+            // the default click and focus events to open the picker.
+            picker.$host = $( '<div/>' ).on( 'click focusin', picker.open.bind( picker, true ) )
 
             // Add the “input” class and insert the host.
             picker.$input.addClass( picker.klasses.input ).after( picker.$host )
@@ -324,9 +325,7 @@ PickExtension.prototype = {
         picker.$source.
 
             // Open the picker with focus on a click or focus within.
-            on( 'click.' + instance.id + ' focusin.' + instance.id, function() {
-                picker.open( true )
-            }).
+            on( 'click.' + instance.id + ' focusin.' + instance.id, picker.open.bind( picker, true ) ).
 
             // Prevent focus out of the host from bubbling up
             // so that a loss of focus within doesn’t close the picker.
@@ -335,7 +334,7 @@ PickExtension.prototype = {
             }).
 
             // Store the extension data.
-            data( 'pick.' + instance.name, picker ).
+            data( 'pick', picker ).
 
             // And finally, trigger the handler for a change event
             // to update any input or hidden input element values.
@@ -466,7 +465,7 @@ PickExtension.prototype = {
         }
 
         // Unbind the events, and remove the stored data
-        picker.$source.off( '.' + instance.id ).removeData( 'pick.' + instance.name )
+        picker.$source.off( '.' + instance.id ).removeData( 'pick' )
 
         // Trigger any queued “stop” event callbacks.
         picker.trigger( 'stop' )
@@ -531,7 +530,7 @@ PickExtension.prototype = {
             instance = picker.i
 
         // If we need to keep focus, do so before changing states.
-        if ( maintainFocus === true ) picker.focus()
+        if ( maintainFocus === true ) picker.$source.trigger( 'focus' )
         else picker.blur()
 
         // If it’s already closed, do nothing.
@@ -557,14 +556,14 @@ PickExtension.prototype = {
         var picker = this,
             instance = picker.i
 
-        // Pass focus to the source element before changing states.
-        picker.$source.trigger( 'focus' )
-
         // If it’s already focused, do nothing.
         if ( instance.is.focused ) return picker
 
         // Update the `focused` state.
         instance.is.focused = true
+
+        // Pass focus to the source element.
+        picker.$source.trigger( 'focus' )
 
         // Add the “active” class to the host.
         picker.$host.addClass( picker.klasses.hostActive )
@@ -804,7 +803,11 @@ Pick._ = {
     /**
      * Keep a storage of the extensions.
      */
-    EXTENSIONS: {},
+    EXTENSIONS: {
+
+        // Reserved name.
+        picker: true
+    },
 
 
     /**
@@ -994,16 +997,16 @@ $.fn.pick = function( name, options, action ) {
         extension = Pick._.EXTENSIONS[ name ],
 
         // Grab the component data.
-        componentData = this.data( 'pick.' + name )
+        componentData = this.data( 'pick' )
 
 
     // Check if an extension was found.
-    if ( !$.isPlainObject( extension ) ) {
+    if ( !extension ) {
         throw 'No extension found by the name of “' + name + '”.'
     }
 
     // If the picker is requested, return the component data.
-    if ( options == 'picker' ) {
+    if ( name == 'picker' || options == 'picker' ) {
         return componentData
     }
 
@@ -1016,7 +1019,7 @@ $.fn.pick = function( name, options, action ) {
     // Otherwise go through each matched element and compose new extensions.
     return this.each( function() {
         var $this = $( this )
-        if ( !$this.data( 'pick.' + name ) ) {
+        if ( !$this.data( 'pick' ) ) {
             new PickExtension( $this, extension, options )
         }
     })

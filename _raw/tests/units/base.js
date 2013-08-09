@@ -749,26 +749,6 @@ test( 'Extension single bindings', 8, function() {
 // })
 
 
-// module( 'Formatting setup', {
-//     setup: function() {
-//         $DOM.append( $INPUT.clone().attr( 'name', 'picker' ) )
-//         var $input = $DOM.find( 'input' ).pickadate({
-//             formatSubmit: 'yyyy/mm/dd'
-//         })
-//         this.picker = $input.pickadate( 'picker' )
-//     },
-//     teardown: function() {
-//         this.picker.stop()
-//         $DOM.empty()
-//     }
-// })
-
-// test( 'Hidden suffix', function() {
-//     var picker = this.picker
-//     strictEqual( picker.$node[0].name + '_submit', picker._hidden.name, 'Correct hidden element `name` suffix' )
-// })
-
-
 
 
 

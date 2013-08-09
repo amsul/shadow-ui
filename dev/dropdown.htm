@@ -62,7 +62,7 @@
         $outlet = $host.children( '.outlet' ).detach().empty()
         selections.
             sort(function( a, b ) { return b > a ? -1 : 1 }).
-            map(function( selection ) {
+            forEach(function( selection ) {
                 $outlet.append( '&nbsp;<kbd>' + options[ selection ] + '</kbd>&nbsp;' )
             })
         $host.append( $outlet )

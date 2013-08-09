@@ -38,7 +38,7 @@ module( 'API `div` minimal', {
         }
         Pick.extend( this.extension )
         var $clone = $NODE_DIV.clone().appendTo( $DOM )
-        this.picker = $clone.pick( 'pick--basic' ).pick( 'pick--basic', 'picker' )
+        this.picker = $clone.pick( 'pick--basic' ).pick( 'picker' )
     },
     teardown: tearDownThePicker
 })
@@ -137,7 +137,7 @@ module( 'API `input` minimal', {
         }
         Pick.extend( this.extension )
         var $clone = $NODE_INPUT.clone().appendTo( $DOM )
-        this.picker = $clone.pick( 'pick--basic-input' ).pick( 'pick--basic-input', 'picker' )
+        this.picker = $clone.pick( 'pick--basic-input' ).pick( 'picker' )
     },
     teardown: tearDownThePicker
 })
@@ -260,7 +260,7 @@ module( 'API prefix', {
             prefix: 'prefix-ftw'
         })
         var $clone = $NODE_DIV.clone().appendTo( $DOM )
-        this.picker = $clone.pick( 'pick--prefix' ).pick( 'pick--prefix', 'picker' )
+        this.picker = $clone.pick( 'pick--prefix' ).pick( 'picker' )
     },
     teardown: tearDownThePicker
 })
@@ -295,7 +295,7 @@ module( 'API dict', {
             }
         })
         var $clone = $NODE_DIV.clone().appendTo( $DOM )
-        this.picker = $clone.pick( 'pick--dict' ).pick( 'pick--dict', 'picker' )
+        this.picker = $clone.pick( 'pick--dict' ).pick( 'picker' )
     },
     teardown: tearDownThePicker
 })
@@ -342,7 +342,7 @@ module( 'API formats', {
             }
         })
         var $clone = $NODE_DIV.clone().appendTo( $DOM )
-        this.picker = $clone.pick( 'pick--dict-formatter' ).pick( 'pick--dict-formatter', 'picker' )
+        this.picker = $clone.pick( 'pick--dict-formatter' ).pick( 'picker' )
     },
     teardown: tearDownThePicker
 })
@@ -380,7 +380,7 @@ module( 'API custom dict', {
             }
         })
         var $clone = $NODE_DIV.clone().appendTo( $DOM )
-        this.picker = $clone.pick( 'pick--dict-custom' ).pick( 'pick--dict-custom', 'picker' )
+        this.picker = $clone.pick( 'pick--dict-custom' ).pick( 'picker' )
     },
     teardown: tearDownThePicker
 })
@@ -428,7 +428,7 @@ module( 'API custom get/set methods', {
             }
         })
         var $clone = $NODE_DIV.clone().appendTo( $DOM )
-        this.picker = $clone.pick( 'pick--get-set-custom' ).pick( 'pick--get-set-custom', 'picker' )
+        this.picker = $clone.pick( 'pick--get-set-custom' ).pick( 'picker' )
     },
     teardown: tearDownThePicker
 })
@@ -464,7 +464,7 @@ module( 'API keys', {
             }
         })
         var $clone = $NODE_DIV.clone().appendTo( $DOM )
-        this.picker = $clone.pick( 'pick--keys' ).pick( 'pick--keys', 'picker' )
+        this.picker = $clone.pick( 'pick--keys' ).pick( 'picker' )
     },
     teardown: tearDownThePicker
 })
@@ -519,7 +519,7 @@ module( 'API inputs', {
             }
         })
         var $clone = $NODE_INPUT.clone().attr({  value: '06', name: 'value_input' }).appendTo( $DOM )
-        this.picker = $clone.pick( 'pick--input' ).pick( 'pick--input', 'picker' )
+        this.picker = $clone.pick( 'pick--input' ).pick( 'picker' )
     },
     teardown: tearDownThePicker
 })
@@ -595,7 +595,7 @@ module( 'API events', {
             }
         }
         var $clone = $NODE_DIV.clone().appendTo( $DOM )
-        this.picker = $clone.pick( 'pick--loudmouth', this.options ).pick( 'pick--loudmouth', 'picker' )
+        this.picker = $clone.pick( 'pick--loudmouth', this.options ).pick( 'picker' )
     },
     teardown: tearDownThePicker
 })

@@ -39,12 +39,14 @@ module.exports = function( grunt ) {
                 raw: '_raw',
                 lib: '_raw/lib',
                 themes: '_raw/lib/themes',
-                tests: '_raw/tests'
+                tests: '_raw/tests',
+                demos: '_raw/demos'
             },
             dest: {
                 lib: 'lib',
                 themes: 'lib/themes',
-                tests: 'tests'
+                tests: 'tests',
+                demos: 'demos'
             }
         },
 
@@ -54,6 +56,7 @@ module.exports = function( grunt ) {
             lib: [ '<%= dirs.dest.lib %>' ],
             themes: [ '<%= dirs.dest.themes %>' ],
             tests: [ '<%= dirs.dest.tests %>' ],
+            demos: [ '<%= dirs.dest.demos %>' ],
             pkg: [ '<%= pkg.name %>.jquery.json', '*.md' ]
         },
 
@@ -85,6 +88,20 @@ module.exports = function( grunt ) {
                 cwd: '<%= dirs.src.tests %>',
                 src: [ '*', '*/**' ],
                 dest: '<%= dirs.dest.tests %>'
+            },
+            demos: {
+                expand: true,
+                cwd: '<%= dirs.src.demos %>',
+                src: [ '*.css', '*.js' ],
+                dest: '<%= dirs.dest.demos %>'
+            }
+        },
+        htmlify: {
+            demos: {
+                expand: true,
+                cwd: '<%= dirs.src.demos %>',
+                src: [],
+                dest: '<%= dirs.dest.demos %>'
             }
         },
 
@@ -137,7 +154,7 @@ module.exports = function( grunt ) {
 
         // Unit test the files.
         qunit: {
-            all: [ '<%= dirs.src.tests %>/units/all.htm' ]
+            all: [ '<%= dirs.dest.tests %>/units/all.htm' ]
         },
 
 
@@ -158,6 +175,10 @@ module.exports = function( grunt ) {
             tests: {
                 files: [ '<%= dirs.src.tests %>' ],
                 tasks: [ 'copy:tests' ]
+            },
+            demos: {
+                files: [ '<%= dirs.src.demos %>/*.htm' ],
+                tasks: [ 'htmlify:demos' ]
             },
             gruntfile: {
                 files: [ 'Gruntfile.js' ],
@@ -184,9 +205,45 @@ module.exports = function( grunt ) {
 
 
     // Register the tasks.
-    grunt.registerTask( 'default', [ 'clean', 'copy', 'less' ] )
-    grunt.registerTask( 'strict', [ 'clean', 'copy', 'less', 'jshint', 'qunit' ] )
+    grunt.registerTask( 'default', [ 'clean', 'copy', 'htmlify', 'less' ] )
+    grunt.registerTask( 'strict', [ 'clean', 'copy', 'htmlify', 'less', 'jshint', 'qunit' ] )
     grunt.registerTask( 'travis', [ 'jshint', 'qunit' ] )
+
+
+    // Create and register the task to build out the static HTML files.
+    grunt.registerMultiTask( 'htmlify', 'Recursively build static HTML files', function() {
+
+        var task = this,
+
+            // Process the base file using the source file content.
+            processFile = function( fileSource ) {
+
+                var processedContent = ''
+
+                // Recursively process the base template using the file source content.
+                grunt.verbose.writeln( 'Processing ' + fileSource )
+                processedContent = grunt.template.process( grunt.file.read( task.data.cwd + '/base.htm' ), {
+                    delimiters: 'curly',
+                    data: {
+                        pkg: packageJSON,
+                        page: fileSource.match( /[\w-]+(?=\.htm$)/ )[ 0 ],
+                        content: grunt.file.read( fileSource ),
+                        meta: grunt.config.data.meta,
+                        dirs: grunt.config.data.dirs
+                    }
+                })
+
+                // Write the destination file by cleaning the file name.
+                grunt.log.writeln( 'Writing ' + fileSource.cyan )
+                grunt.file.write( task.data.dest + '/' + fileSource.match( /[\w-]+\.htm$/ )[ 0 ], processedContent )
+            }
+
+
+        // Map through the task directory and process the HTML files.
+        grunt.log.writeln( 'Expanding ' + task.data.cwd.cyan )
+        task.data.src.push( '!(base)*.htm' )
+        grunt.file.expand( task.data.cwd + '/' + task.data.src ).map( processFile )
+    })
 
 } //module.exports
 

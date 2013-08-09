@@ -2,6 +2,7 @@
 
 var $DOM = $( '#qunit-fixture' )
 var $NODE_DIV = $( '<div/>' )
+var $NODE_INPUT = $( '<input>' )
 var tearDownThePicker = function() {
     this.picker.stop()
     $DOM.empty()
@@ -29,7 +30,7 @@ test( 'Globals', function() {
 /**
  * Check the most basic api.
  */
-module( 'API minimal', {
+module( 'API `div` minimal', {
     setup: function() {
         this.extension = {
             name: 'pick--basic',
@@ -37,7 +38,7 @@ module( 'API minimal', {
         }
         Pick.extend( this.extension )
         var $clone = $NODE_DIV.clone().appendTo( $DOM )
-        this.picker = $clone.pick( 'pick--basic' ).pick( 'pick--basic', 'picker' )
+        this.picker = $clone.pick( 'pick--basic' ).pick( 'picker' )
     },
     teardown: tearDownThePicker
 })
@@ -49,6 +50,9 @@ test( 'Extension', function() {
 
     // Confirm it also stored appropriately.
     deepEqual( Pick._.EXTENSIONS[ 'pick--basic' ], this.extension, 'Check: collected extension' )
+
+    // Confirm the host is the source.
+    deepEqual( this.picker.$host, this.picker.$source, 'Check: host `div` is the source element' )
 })
 
 test( 'Start and stop with extension data', function() {
@@ -123,6 +127,105 @@ test( 'Open, close, focus, and blur', function() {
 
 
 /**
+ * Check the most basic `input` api.
+ */
+module( 'API `input` minimal', {
+    setup: function() {
+        this.extension = {
+            name: 'pick--basic-input',
+            content: '<div>This is the most basic form of an `input` pick extension.</div>'
+        }
+        Pick.extend( this.extension )
+        var $clone = $NODE_INPUT.clone().appendTo( $DOM )
+        this.picker = $clone.pick( 'pick--basic-input' ).pick( 'picker' )
+    },
+    teardown: tearDownThePicker
+})
+
+test( 'Extension', function() {
+
+    // Confirm the picker instance has the extension.
+    deepEqual( this.picker.r.extension, this.extension, 'Check: instance extension' )
+
+    // Confirm it also stored appropriately.
+    deepEqual( Pick._.EXTENSIONS[ 'pick--basic-input' ], this.extension, 'Check: collected extension' )
+
+    // Confirm the `input` is the source.
+    deepEqual( this.picker.$input, this.picker.$source, 'Check: `input` is the source element' )
+})
+
+test( 'Start and stop with extension data', function() {
+
+    var picker = this.picker
+    var $input = picker.$input
+
+    // Confirm the data exists.
+    ok( $input.data( 'pick.pick--basic-input' ), 'Exists: pick data' )
+
+    // Confirm the picker started.
+    strictEqual( picker.is( 'started' ), true, 'Check: started' )
+
+    // Destroy a pick extension on the element.
+    ok( picker.stop(), 'Trigger: stop' )
+    strictEqual( $input.data( 'pick.pick--basic-input' ), undefined, 'Destroy: pick data' )
+
+    // Confirm the picker stopped.
+    strictEqual( picker.is( 'started' ), false, 'Check: stopped' )
+
+    // Re-create a pick extension on the element.
+    ok( picker.start(), 'Trigger: start' )
+    ok( $input.data( 'pick.pick--basic-input' ), 'Exists: pick data' )
+
+    // Confirm the picker started again.
+    strictEqual( picker.is( 'started' ), true, 'Check: started' )
+})
+
+test( 'Open, close, focus, and blur', function() {
+
+    var picker = this.picker
+    var $input = picker.$input
+
+    // Confirm the starting state.
+    strictEqual( picker.is( 'opened' ), false, 'Check: closed' )
+    strictEqual( picker.is( 'focused' ), false, 'Check: unfocused' )
+
+    // Click to open it.
+    ok( $input.click(), 'Open: node click' )
+    strictEqual( picker.is( 'opened' ), true, 'Check: opened' )
+    strictEqual( picker.is( 'focused' ), true, 'Check: focused' )
+
+    // Click to close it.
+    ok( $DOM.click(), 'Close: doc click' )
+    strictEqual( picker.is( 'opened' ), false, 'Check: closed' )
+    strictEqual( picker.is( 'focused' ), false, 'Check: unfocused' )
+
+    // Open the picker and confirm the change.
+    ok( picker.open(), 'Trigger: open' )
+    strictEqual( picker.is( 'opened' ), true, 'Check: opened' )
+    strictEqual( picker.is( 'focused' ), false, 'Check: unfocused' )
+
+    // Close the picker and confirm the change.
+    ok( picker.close(), 'Trigger: close' )
+    strictEqual( picker.is( 'opened' ), false, 'Check: closed' )
+    strictEqual( picker.is( 'focused' ), false, 'Check: unfocused' )
+
+    // Open the picker with focus and confirm the change.
+    ok( picker.open( true ), 'Trigger: open with focus' )
+    strictEqual( picker.is( 'opened' ), true, 'Check: opened' )
+    strictEqual( picker.is( 'focused' ), true, 'Check: focused' )
+
+    // Close the picker with focus and confirm the change.
+    ok( picker.close( true ), 'Trigger: close with focus' )
+    strictEqual( picker.is( 'opened' ), false, 'Check: closed' )
+    strictEqual( picker.is( 'focused' ), true, 'Check: focused' )
+})
+
+
+
+
+
+
+/**
  * Check the alias name api.
  */
 module( 'API alias', {
@@ -157,7 +260,7 @@ module( 'API prefix', {
             prefix: 'prefix-ftw'
         })
         var $clone = $NODE_DIV.clone().appendTo( $DOM )
-        this.picker = $clone.pick( 'pick--prefix' ).pick( 'pick--prefix', 'picker' )
+        this.picker = $clone.pick( 'pick--prefix' ).pick( 'picker' )
     },
     teardown: tearDownThePicker
 })
@@ -192,7 +295,7 @@ module( 'API dict', {
             }
         })
         var $clone = $NODE_DIV.clone().appendTo( $DOM )
-        this.picker = $clone.pick( 'pick--dict' ).pick( 'pick--dict', 'picker' )
+        this.picker = $clone.pick( 'pick--dict' ).pick( 'picker' )
     },
     teardown: tearDownThePicker
 })
@@ -239,7 +342,7 @@ module( 'API formats', {
             }
         })
         var $clone = $NODE_DIV.clone().appendTo( $DOM )
-        this.picker = $clone.pick( 'pick--dict-formatter' ).pick( 'pick--dict-formatter', 'picker' )
+        this.picker = $clone.pick( 'pick--dict-formatter' ).pick( 'picker' )
     },
     teardown: tearDownThePicker
 })
@@ -269,7 +372,8 @@ module( 'API custom dict', {
             name: 'pick--dict-custom',
             dict: {
                 sup: 'not much',
-                highlight: 400
+                highlight: 400,
+                lucky_ones: [ 0, 3, 4, 5, 10 ]
             },
             cascades: {
                 select: false,
@@ -277,7 +381,7 @@ module( 'API custom dict', {
             }
         })
         var $clone = $NODE_DIV.clone().appendTo( $DOM )
-        this.picker = $clone.pick( 'pick--dict-custom' ).pick( 'pick--dict-custom', 'picker' )
+        this.picker = $clone.pick( 'pick--dict-custom' ).pick( 'picker' )
     },
     teardown: tearDownThePicker
 })
@@ -300,6 +404,21 @@ test( 'Get and set with dict and cascades', function() {
 
     strictEqual( picker.get( 'sup' ), 'just chillin’', 'Check: custom value updated' )
     strictEqual( picker.get( 'highlight' ), 'just chillin’', 'Check: custom cascade to default' )
+})
+
+test( 'Add and remove with dict collections', function() {
+
+    var picker = this.picker
+
+    deepEqual( picker.get( 'lucky_ones' ), [ 0, 3, 4, 5, 10 ], 'Check: initial value' )
+
+    ok( picker.add( 'lucky_ones', 2 ), 'Change: updated collection' )
+
+    deepEqual( picker.get( 'lucky_ones' ), [ 0, 3, 4, 5, 10, 2 ], 'Check: added new item' )
+
+    ok( picker.remove( 'lucky_ones', 3 ), 'Change: updated collection' )
+
+    deepEqual( picker.get( 'lucky_ones' ), [ 0, 4, 5, 10, 2 ], 'Check: removed item' )
 })
 
 
@@ -325,7 +444,7 @@ module( 'API custom get/set methods', {
             }
         })
         var $clone = $NODE_DIV.clone().appendTo( $DOM )
-        this.picker = $clone.pick( 'pick--get-set-custom' ).pick( 'pick--get-set-custom', 'picker' )
+        this.picker = $clone.pick( 'pick--get-set-custom' ).pick( 'picker' )
     },
     teardown: tearDownThePicker
 })
@@ -361,7 +480,7 @@ module( 'API keys', {
             }
         })
         var $clone = $NODE_DIV.clone().appendTo( $DOM )
-        this.picker = $clone.pick( 'pick--keys' ).pick( 'pick--keys', 'picker' )
+        this.picker = $clone.pick( 'pick--keys' ).pick( 'picker' )
     },
     teardown: tearDownThePicker
 })
@@ -415,8 +534,8 @@ module( 'API inputs', {
                 suffixHidden: '_hidden'
             }
         })
-        var $clone = $NODE_DIV.clone().append( $( '<input value="06" name="value_input">' ) ).appendTo( $DOM )
-        this.picker = $clone.pick( 'pick--input' ).pick( 'pick--input', 'picker' )
+        var $clone = $NODE_INPUT.clone().attr({  value: '06', name: 'value_input' }).appendTo( $DOM )
+        this.picker = $clone.pick( 'pick--input' ).pick( 'picker' )
     },
     teardown: tearDownThePicker
 })
@@ -492,7 +611,7 @@ module( 'API events', {
             }
         }
         var $clone = $NODE_DIV.clone().appendTo( $DOM )
-        this.picker = $clone.pick( 'pick--loudmouth', this.options ).pick( 'pick--loudmouth', 'picker' )
+        this.picker = $clone.pick( 'pick--loudmouth', this.options ).pick( 'picker' )
     },
     teardown: tearDownThePicker
 })
@@ -500,7 +619,6 @@ module( 'API events', {
 test( 'Instance events', 2, function() {
 
     var mod = this
-    var picker = this.picker
 
     strictEqual( mod.has.initialized, true, 'Check: `init`' )
     strictEqual( mod.has.readied, true, 'Check: `ready`' )
@@ -644,26 +762,6 @@ test( 'Extension single bindings', 8, function() {
 //     picker.$root.click()
 //     ok( picker.get( 'open' ) === true, 'Remains open with click within' )
 
-// })
-
-
-// module( 'Formatting setup', {
-//     setup: function() {
-//         $DOM.append( $INPUT.clone().attr( 'name', 'picker' ) )
-//         var $input = $DOM.find( 'input' ).pickadate({
-//             formatSubmit: 'yyyy/mm/dd'
-//         })
-//         this.picker = $input.pickadate( 'picker' )
-//     },
-//     teardown: function() {
-//         this.picker.stop()
-//         $DOM.empty()
-//     }
-// })
-
-// test( 'Hidden suffix', function() {
-//     var picker = this.picker
-//     strictEqual( picker.$node[0].name + '_submit', picker._hidden.name, 'Correct hidden element `name` suffix' )
 // })
 
 

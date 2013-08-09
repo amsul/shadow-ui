@@ -1,0 +1,50 @@
+<!doctype html>
+
+<meta charset="utf-8">
+
+<link rel="stylesheet" href="normalize.css">
+<link rel="stylesheet" href="style.css">
+
+<link rel="stylesheet" href="../lib/themes/pick.base.css">
+<link rel="stylesheet" href="../lib/themes/pick.drop.css">
+<link rel="stylesheet" href="../lib/themes/pick.modal.css">
+<link rel="stylesheet" href="../lib/themes/pick.box.css">
+
+<body>
+
+    <script src="jquery.js"></script>
+    <script src="../lib/legacy.js"></script>
+    <script src="../lib/pick.js"></script>
+
+    <a href="../demos">demos</a>
+    <hr>
+
+    
+<section>
+    <div class="div">Keys trigger</div>
+</section>
+
+<script>
+
+    $.fn.pick.extend({
+        name: 'pick--keys',
+        keys: {
+            65: function( /*event*/ ) {
+                ++this.dict.highlight
+                this.picker.$host.trigger( 'key_change' )
+            }
+        }
+    })
+
+    var $div = $( '.div' ).pick( 'pick--keys' )
+    var picker = $div.pick( 'picker' )
+
+    picker.$host.on( 'key_change', function() {
+        console.log( picker.get( 'highlight' ) )
+    })
+
+</script>
+
+
+</body>
+

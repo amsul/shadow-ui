@@ -2,60 +2,31 @@
 
 <meta charset="utf-8">
 
-<style>
-    body {
-        font-family: sans-serif;
-        font-weight: 100;
-        margin: 2em;
-    }
-    section {
-        margin: 2em 0;
-    }
-    input {
-        border: 1px solid #ccc;
-        margin: 0;
-    }
-    input:focus {
-        border-color: #444;
-    }
-    input[type=checkbox] {
-        margin-right: 5px;
-    }
-    .div {
-        text-align: center;
-        position: relative;
-        background: #ddd;
-    }
-    h4 {
-        margin: 0;
-        padding: .5em 0;
-    }
-    .outlet {
-        padding-bottom: .5em;
-    }
-</style>
+<link rel="stylesheet" href="normalize.css">
+<link rel="stylesheet" href="style.css">
+
 <link rel="stylesheet" href="../lib/themes/pick.base.css">
 <link rel="stylesheet" href="../lib/themes/pick.drop.css">
 <link rel="stylesheet" href="../lib/themes/pick.modal.css">
 <link rel="stylesheet" href="../lib/themes/pick.box.css">
 
+<body>
+
+    <script src="jquery.js"></script>
+    <script src="../lib/legacy.js"></script>
+    <script src="../lib/pick.js"></script>
+
+    <a href="../demos">demos</a>
+    <hr>
+
+    
 <section>
-    <div class="div dropdown">
+    <div class="div">
         <h4>Multiple option dropdown</h4>
         <div class="outlet"></div>
     </div>
 </section>
 
-<section>
-    <div class="inline-box">
-        <h4>Inline position</h4>
-    </div>
-</section>
-
-<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-
-<script src="jquery.js"></script>
-<script src="../lib/pick.js"></script>
 <script>
 
     function printSelections( selections, options, $host ) {
@@ -109,23 +80,12 @@
         }
     })
 
-    var $div = $( '.dropdown' ).dropdown()
+    var $div = $( '.div' ).dropdown()
     var picker = $div.dropdown( 'picker' )
     // picker.open(true)
 
-
-    ////////////////////////////////////////////////////////////
-
-
-    Pick.extend({
-        name: 'inline-box',
-        alias: 'inlineBox',
-        prefix: 'pick-box',
-        content: '<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>'
-    })
-
-    var $div2 = $( '.inline-box' ).inlineBox()
-    var picker = $div2.inlineBox( 'picker' )
-    // picker.open(true)
-
 </script>
+
+
+</body>
+

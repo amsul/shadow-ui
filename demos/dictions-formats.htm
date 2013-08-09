@@ -1,0 +1,53 @@
+<!doctype html>
+
+<meta charset="utf-8">
+
+<link rel="stylesheet" href="normalize.css">
+<link rel="stylesheet" href="style.css">
+
+<link rel="stylesheet" href="../lib/themes/pick.base.css">
+<link rel="stylesheet" href="../lib/themes/pick.drop.css">
+<link rel="stylesheet" href="../lib/themes/pick.modal.css">
+<link rel="stylesheet" href="../lib/themes/pick.box.css">
+
+<body>
+
+    <script src="jquery.js"></script>
+    <script src="../lib/legacy.js"></script>
+    <script src="../lib/pick.js"></script>
+
+    <a href="../demos">demos</a>
+    <hr>
+
+    
+<section>
+    <div class="div">Dictions and formats</div>
+</section>
+
+<script>
+
+    $.fn.pick.extend({
+        name: 'pick--dict-formatter',
+        formats: {
+            lol: 'Laugh Out Loud!',
+            c: function( value ) {
+                var string = '' + value
+                for ( var i = value + 1; i < value + 5; i += 1 ) {
+                    string += i
+                }
+                return string
+            }
+        }
+    })
+
+    var $div = $( '.div' ).pick( 'pick--dict-formatter' )
+    var picker = $div.pick( 'picker' )
+
+    console.log( picker.get( 'select', 'lol [That’s funny, lol].' ) )
+    console.log( picker.get( 'select', 'c [Let’s c what happens].' ) )
+
+</script>
+
+
+</body>
+

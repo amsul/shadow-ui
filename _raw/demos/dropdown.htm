@@ -1,0 +1,66 @@
+
+<section>
+    <div class="div">
+        <h4>Multiple option dropdown</h4>
+        <div class="outlet"></div>
+    </div>
+</section>
+
+<script>
+
+    function printSelections( selections, options, $host ) {
+        $outlet = $host.children( '.outlet' ).detach().empty()
+        selections.
+            sort(function( a, b ) { return b > a ? -1 : 1 }).
+            forEach(function( selection ) {
+                $outlet.append( '&nbsp;<kbd>' + options[ selection ] + '</kbd>&nbsp;' )
+            })
+        $host.append( $outlet )
+    }
+
+    Pick.extend({
+        name: 'dropdown',
+        alias: 'dropdown',
+        dict: {
+            options: [ 'All', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten' ],
+            select: [ 0, 3, 4, 5, 10 ]
+        },
+        init: function() {
+            printSelections( this.dict.select, this.dict.options, this.picker.$host )
+        },
+        ready: function() {
+            var picker = this.picker,
+                diction = this.dict
+            picker.$root.on( 'change', function( event ) {
+                var value = ~~event.target.value
+                if ( event.target.checked ) picker.add( 'select', value )
+                else picker.remove( 'select', value )
+                printSelections( diction.select, diction.options, picker.$host )
+            })
+        },
+        content: function() {
+            var selections = this.dict.select,
+                options = this.dict.options
+            return Pick._.node({
+                el: 'ul',
+                content: options.map( function( option, index ) {
+                    var isSelected = selections.indexOf( index ) > -1
+                    return Pick._.node({
+                        el: 'li',
+                        content: [
+                            '<label>',
+                                '<input value="' + index + '"' + (isSelected ? ' checked' : '') + ' type=checkbox>',
+                                option,
+                            '</label>'
+                        ]
+                    })
+                })
+            })
+        }
+    })
+
+    var $div = $( '.div' ).dropdown()
+    var picker = $div.dropdown( 'picker' )
+    // picker.open(true)
+
+</script>

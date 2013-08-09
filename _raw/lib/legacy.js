@@ -1,44 +1,26 @@
 
 /*jshint
-   asi: true,
-   unused: true,
    boss: true,
-   loopfunc: true,
-   eqnull: true
+   loopfunc: true
  */
+
+(function() {
+
+'use strict';
 
 
 /*!
  * Legacy browser support
  */
 
-
 // Map array support
 if ( ![].map ) {
     Array.prototype.map = function ( callback, self ) {
         var array = this, len = array.length, newArray = new Array( len )
-        for ( var i = 0; i < len; i++ ) {
+        for ( var i = 0; i < len; ++i ) {
             if ( i in array ) {
                 newArray[ i ] = callback.call( self, array[ i ], i, array )
             }
-        }
-        return newArray
-    }
-}
-
-
-// Filter array support
-if ( ![].filter ) {
-    Array.prototype.filter = function( callback ) {
-        if ( this == null ) throw new TypeError()
-        var t = Object( this ), len = t.length >>> 0
-        if ( typeof callback != 'function' ) throw new TypeError()
-        var newArray = [], thisp = arguments[ 1 ]
-        for ( var i = 0; i < len; i++ ) {
-          if ( i in t ) {
-            var val = t[ i ]
-            if ( callback.call( thisp, val, i, t ) ) newArray.push( val )
-          }
         }
         return newArray
     }
@@ -71,13 +53,44 @@ if ( ![].indexOf ) {
 }
 
 
+// Function binding support
+if ( !Function.prototype.bind ) {
+    Function.prototype.bind = function ( that ) {
+        if ( typeof this !== 'function') throw new TypeError('Function.prototype.bind - what is trying to be bound is not callable')
+        var aArgs = Array.prototype.slice.call(arguments, 1),
+            FuncToBind = this,
+            FuncNOP = function() {},
+            FuncBound = function() {
+                return FuncToBind.apply(this instanceof FuncNOP && that ? this : that,
+                    aArgs.concat(Array.prototype.slice.call(arguments))
+                )
+            }
+        FuncNOP.prototype = this.prototype
+        FuncBound.prototype = new FuncNOP()
+        return FuncBound
+    }
+}
+
+
+// Object keys support
+if ( !Object.keys ) {
+    Object.keys = function(o) {
+        if (o !== Object(o))
+        throw new TypeError('Object.keys called on a non-object')
+        var k=[],p
+        for (p in o) if (Object.prototype.hasOwnProperty.call(o,p)) k.push(p)
+        return k
+    }
+}
+
+
 /*!
  * Cross-Browser Split 1.1.1
  * Copyright 2007-2012 Steven Levithan <stevenlevithan.com>
  * Available under the MIT License
  * http://blog.stevenlevithan.com/archives/cross-browser-split
  */
-var nativeSplit = String.prototype.split, compliantExecNpcg = /()??/.exec('')[1] === undefined
+var nativeSplit = ''.split, compliantExecNpcg = /()??/.exec('')[1] === undefined
 String.prototype.split = function(separator, limit) {
     var str = this
     if (Object.prototype.toString.call(separator) !== '[object RegExp]') {
@@ -131,3 +144,7 @@ String.prototype.split = function(separator, limit) {
     }
     return output.length > limit ? output.slice(0, limit) : output
 }
+
+
+})();
+

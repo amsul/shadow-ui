@@ -2,186 +2,29 @@
 
 <meta charset="utf-8">
 
-<style>
-    body {
-        font-family: sans-serif;
-        font-weight: 100;
-        margin: 2em;
-    }
-    section {
-        margin: 2em 0;
-    }
-    input {
-        border: 1px solid #ccc;
-        margin: 0;
-    }
-    input:focus {
-        border-color: #444;
-    }
-    .div {
-        /*float: left;*/
-        text-align: center;
-        position: relative;
-        background: #ddd;
-    }
-    .content {
-        color: green;
-        font-size: 24px;
-        font-weight: bold;
-        padding: 10px;
-    }
-</style>
+<link rel="stylesheet" href="normalize.css">
+<link rel="stylesheet" href="style.css">
+
 <link rel="stylesheet" href="../lib/themes/pick.base.css">
 <link rel="stylesheet" href="../lib/themes/pick.drop.css">
 <link rel="stylesheet" href="../lib/themes/pick.modal.css">
 <link rel="stylesheet" href="../lib/themes/pick.box.css">
 
+<body>
+
+    <script src="jquery.js"></script>
+    <script src="../lib/legacy.js"></script>
+    <script src="../lib/pick.js"></script>
+
+    <a href="../demos">demos</a>
+    <hr>
+
+    
 <section>
-    <div class="div pick--basic">Basic</div>
+    <div class="div">Input picker<input class="input" type="text" value="06" name="value_input"></div>
 </section>
 
-<section>
-    <div class="div pick--dict">Dictions</div>
-</section>
-
-<section>
-    <div class="div pick--dict-formatter">Dictions formatter</div>
-</section>
-
-<section>
-    <div class="div pick--dict-custom">Custom dict</div>
-</section>
-
-<section>
-    <div class="div pick--get-set-custom">Custom get and set</div>
-</section>
-
-<section>
-    <div class="div pick--keys">Keys trigger</div>
-</section>
-
-<section>
-    <div class="div">Input picker<input class=" pick--input" type="text" value="06" name="value_input"></div>
-</section>
-
-<section>
-    <div class="div pick--alias">Aliased extension</div>
-</section>
-
-<script src="jquery.js"></script>
-<script src="../lib/pick.js"></script>
 <script>
-
-    $.fn.pick.extend({
-        name: 'pick--basic',
-        content: '<div class="content">This is the most basic form of a picker.</div>'
-    })
-
-    var $div = $( '.pick--basic' ).pick( 'pick--basic' )
-
-
-    ////////////////////////////////////////////////////////////
-
-
-    $.fn.pick.extend({
-        name: 'pick--dict',
-        content: function() {
-            var to_select = ~~(Math.random()*1000),
-                to_highlight = ~~(Math.random()*1000)
-            return '<div class="content">' +
-                'Select: <u>' + this.picker.get('select') + '</u><br>' +
-                'Highlight: <u>' + this.picker.get('highlight') + '</u><hr>' +
-                '<button data-pick="select:' + to_select + '">Set select to ' + to_select + '</button>' +
-                '<button data-pick="highlight:' + to_highlight + '">Set highlight to ' + to_highlight + '</button>' +
-            '</div>'
-        },
-        ready: function() {
-            var picker = this.picker
-            picker.on( 'set', function( event ) {
-                if ( 'highlight' in event.data || 'select' in event.data ) {
-                    picker.render()
-                }
-            })
-        }
-    })
-
-    var $div2 = $( '.pick--dict' ).pick( 'pick--dict' )
-
-
-    ////////////////////////////////////////////////////////////
-
-
-    $.fn.pick.extend({
-        name: 'pick--dict-formatter',
-        formats: {
-            lol: 'Laugh Out Loud!',
-            c: function( value ) {
-                var string = '' + value
-                for ( var i = value + 1; i < value + 5; i += 1 ) {
-                    string += i
-                }
-                return string
-            }
-        }
-    })
-
-    var $div3 = $( '.pick--dict-formatter' ).pick( 'pick--dict-formatter' )
-
-
-    ////////////////////////////////////////////////////////////
-
-
-    $.fn.pick.extend({
-        name: 'pick--dict-custom',
-        dict: {
-            sup: 'not much',
-            highlight: 400
-        },
-        cascades: {
-            select: false,
-            sup: 'highlight'
-        }
-    })
-
-    var $div4 = $( '.pick--dict-custom' ).pick( 'pick--dict-custom' )
-
-
-    ////////////////////////////////////////////////////////////
-
-
-    $.fn.pick.extend({
-        name: 'pick--get-set-custom',
-        get: function( thing, options ) {
-            var value = this.dict[ thing ]
-            return options === true ? value : String.fromCharCode( 65 + value )
-        },
-        set: function( thing, value, options ) {
-            value = value.charCodeAt(0) - 65
-            this.dict[ thing ] = value
-            return value
-        }
-    })
-
-    var $div5 = $( '.pick--get-set-custom' ).pick( 'pick--get-set-custom' )
-
-
-    ////////////////////////////////////////////////////////////
-
-
-    $.fn.pick.extend({
-        name: 'pick--keys',
-        keys: {
-            65: function( /*event*/ ) {
-                ++this.dict.highlight
-            }
-        }
-    })
-
-    var $div6 = $( '.pick--keys' ).pick( 'pick--keys' )
-
-
-    ////////////////////////////////////////////////////////////
-
 
     $.fn.pick.extend({
         name: 'pick--input',
@@ -227,18 +70,11 @@
         }
     })
 
-    var $div7 = $( '.pick--input' ).pick( 'pick--input' )
-
-
-    ////////////////////////////////////////////////////////////
-
-
-    $.fn.pick.extend({
-        name: 'pick--alias',
-        alias: 'pickAliased'
-    })
-
-    var $div8 = $( '.pick--alias' ).pickAliased()
-
+    var $input = $( '.input' ).pick( 'pick--input' )
+    var picker = $input.pick( 'picker' )
 
 </script>
+
+
+</body>
+

@@ -143,7 +143,7 @@ function createInstance( picker, extension ) {
             },
             toFormatHash: function( format, value ) {
                 var object = {}
-                instance.toFormatArray( format ).forEach( function( formatting ) {
+                instance.toFormatArray( format ).map( function( formatting ) {
                     var formattingLength = formatting.f ? Pick._.trigger( instance.formats[ formatting.f ], instance, [ value, true ] ) : formatting.length
                     if ( formatting.f ) {
                         object[ formatting.f ] = value.substr( 0, formattingLength )
@@ -666,7 +666,7 @@ PickExtension.prototype = {
         var picker = this,
             methodList = picker.i.bindings[ name ]
         if ( methodList ) {
-            methodList.forEach( function( callback ) {
+            methodList.map( function( callback ) {
                 Pick._.trigger( callback, picker, [ data ] )
             })
         }
@@ -998,7 +998,7 @@ $.fn.pick = function( name, options ) {
     if ( extension ) {
 
         // Trigger the `name` action and pass all arguments (except `name`).
-        returnValue = Pick._.trigger( extension[ name ], extension, ([]).slice.apply( arguments, [1] ) )
+        returnValue = Pick._.trigger( extension[ name ], extension, [].slice.apply( arguments, [1] ) )
 
         // If the picker is returned, allow for jQuery chaining.
         // Otherwise return the value from the picker’s method.

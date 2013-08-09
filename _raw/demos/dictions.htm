@@ -1,0 +1,33 @@
+
+<section>
+    <div class="div">Dictions and cascades</div>
+</section>
+
+<script>
+
+    $.fn.pick.extend({
+        name: 'pick--dict',
+        content: function() {
+            var to_select = ~~(Math.random()*1000),
+                to_highlight = ~~(Math.random()*1000)
+            return '<div class="content">' +
+                'Select: <u>' + this.picker.get('select') + '</u><br>' +
+                'Highlight: <u>' + this.picker.get('highlight') + '</u><hr>' +
+                '<button data-pick="select:' + to_select + '">Set select to ' + to_select + '</button>' +
+                '<button data-pick="highlight:' + to_highlight + '">Set highlight to ' + to_highlight + '</button>' +
+            '</div>'
+        },
+        ready: function() {
+            var picker = this.picker
+            picker.on( 'set', function( event ) {
+                if ( 'highlight' in event.data || 'select' in event.data ) {
+                    picker.render()
+                }
+            })
+        }
+    })
+
+    var $div = $( '.div' ).pick( 'pick--dict' )
+    var picker = $div.pick( 'picker' )
+
+</script>

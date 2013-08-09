@@ -1,0 +1,32 @@
+
+<section>
+    <div class="div">Custom dictions</div>
+</section>
+
+<script>
+
+    $.fn.pick.extend({
+        name: 'pick--get-set-custom',
+        get: function( thing, options ) {
+            var value = this.dict[ thing ]
+            return options === true ? value : String.fromCharCode( 65 + value )
+        },
+        set: function( thing, value, options ) {
+            value = value.charCodeAt(0) - 65
+            this.dict[ thing ] = value
+            return value
+        }
+    })
+
+    var $div = $( '.div' ).pick( 'pick--get-set-custom' )
+    var picker = $div.pick( 'picker' )
+
+    console.log( picker.get( 'highlight' ) )
+    console.log( picker.get( 'select' ) )
+
+    picker.set( 'highlight', 'K' )
+
+    console.log( picker.get( 'highlight' ) )
+    console.log( picker.get( 'select' ) )
+
+</script>

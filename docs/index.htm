@@ -2,9 +2,7 @@
 
 <meta charset="utf-8">
 
-<link rel="stylesheet" href="../demos/normalize.css">
-<link rel="stylesheet" href="../demos/style.css">
-
+<link rel="stylesheet" href="../demos/styles/main.css">
 <link rel="stylesheet" href="../lib/themes/pick.base.css">
 <link rel="stylesheet" href="../lib/themes/pick.drop.css">
 <link rel="stylesheet" href="../lib/themes/pick.modal.css">
@@ -12,7 +10,8 @@
 
 <body>
 
-    <script src="../demos/jquery.js"></script>
+    <script src="../demos/scripts/jquery.js"></script>
+    <script src="../demos/scripts/rainbow.js"></script>
     <script src="../lib/legacy.js"></script>
     <script src="../lib/pick.js"></script>
 
@@ -22,12 +21,30 @@
     <hr>
 
     
-this is the most basic picker:
+<section class="section">
+    <div class="section__block section__block--scoped">
 
-<pre>Pick.extend({
+        this is the most basic picker:
+
+        <pre class="codeblock"><code data-language="javascript">Pick.extend({
     name: 'pindrop',
-    content: 'My awesome picker.'
-})</pre>
+    content: 'My awesome picker'
+})</code></pre>
+
+        <div class="codeblock-demo">
+            <div id="pindrop">Pindrop</div>
+        </div>
+
+    </div>
+</section>
+
+<script>
+    Pick.extend({
+        name: 'pindrop',
+        content: 'My awesome picker'
+    })
+    $('#pindrop').pick('pindrop')
+</script>
 
 
 

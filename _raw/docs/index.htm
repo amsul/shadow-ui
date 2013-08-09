@@ -1,8 +1,26 @@
 
-this is the most basic picker:
+<section class="section">
+    <div class="section__block section__block--scoped">
 
-<pre>Pick.extend({
+        this is the most basic picker:
+
+        <pre class="codeblock"><code data-language="javascript">Pick.extend({
     name: 'pindrop',
-    content: 'My awesome picker.'
-})</pre>
+    content: 'My awesome picker'
+})</code></pre>
+
+        <div class="codeblock-demo">
+            <div id="pindrop">Pindrop</div>
+        </div>
+
+    </div>
+</section>
+
+<script>
+    Pick.extend({
+        name: 'pindrop',
+        content: 'My awesome picker'
+    })
+    $('#pindrop').pick('pindrop')
+</script>
 

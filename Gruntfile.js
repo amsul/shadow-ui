@@ -95,7 +95,7 @@ module.exports = function( grunt ) {
             demos: {
                 expand: true,
                 cwd: '<%= dirs.src.demos %>',
-                src: [ '*.css', '*.js' ],
+                src: [ 'styles/*.css', 'scripts/*.js' ],
                 dest: '<%= dirs.dest.demos %>'
             }
         },
@@ -131,6 +131,11 @@ module.exports = function( grunt ) {
                     '<%= dirs.dest.themes %>/<%= pkg.name %>.box.css': '<%= dirs.src.themes %>/box.less',
                     '<%= dirs.dest.themes %>/<%= pkg.name %>.drop.css': '<%= dirs.src.themes %>/drop.less',
                     '<%= dirs.dest.themes %>/<%= pkg.name %>.modal.css': '<%= dirs.src.themes %>/modal.less'
+                }
+            },
+            demos: {
+                files: {
+                    '<%= dirs.dest.demos %>/styles/main.css': '<%= dirs.src.demos %>/styles/base.less'
                 }
             }
         },
@@ -191,12 +196,12 @@ module.exports = function( grunt ) {
                 tasks: [ 'copy:tests' ]
             },
             demos: {
-                files: [ '<%= dirs.src.demos %>/*.htm' ],
-                tasks: [ 'htmlify:demos' ]
+                files: [ '<%= dirs.src.demos %>/*.htm', '<%= dirs.src.demos %>/styles/*.less' ],
+                tasks: [ 'htmlify:demos', 'less:demos' ]
             },
             docs: {
-                files: [ '<%= dirs.src.docs %>/*.htm' ],
-                tasks: [ 'htmlify:docs' ]
+                files: [ '<%= dirs.src.docs %>/*.htm', '<%= dirs.src.demos %>/styles/*.less' ],
+                tasks: [ 'htmlify:docs', 'less:demos' ]
             },
             gruntfile: {
                 files: [ 'Gruntfile.js' ],

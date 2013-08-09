@@ -40,13 +40,15 @@ module.exports = function( grunt ) {
                 lib: '_raw/lib',
                 themes: '_raw/lib/themes',
                 tests: '_raw/tests',
-                demos: '_raw/demos'
+                demos: '_raw/demos',
+                docs: '_raw/docs'
             },
             dest: {
                 lib: 'lib',
                 themes: 'lib/themes',
                 tests: 'tests',
-                demos: 'demos'
+                demos: 'demos',
+                docs: 'docs'
             }
         },
 
@@ -57,6 +59,7 @@ module.exports = function( grunt ) {
             themes: [ '<%= dirs.dest.themes %>' ],
             tests: [ '<%= dirs.dest.tests %>' ],
             demos: [ '<%= dirs.dest.demos %>' ],
+            docs: [ '<%= dirs.dest.docs %>' ],
             pkg: [ '<%= pkg.name %>.jquery.json', '*.md' ]
         },
 
@@ -97,11 +100,22 @@ module.exports = function( grunt ) {
             }
         },
         htmlify: {
+            // pkg: {
+            //     // todo..
+            // },
             demos: {
                 expand: true,
                 cwd: '<%= dirs.src.demos %>',
-                src: [],
-                dest: '<%= dirs.dest.demos %>'
+                src: [ '*.htm' ],
+                dest: '<%= dirs.dest.demos %>',
+                base: '../base.htm'
+            },
+            docs: {
+                expand: true,
+                cwd: '<%= dirs.src.docs %>',
+                src: [ '*.htm' ],
+                dest: '<%= dirs.dest.docs %>',
+                base: '../base.htm'
             }
         },
 
@@ -161,8 +175,8 @@ module.exports = function( grunt ) {
         // Watch the project files.
         watch: {
             pkg: {
-                files: [ '<%= dirs.src.raw %>/*md' ],
-                tasks: [ 'copy:pkg' ]
+                files: [ '<%= dirs.src.raw %>/*md', '<%= dirs.src.raw %>/*.htm' ],
+                tasks: [ 'copy:pkg', 'htmlify' ]
             },
             lib: {
                 files: [ '<%= dirs.src.lib %>/*.js' ],
@@ -179,6 +193,10 @@ module.exports = function( grunt ) {
             demos: {
                 files: [ '<%= dirs.src.demos %>/*.htm' ],
                 tasks: [ 'htmlify:demos' ]
+            },
+            docs: {
+                files: [ '<%= dirs.src.docs %>/*.htm' ],
+                tasks: [ 'htmlify:docs' ]
             },
             gruntfile: {
                 files: [ 'Gruntfile.js' ],
@@ -222,7 +240,7 @@ module.exports = function( grunt ) {
 
                 // Recursively process the base template using the file source content.
                 grunt.verbose.writeln( 'Processing ' + fileSource )
-                processedContent = grunt.template.process( grunt.file.read( task.data.cwd + '/base.htm' ), {
+                processedContent = grunt.template.process( grunt.file.read( task.data.cwd + '/' + task.data.base ), {
                     delimiters: 'curly',
                     data: {
                         pkg: packageJSON,
@@ -241,7 +259,6 @@ module.exports = function( grunt ) {
 
         // Map through the task directory and process the HTML files.
         grunt.log.writeln( 'Expanding ' + task.data.cwd.cyan )
-        task.data.src.push( '!(base)*.htm' )
         grunt.file.expand( task.data.cwd + '/' + task.data.src ).map( processFile )
     })
 

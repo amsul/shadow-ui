@@ -2,8 +2,8 @@
 
 <meta charset="utf-8">
 
-<link rel="stylesheet" href="normalize.css">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="../{%= dirs.dest.demos %}/normalize.css">
+<link rel="stylesheet" href="../{%= dirs.dest.demos %}/style.css">
 
 <link rel="stylesheet" href="../{%= dirs.dest.themes %}/pick.base.css">
 <link rel="stylesheet" href="../{%= dirs.dest.themes %}/pick.drop.css">
@@ -12,11 +12,13 @@
 
 <body>
 
-    <script src="jquery.js"></script>
+    <script src="../{%= dirs.dest.demos %}/jquery.js"></script>
     <script src="../{%= dirs.dest.lib %}/legacy.js"></script>
     <script src="../{%= dirs.dest.lib %}/{%= pkg.title %}"></script>
 
-    <a href="../demos">demos</a>
+    <a href="../">home</a>
+    <a href="../{%= dirs.dest.demos %}">demos</a>
+    <a href="../{%= dirs.dest.docs %}">docs</a>
     <hr>
 
     {%= content %}

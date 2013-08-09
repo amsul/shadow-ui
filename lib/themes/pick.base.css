@@ -66,6 +66,7 @@
   /* Set the base text stylings. */
 
   font-size: 16px;
+  font-weight: 200;
   line-height: 1.2;
   text-align: left;
 }

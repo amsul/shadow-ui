@@ -61,7 +61,7 @@
 </section>
 
 <section>
-    <div class="div pick--input">Input picker<input type="text" value="06" name="value_input"></div>
+    <div class="div">Input picker<input class=" pick--input" type="text" value="06" name="value_input"></div>
 </section>
 
 <section>
@@ -227,7 +227,7 @@
         }
     })
 
-    var $div7 = $( '.pick--input' ).pick( 'pick--input' ).pick('pick--input', 'open')
+    var $div7 = $( '.pick--input' ).pick( 'pick--input' )
 
 
     ////////////////////////////////////////////////////////////
@@ -235,8 +235,7 @@
 
     $.fn.pick.extend({
         name: 'pick--alias',
-        alias: 'pickAliased',
-        prefix: 'pick-modal'
+        alias: 'pickAliased'
     })
 
     var $div8 = $( '.pick--alias' ).pickAliased()

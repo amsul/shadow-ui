@@ -178,14 +178,6 @@
         text-align: center;
     }
 
-    /* Align the pointer pseudo-borders. */
-    .pick-drop--center .pick-drop__pointer:before {
-        left: @height-pointer--pick-drop/2;
-    }
-    .pick-drop--center .pick-drop__pointer:after {
-        left: -(@height-pointer--pick-drop/2 + @height-pointer--pick-drop);
-    }
-
     /* Adjust the holder to the center using half it’s width as a negative margin. */
     .pick-drop--center .pick-drop__holder {
         margin-left: -(@width--pick-drop/2);

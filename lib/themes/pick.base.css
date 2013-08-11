@@ -26,6 +26,11 @@
 /**
  * The extended host element.
  */
+.pick-drop-host,
+.pick-modal-host,
+.pick-box-host {
+  position: relative;
+}
 /* The host state when it is focused. */
 .pick-drop-host:focus,
 .pick-modal-host:focus,

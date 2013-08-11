@@ -14,6 +14,9 @@
     /* Make sure elements around aren’t affected. */
     position: absolute;
 
+    /* Align it to the left edge by default. */
+    left: 0;
+
     /* Hide everything to begin with. */
     opacity: 0;
 
@@ -39,12 +42,20 @@
 
 
     /**
+     * The pick-drop’s pointer and holder.
+     */
+    .pick-drop__pointer,
+    .pick-drop__holder {
+
+        /* Set the width. */
+        width: @width--pick-drop;
+    }
+
+
+    /**
      * The pick-drop’s pointer and pseudo-borders.
      */
     .pick-drop__pointer {
-
-        /* Set a width. */
-        width: @width--pick-drop;
 
         /* Give room for the pseudo-borders. */
         height: @height-pointer--pick-drop;
@@ -114,9 +125,6 @@
      */
     .pick-drop__holder {
 
-        /* Set a width. */
-        width: @width--pick-drop;
-
         /* Add a background and collapsed border. */
         background: @background--pick-drop;
         border: 0 solid @border-color--pick-drop;
@@ -154,6 +162,16 @@
     }
 
 
+        /**
+         * The content frame.
+         */
+        .pick-drop__frame {
+
+            /* Set the max height before scrolling. */
+            max-height: @max-height--pick-drop;
+        }
+
+
 
 
 /**
@@ -165,22 +183,20 @@
     width: 0;
 
     /* Fix the element edges to the parent. */
-    left: 0;
     right: 0;
 
     /* Then center it. */
     margin: 0 auto;
 }
 
-    /* Align the pointer to the center using half it’s width as a negative margin. */
-    .pick-drop--center .pick-drop__pointer {
-        margin-left: -(@width--pick-drop/2);
-        text-align: center;
-    }
-
-    /* Adjust the holder to the center using half it’s width as a negative margin. */
+    /* Align the pointer and holder to the center using half the width as a negative margin. */
+    .pick-drop--center .pick-drop__pointer,
     .pick-drop--center .pick-drop__holder {
         margin-left: -(@width--pick-drop/2);
+    }
+
+    .pick-drop--center .pick-drop__pointer {
+        text-align: center;
     }
 
 
@@ -190,6 +206,7 @@
  * The right aligned pick-drop.
  */
 .pick-drop--right {
+    left: auto;
     right: 0;
 }
 

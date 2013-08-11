@@ -1,0 +1,50 @@
+
+<section>
+    <div class="div" data-value="006">Custom input picker</div>
+</section>
+
+<script>
+
+    $.fn.pick.extend({
+        name: 'pick--input-custom',
+        formats: {
+            dd: function( value ) {
+                return '0' + value
+            },
+            ddd: function( value ) {
+                return '00' + value
+            }
+        },
+        defaults: {
+            format: 'dd',
+            formatHidden: 'ddd',
+            suffixHidden: '_submit'
+        },
+        content: function() {
+            var string = '<input class="input" type="text" name="value_input">'
+            return '<p>' + string + '</p>'
+        },
+
+        init: function( formatValueHash ) {
+
+            var dict = this.dict,
+                picker = this.picker
+
+            if ( 'ddd' in formatValueHash ) dict.select = ~~formatValueHash.ddd
+
+            picker.on( 'render', function() {
+                picker.$input = picker.$root.find( 'input' ).first()
+                picker.$host.trigger( 'change' )
+            })
+
+            picker.$host.on( 'change', function() {
+                picker.$input[0].value = picker.get( 'select', { format: picker.settings.format } )
+            })
+        }
+    })
+
+    var $input = $( '.div' ).pick( 'pick--input-custom' )
+    var picker = $input.pick( 'picker' )
+    picker.open()
+
+</script>

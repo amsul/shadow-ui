@@ -202,7 +202,8 @@ function createTemplate( picker ) {
 function PickExtension( $element, extension, options ) {
 
     var picker = this,
-        nodeName = $element[0].nodeName
+        nodeName = $element[0].nodeName,
+        valueHidden = $element.attr( 'data-value' )
 
     // Link up the source element.
     picker.$source = $element
@@ -226,8 +227,16 @@ function PickExtension( $element, extension, options ) {
     // Create class names by merging the prefixed defaults with the settings.
     picker.klasses = Pick._.prefix( picker.i.prefix, $.extend( {}, Pick._.klasses(), picker.settings.klass ) )
 
-    // Start up the picker.
-    picker.start()
+    // Before starting, trigger the instance’s `init` method.
+    // If there’s the need, parse the input value into a format-value hash.
+    Pick._.trigger( picker.i.init, picker.i, [
+        picker.i.formats ?
+            picker.i.toFormatHash( valueHidden ? picker.settings.formatHidden : picker.settings.format, valueHidden || $element[0].value ) :
+            null
+    ])
+
+    // Start up the picker with the starting value.
+    picker.start( valueHidden )
 }
 
 
@@ -243,42 +252,19 @@ PickExtension.prototype = {
     /**
      * Construct the extension.
      */
-    start: function() {
+    start: function( valueHidden ) {
 
         var template,
             picker = this,
-            instance = picker.i,
-            valueHidden = picker.$source.attr( 'data-value' )
+            instance = picker.i
 
 
         // If it’s already started, do nothing.
         if ( instance.is.started ) return picker
 
 
-        // Before starting, trigger the instance’s `init` method.
-        // If there’s the need, parse the input value into a format-value hash.
-        Pick._.trigger( picker.i.init, picker.i, [
-            picker.i.formats ?
-                picker.i.toFormatHash( valueHidden ? picker.settings.formatHidden : picker.settings.format, valueHidden || picker.$source[0].value ) :
-                null
-        ])
-
-
         // Update the `started` state.
         instance.is.started = true
-
-
-        // Register the default settings events.
-        picker.on({
-            start: picker.settings.onStart,
-            render: picker.settings.onRender,
-            stop: picker.settings.onStop,
-            open: picker.settings.onOpen,
-            close: picker.settings.onClose,
-            focus: picker.settings.onFocus,
-            blur: picker.settings.onBlur,
-            set: picker.settings.onSet
-        })
 
 
         // If there’s an input element, create a host.
@@ -395,16 +381,25 @@ PickExtension.prototype = {
             })
 
 
-        // Trigger any queued “render” events.
-        picker.trigger( 'render' )
-
-
-        // Trigger the instance `ready` method after the host and root are prepared.
+        // Once all is composed, trigger the instance’s `ready` method.
         Pick._.trigger( instance.ready, instance )
 
 
-        // Trigger any queued “start” events.
-        return picker.trigger( 'start' )
+        // Register the default settings events.
+        picker.on({
+            start: picker.settings.onStart,
+            render: picker.settings.onRender,
+            stop: picker.settings.onStop,
+            open: picker.settings.onOpen,
+            close: picker.settings.onClose,
+            focus: picker.settings.onFocus,
+            blur: picker.settings.onBlur,
+            set: picker.settings.onSet
+        })
+
+
+        // Trigger any queued “start” and “render” events.
+        return picker.trigger( 'start' ).trigger( 'render' )
     }, //start
 
 

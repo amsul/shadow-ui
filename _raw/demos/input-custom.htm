@@ -24,13 +24,12 @@
             var string = '<input class="input" type="text" name="value_input">'
             return '<p>' + string + '</p>'
         },
-
         init: function( formatValueHash ) {
+            if ( 'ddd' in formatValueHash ) this.dict.select = ~~formatValueHash.ddd
+        },
+        ready: function() {
 
-            var dict = this.dict,
-                picker = this.picker
-
-            if ( 'ddd' in formatValueHash ) dict.select = ~~formatValueHash.ddd
+            var picker = this.picker
 
             picker.on( 'render', function() {
                 picker.$input = picker.$root.find( 'input' ).first()

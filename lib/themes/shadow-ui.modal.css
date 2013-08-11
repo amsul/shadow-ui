@@ -21,12 +21,12 @@
  * Breakpoints.
  */
 /*------------------------------------*\
-    $PICK-MODAL
+    $UI-MODAL
 \*------------------------------------*/
 /**
- * The root of the pick-modal.
+ * The root of the ui-modal.
  */
-.pick-modal {
+.ui-modal {
   /* Make the holder and frame fullscreen. */
 
   bottom: 0;
@@ -51,8 +51,8 @@
 
   transition: opacity 0.2s ease-in, top 0s 0.2s;
 }
-/* Opened pick-modal state. */
-.pick-modal--opened {
+/* Opened ui-modal state. */
+.ui-modal--opened {
   /* Immediately move the holder to the top edge. */
 
   top: 0;
@@ -63,13 +63,13 @@
 
   transition: opacity 0.2s ease-out;
 }
-/* Active pick-modal state. */
+/* Active ui-modal state. */
 /**
      * The pointer as a helper to vertically align.
      */
 /* For greater than `small` screens... */
 @media (min-height: 33.875em) {
-  .pick-modal__pointer {
+  .ui-modal__pointer {
     /* Fill up the height without a width. */
   
     height: 100%;
@@ -80,9 +80,9 @@
   }
 }
 /**
-     * The content holder of the pick-modal.
+     * The content holder of the ui-modal.
      */
-.pick-modal__holder {
+.ui-modal__holder {
   position: relative;
   /* Re-align the text. */
 
@@ -115,7 +115,7 @@
 }
 /* For greater than `tiny` screens... */
 @media (min-height: 26.5em) {
-  .pick-modal__holder {
+  .ui-modal__holder {
     /* Increase the font size a bit. */
   
     font-size: 1.25em;
@@ -123,7 +123,7 @@
 }
 /* For greater than `small` screens... */
 @media (min-height: 33.875em) {
-  .pick-modal__holder {
+  .ui-modal__holder {
     /* Increase the font size a bit more */
   
     font-size: 1.33em;
@@ -151,7 +151,7 @@
 }
 /* For greater than `medium` screens... */
 @media (min-height: 40.125em) {
-  .pick-modal__holder {
+  .ui-modal__holder {
     /* Increase the font size. */
   
     font-size: 1.5em;
@@ -171,7 +171,7 @@
 }
 /* For smaller than the holder’s `min-width` screens... */
 @media (max-width: 256px) {
-  .pick-modal__holder {
+  .ui-modal__holder {
     /* Make the holder fill-up the entire screen. */
   
     position: absolute;
@@ -194,7 +194,7 @@
   }
 }
 /* The opened content holder. */
-.pick-modal--opened .pick-modal__holder {
+.ui-modal--opened .ui-modal__holder {
   /* Bring it back into position. */
 
   -webkit-transform: translateY(0%);
@@ -203,9 +203,9 @@
   -webkit-transition: -webkit-transform 0.15000000000000002s 0.05s ease-out;
 }
 /**
-         * The frame creates a pick-modal boundary.
+         * The frame creates a ui-modal boundary.
          */
-.pick-modal__frame {
+.ui-modal__frame {
   position: absolute;
   left: 0;
   top: 0;

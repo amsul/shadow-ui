@@ -5,8 +5,8 @@
 
 <script>
 
-    $.fn.pick.extend({
-        name: 'pick--dict-formatter',
+    $.fn.shadow.extend({
+        name: 'shadow--dict-formatter',
         formats: {
             lol: 'Laugh Out Loud!',
             c: function( value ) {
@@ -19,10 +19,10 @@
         }
     })
 
-    var $div = $( '.div' ).pick( 'pick--dict-formatter' )
-    var picker = $div.pick( 'picker' )
+    var $div = $( '.div' ).shadow( 'shadow--dict-formatter' )
+    var ui = $div.shadow( 'ui' )
 
-    console.log( picker.get( 'select', 'lol [That’s funny, lol].' ) )
-    console.log( picker.get( 'select', 'c [Let’s c what happens].' ) )
+    console.log( ui.get( 'select', 'lol [That’s funny, lol].' ) )
+    console.log( ui.get( 'select', 'c [Let’s c what happens].' ) )
 
 </script>

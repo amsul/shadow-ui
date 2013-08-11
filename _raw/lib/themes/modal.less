@@ -3,13 +3,13 @@
 
 
 /*------------------------------------*\
-    $PICK-MODAL
+    $UI-MODAL
 \*------------------------------------*/
 
 /**
- * The root of the pick-modal.
+ * The root of the ui-modal.
  */
-.pick-modal {
+.ui-modal {
 
     /* Make the holder and frame fullscreen. */
     bottom: 0;
@@ -29,14 +29,14 @@
     position: fixed;
 
     /* Give it a translucent overlay. */
-    background: @overlay--pick-modal;
+    background: @overlay--ui-modal;
 
     /* Fade out it out, then immediately shift the holder out of view. */
-    transition: opacity @transition-speed--pick-modal ease-in, top 0s @transition-speed--pick-modal;
+    transition: opacity @transition-speed--ui-modal ease-in, top 0s @transition-speed--ui-modal;
 }
 
-/* Opened pick-modal state. */
-.pick-modal--opened {
+/* Opened ui-modal state. */
+.ui-modal--opened {
 
     /* Immediately move the holder to the top edge. */
     top: 0;
@@ -45,22 +45,22 @@
     opacity: 1;
 
     /* Animate in the opacity. */
-    transition: opacity @transition-speed--pick-modal ease-out;
+    transition: opacity @transition-speed--ui-modal ease-out;
 }
 
-/* Active pick-modal state. */
-.pick-modal--active {}
+/* Active ui-modal state. */
+.ui-modal--active {}
 
 
     /**
      * The pointer as a helper to vertically align.
      */
-    .pick-modal__pointer {}
+    .ui-modal__pointer {}
 
     /* For greater than `small` screens... */
     @media (min-height: @break-small--height) {
 
-        .pick-modal__pointer {
+        .ui-modal__pointer {
 
             /* Fill up the height without a width. */
             height: 100%;
@@ -73,9 +73,9 @@
 
 
     /**
-     * The content holder of the pick-modal.
+     * The content holder of the ui-modal.
      */
-    .pick-modal__holder {
+    .ui-modal__holder {
 
         position: relative;
 
@@ -86,8 +86,8 @@
         width: 100%;
 
         /* Specify the min & max widths. */
-        min-width: @min-width--pick-modal;
-        max-width: @max-width--pick-modal;
+        min-width: @min-width--ui-modal;
+        max-width: @max-width--ui-modal;
 
         /* Center align it if the width is restricted. */
         margin: 0 auto;
@@ -96,7 +96,7 @@
         height: 100%;
 
         /* Add a background. */
-        background: @background--pick-modal;
+        background: @background--ui-modal;
 
         /* Play nice with the widths. */
         box-sizing: border-box;
@@ -105,13 +105,13 @@
         -webkit-transform: translateY(20%);
 
         /* Animate the holder out of view a bit faster. */
-        -webkit-transition: -webkit-transform (@transition-speed--pick-modal - .05s) ease-in;
+        -webkit-transition: -webkit-transform (@transition-speed--ui-modal - .05s) ease-in;
     }
 
     /* For greater than `tiny` screens... */
     @media (min-height: @break-tiny--height) {
 
-        .pick-modal__holder {
+        .ui-modal__holder {
 
             /* Increase the font size a bit. */
             font-size: 1.25em;
@@ -121,7 +121,7 @@
     /* For greater than `small` screens... */
     @media (min-height: @break-small--height) {
 
-        .pick-modal__holder {
+        .ui-modal__holder {
 
             /* Increase the font size a bit more */
             font-size: 1.33em;
@@ -131,27 +131,27 @@
             vertical-align: bottom;
 
             /* Reduce the height to give spacing above. */
-            height: 100% - @spacing-vertical--pick-modal;
+            height: 100% - @spacing-vertical--ui-modal;
 
             /* Add the borders. */
-            border: @border-width--pick-modal solid @border-color--pick-modal;
-            border-top-color: lighten( @border-color--pick-modal, 7% );
+            border: @border-width--ui-modal solid @border-color--ui-modal;
+            border-top-color: lighten( @border-color--ui-modal, 7% );
 
             /* Make ‘em rounded at the top corners */
-            border-radius: @border-radius--pick-modal @border-radius--pick-modal 0 0;
+            border-radius: @border-radius--ui-modal @border-radius--ui-modal 0 0;
 
             /* Hide the bottom border this way so margins within don’t collapse */
-            bottom: -@border-width--pick-modal;
+            bottom: -@border-width--ui-modal;
 
             /* And finally, add a nice shadow. */
-            box-shadow: @box-shadow--pick-modal;
+            box-shadow: @box-shadow--ui-modal;
         }
     }
 
     /* For greater than `medium` screens... */
     @media (min-height: @break-medium--height) {
 
-        .pick-modal__holder {
+        .ui-modal__holder {
 
             /* Increase the font size. */
             font-size: 1.5em;
@@ -160,10 +160,10 @@
             vertical-align: middle;
 
             /* Reduce the height to give spacing below. */
-            height: 100% - @spacing-vertical--pick-modal - @spacing-vertical--pick-modal;
+            height: 100% - @spacing-vertical--ui-modal - @spacing-vertical--ui-modal;
 
             /* Round off the corners. */
-            border-radius: @border-radius--pick-modal;
+            border-radius: @border-radius--ui-modal;
 
             /* Reveal the bottom border. */
             bottom: 0;
@@ -171,9 +171,9 @@
     }
 
     /* For smaller than the holder’s `min-width` screens... */
-    @media (max-width: @min-width--pick-modal) {
+    @media (max-width: @min-width--ui-modal) {
 
-        .pick-modal__holder {
+        .ui-modal__holder {
 
             /* Make the holder fill-up the entire screen. */
             position: absolute;
@@ -197,20 +197,20 @@
     }
 
     /* The opened content holder. */
-    .pick-modal--opened .pick-modal__holder {
+    .ui-modal--opened .ui-modal__holder {
 
         /* Bring it back into position. */
         -webkit-transform: translateY(0%);
 
         /* Animate the holder in to view a bit slower. */
-        -webkit-transition: -webkit-transform (@transition-speed--pick-modal - .05s) .05s ease-out;
+        -webkit-transition: -webkit-transform (@transition-speed--ui-modal - .05s) .05s ease-out;
     }
 
 
         /**
-         * The frame creates a pick-modal boundary.
+         * The frame creates a ui-modal boundary.
          */
-        .pick-modal__frame {
+        .ui-modal__frame {
             position: absolute;
             left: 0;
             top: 0;

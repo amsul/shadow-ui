@@ -3,17 +3,17 @@
 <meta charset="utf-8">
 
 <link rel="stylesheet" href="../demos/styles/main.css">
-<link rel="stylesheet" href="../lib/themes/pick.base.css">
-<link rel="stylesheet" href="../lib/themes/pick.drop.css">
-<link rel="stylesheet" href="../lib/themes/pick.modal.css">
-<link rel="stylesheet" href="../lib/themes/pick.box.css">
+<link rel="stylesheet" href="../lib/themes/shadow-ui.base.css">
+<link rel="stylesheet" href="../lib/themes/shadow-ui.drop.css">
+<link rel="stylesheet" href="../lib/themes/shadow-ui.modal.css">
+<link rel="stylesheet" href="../lib/themes/shadow-ui.blob.css">
 
 <body>
 
     <script src="../demos/scripts/jquery.js"></script>
     <script src="../demos/scripts/rainbow.js"></script>
     <script src="../lib/legacy.js"></script>
-    <script src="../lib/pick.js"></script>
+    <script src="../lib/shadow-ui.js"></script>
 
     <a href="../">home</a>
     <a href="../demos">demos</a>
@@ -22,13 +22,13 @@
 
     
 <section>
-    <div class="div" data-value="006">Custom input picker</div>
+    <div class="div" data-value="006">Custom input shadow</div>
 </section>
 
 <script>
 
-    $.fn.pick.extend({
-        name: 'pick--input-custom',
+    $.fn.shadow.extend({
+        name: 'shadow--input-custom',
         formats: {
             dd: function( value ) {
                 return '0' + value
@@ -51,22 +51,21 @@
         },
         ready: function() {
 
-            var picker = this.picker
+            var ui = this.ui
 
-            picker.on( 'render', function() {
-                picker.$input = picker.$root.find( 'input' ).first()
-                picker.$host.trigger( 'change' )
+            ui.on( 'render', function() {
+                ui.$input = ui.$root.find( 'input' ).first()
+                ui.$host.trigger( 'change' )
             })
 
-            picker.$host.on( 'change', function() {
-                picker.$input[0].value = picker.get( 'select', { format: picker.settings.format } )
+            ui.$host.on( 'change', function() {
+                ui.$input[0].value = ui.get( 'select', { format: ui.settings.format } )
             })
         }
     })
 
-    var $input = $( '.div' ).pick( 'pick--input-custom' )
-    var picker = $input.pick( 'picker' )
-    picker.open()
+    var $input = $( '.div' ).shadow( 'shadow--input-custom' )
+    var ui = $input.shadow( 'ui' )
 
 </script>
 

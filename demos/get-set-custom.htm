@@ -3,17 +3,17 @@
 <meta charset="utf-8">
 
 <link rel="stylesheet" href="../demos/styles/main.css">
-<link rel="stylesheet" href="../lib/themes/pick.base.css">
-<link rel="stylesheet" href="../lib/themes/pick.drop.css">
-<link rel="stylesheet" href="../lib/themes/pick.modal.css">
-<link rel="stylesheet" href="../lib/themes/pick.box.css">
+<link rel="stylesheet" href="../lib/themes/shadow-ui.base.css">
+<link rel="stylesheet" href="../lib/themes/shadow-ui.drop.css">
+<link rel="stylesheet" href="../lib/themes/shadow-ui.modal.css">
+<link rel="stylesheet" href="../lib/themes/shadow-ui.blob.css">
 
 <body>
 
     <script src="../demos/scripts/jquery.js"></script>
     <script src="../demos/scripts/rainbow.js"></script>
     <script src="../lib/legacy.js"></script>
-    <script src="../lib/pick.js"></script>
+    <script src="../lib/shadow-ui.js"></script>
 
     <a href="../">home</a>
     <a href="../demos">demos</a>
@@ -22,13 +22,13 @@
 
     
 <section>
-    <div class="div">Custom dictions</div>
+    <div class="div">Custom get and set</div>
 </section>
 
 <script>
 
-    $.fn.pick.extend({
-        name: 'pick--get-set-custom',
+    $.fn.shadow.extend({
+        name: 'shadow--get-set-custom',
         get: function( thing, options ) {
             var value = this.dict[ thing ]
             return options === true ? value : String.fromCharCode( 65 + value )
@@ -40,16 +40,16 @@
         }
     })
 
-    var $div = $( '.div' ).pick( 'pick--get-set-custom' )
-    var picker = $div.pick( 'picker' )
+    var $div = $( '.div' ).shadow( 'shadow--get-set-custom' )
+    var ui = $div.shadow( 'ui' )
 
-    console.log( picker.get( 'highlight' ) )
-    console.log( picker.get( 'select' ) )
+    console.log( ui.get( 'highlight' ) )
+    console.log( ui.get( 'select' ) )
 
-    picker.set( 'highlight', 'K' )
+    ui.set( 'highlight', 'K' )
 
-    console.log( picker.get( 'highlight' ) )
-    console.log( picker.get( 'select' ) )
+    console.log( ui.get( 'highlight' ) )
+    console.log( ui.get( 'select' ) )
 
 </script>
 

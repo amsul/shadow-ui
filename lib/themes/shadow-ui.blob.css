@@ -21,17 +21,17 @@
  * Breakpoints.
  */
 /*------------------------------------*\
-    $PICK-BOX
+    $UI-BLOB
 \*------------------------------------*/
 /**
- * The root of the pick-box.
+ * The root of the ui-blob.
  */
-/* Opened pick-box state. */
-/* Active pick-box state. */
+/* Opened ui-blob state. */
+/* Active ui-blob state. */
 /**
-     * The content holder of the pick-box.
+     * The content holder of the ui-blob.
      */
-.pick-box__holder {
+.ui-blob__holder {
   /* Add a background and border. */
 
   background: #f5f5f5;
@@ -44,7 +44,7 @@
 /**
          * The content frame.
          */
-.pick-drop__frame {
+.ui-drop__frame {
   /* Set the max height before scrolling. */
 
   max-height: 25em;

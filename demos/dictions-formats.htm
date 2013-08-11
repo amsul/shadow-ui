@@ -3,17 +3,17 @@
 <meta charset="utf-8">
 
 <link rel="stylesheet" href="../demos/styles/main.css">
-<link rel="stylesheet" href="../lib/themes/pick.base.css">
-<link rel="stylesheet" href="../lib/themes/pick.drop.css">
-<link rel="stylesheet" href="../lib/themes/pick.modal.css">
-<link rel="stylesheet" href="../lib/themes/pick.box.css">
+<link rel="stylesheet" href="../lib/themes/shadow-ui.base.css">
+<link rel="stylesheet" href="../lib/themes/shadow-ui.drop.css">
+<link rel="stylesheet" href="../lib/themes/shadow-ui.modal.css">
+<link rel="stylesheet" href="../lib/themes/shadow-ui.blob.css">
 
 <body>
 
     <script src="../demos/scripts/jquery.js"></script>
     <script src="../demos/scripts/rainbow.js"></script>
     <script src="../lib/legacy.js"></script>
-    <script src="../lib/pick.js"></script>
+    <script src="../lib/shadow-ui.js"></script>
 
     <a href="../">home</a>
     <a href="../demos">demos</a>
@@ -27,8 +27,8 @@
 
 <script>
 
-    $.fn.pick.extend({
-        name: 'pick--dict-formatter',
+    $.fn.shadow.extend({
+        name: 'shadow--dict-formatter',
         formats: {
             lol: 'Laugh Out Loud!',
             c: function( value ) {
@@ -41,11 +41,11 @@
         }
     })
 
-    var $div = $( '.div' ).pick( 'pick--dict-formatter' )
-    var picker = $div.pick( 'picker' )
+    var $div = $( '.div' ).shadow( 'shadow--dict-formatter' )
+    var ui = $div.shadow( 'ui' )
 
-    console.log( picker.get( 'select', 'lol [That’s funny, lol].' ) )
-    console.log( picker.get( 'select', 'c [Let’s c what happens].' ) )
+    console.log( ui.get( 'select', 'lol [That’s funny, lol].' ) )
+    console.log( ui.get( 'select', 'c [Let’s c what happens].' ) )
 
 </script>
 

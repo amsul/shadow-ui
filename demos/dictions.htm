@@ -3,17 +3,17 @@
 <meta charset="utf-8">
 
 <link rel="stylesheet" href="../demos/styles/main.css">
-<link rel="stylesheet" href="../lib/themes/pick.base.css">
-<link rel="stylesheet" href="../lib/themes/pick.drop.css">
-<link rel="stylesheet" href="../lib/themes/pick.modal.css">
-<link rel="stylesheet" href="../lib/themes/pick.box.css">
+<link rel="stylesheet" href="../lib/themes/shadow-ui.base.css">
+<link rel="stylesheet" href="../lib/themes/shadow-ui.drop.css">
+<link rel="stylesheet" href="../lib/themes/shadow-ui.modal.css">
+<link rel="stylesheet" href="../lib/themes/shadow-ui.blob.css">
 
 <body>
 
     <script src="../demos/scripts/jquery.js"></script>
     <script src="../demos/scripts/rainbow.js"></script>
     <script src="../lib/legacy.js"></script>
-    <script src="../lib/pick.js"></script>
+    <script src="../lib/shadow-ui.js"></script>
 
     <a href="../">home</a>
     <a href="../demos">demos</a>
@@ -27,30 +27,30 @@
 
 <script>
 
-    $.fn.pick.extend({
-        name: 'pick--dict',
+    $.fn.shadow.extend({
+        name: 'shadow--dict',
         content: function() {
             var to_select = ~~(Math.random()*1000),
                 to_highlight = ~~(Math.random()*1000)
             return '<div class="content">' +
-                'Select: <u>' + this.picker.get('select') + '</u><br>' +
-                'Highlight: <u>' + this.picker.get('highlight') + '</u><hr>' +
+                'Select: <u>' + this.ui.get('select') + '</u><br>' +
+                'Highlight: <u>' + this.ui.get('highlight') + '</u><hr>' +
                 '<button data-pick="select:' + to_select + '">Set select to ' + to_select + '</button>' +
                 '<button data-pick="highlight:' + to_highlight + '">Set highlight to ' + to_highlight + '</button>' +
             '</div>'
         },
         ready: function() {
-            var picker = this.picker
-            picker.on( 'set', function( event ) {
+            var ui = this.ui
+            ui.on( 'set', function( event ) {
                 if ( 'highlight' in event.data || 'select' in event.data ) {
-                    picker.render()
+                    ui.render()
                 }
             })
         }
     })
 
-    var $div = $( '.div' ).pick( 'pick--dict' )
-    var picker = $div.pick( 'picker' )
+    var $div = $( '.div' ).shadow( 'shadow--dict' )
+    var ui = $div.shadow( 'ui' )
 
 </script>
 

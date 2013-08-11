@@ -60,7 +60,7 @@ module.exports = function( grunt ) {
             tests: [ '<%= dirs.dest.tests %>' ],
             demos: [ '<%= dirs.dest.demos %>' ],
             docs: [ '<%= dirs.dest.docs %>' ],
-            pkg: [ '<%= pkg.name %>.jquery.json', '*.md' ]
+            pkg: [ '*.jquery.json', '*.md' ]
         },
 
 
@@ -128,7 +128,7 @@ module.exports = function( grunt ) {
             themes: {
                 files: {
                     '<%= dirs.dest.themes %>/<%= pkg.name %>.base.css': '<%= dirs.src.themes %>/base.less',
-                    '<%= dirs.dest.themes %>/<%= pkg.name %>.box.css': '<%= dirs.src.themes %>/box.less',
+                    '<%= dirs.dest.themes %>/<%= pkg.name %>.blob.css': '<%= dirs.src.themes %>/blob.less',
                     '<%= dirs.dest.themes %>/<%= pkg.name %>.drop.css': '<%= dirs.src.themes %>/drop.less',
                     '<%= dirs.dest.themes %>/<%= pkg.name %>.modal.css': '<%= dirs.src.themes %>/modal.less'
                 }
@@ -180,7 +180,7 @@ module.exports = function( grunt ) {
         // Watch the project files.
         watch: {
             pkg: {
-                files: [ '<%= dirs.src.raw %>/*md', '<%= dirs.src.raw %>/*.htm' ],
+                files: [ 'package.json', '<%= dirs.src.raw %>/*md', '<%= dirs.src.raw %>/*.htm' ],
                 tasks: [ 'copy:pkg', 'htmlify' ]
             },
             lib: {
@@ -192,7 +192,7 @@ module.exports = function( grunt ) {
                 tasks: [ 'less:themes' ]
             },
             tests: {
-                files: [ '<%= dirs.src.tests %>' ],
+                files: [ '<%= dirs.src.tests %>/**/*' ],
                 tasks: [ 'copy:tests' ]
             },
             demos: {

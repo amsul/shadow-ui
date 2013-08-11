@@ -3,17 +3,17 @@
 <meta charset="utf-8">
 
 <link rel="stylesheet" href="../demos/styles/main.css">
-<link rel="stylesheet" href="../lib/themes/pick.base.css">
-<link rel="stylesheet" href="../lib/themes/pick.drop.css">
-<link rel="stylesheet" href="../lib/themes/pick.modal.css">
-<link rel="stylesheet" href="../lib/themes/pick.box.css">
+<link rel="stylesheet" href="../lib/themes/shadow-ui.base.css">
+<link rel="stylesheet" href="../lib/themes/shadow-ui.drop.css">
+<link rel="stylesheet" href="../lib/themes/shadow-ui.modal.css">
+<link rel="stylesheet" href="../lib/themes/shadow-ui.blob.css">
 
 <body>
 
     <script src="../demos/scripts/jquery.js"></script>
     <script src="../demos/scripts/rainbow.js"></script>
     <script src="../lib/legacy.js"></script>
-    <script src="../lib/pick.js"></script>
+    <script src="../lib/shadow-ui.js"></script>
 
     <a href="../">home</a>
     <a href="../demos">demos</a>
@@ -24,11 +24,11 @@
 <section class="section">
     <div class="section__block section__block--scoped">
 
-        this is the most basic picker:
+        this is the most basic shadow extension:
 
-        <pre class="codeblock"><code data-language="javascript">Pick.extend({
+        <pre class="codeblock"><code data-language="javascript">shadow.extend({
     name: 'pindrop',
-    content: 'My awesome picker'
+    content: 'My awesome ui'
 })</code></pre>
 
         <div class="codeblock-demo">
@@ -39,11 +39,11 @@
 </section>
 
 <script>
-    Pick.extend({
+    shadow.extend({
         name: 'pindrop',
-        content: 'My awesome picker'
+        content: 'My awesome ui'
     })
-    $('#pindrop').pick('pindrop')
+    $('#pindrop').shadow('pindrop')
 </script>
 
 

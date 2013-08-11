@@ -5,8 +5,8 @@
 
 <script>
 
-    $.fn.pick.extend({
-        name: 'pick--dict-custom',
+    $.fn.shadow.extend({
+        name: 'shadow--dict-custom',
         dict: {
             sup: 'not much',
             highlight: 400
@@ -17,15 +17,15 @@
         }
     })
 
-    var $div = $( '.div' ).pick( 'pick--dict-custom' )
-    var picker = $div.pick( 'picker' )
+    var $div = $( '.div' ).shadow( 'shadow--dict-custom' )
+    var ui = $div.shadow( 'ui' )
 
-    console.log( picker.get( 'sup' ) )
-    console.log( picker.get( 'highlight' ) )
-    console.log( picker.get( 'select' ) )
+    console.log( ui.get( 'sup' ) )
+    console.log( ui.get( 'highlight' ) )
+    console.log( ui.get( 'select' ) )
 
-    picker.set( 'highlight', 100 )
-    console.log( picker.get( 'highlight' ) )
-    console.log( picker.get( 'select' ) )
+    ui.set( 'highlight', 100 )
+    console.log( ui.get( 'highlight' ) )
+    console.log( ui.get( 'select' ) )
 
 </script>

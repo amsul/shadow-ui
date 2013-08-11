@@ -21,12 +21,12 @@
  * Breakpoints.
  */
 /*------------------------------------*\
-    $PICK-DROP
+    $UI-DROP
 \*------------------------------------*/
 /**
- * The root of the pick-drop.
+ * The root of the ui-drop.
  */
-.pick-drop {
+.ui-drop {
   /* Make sure elements around aren’t affected. */
 
   position: absolute;
@@ -43,8 +43,8 @@
 
   -webkit-transition: all 0.2s ease-out;
 }
-/* Opened pick-drop state. */
-.pick-drop--opened {
+/* Opened ui-drop state. */
+.ui-drop--opened {
   /* Reveal the content. */
 
   opacity: 1;
@@ -52,20 +52,20 @@
 
   -webkit-transform: translateY(0) perspective(600px) rotateX(0);
 }
-/* Active pick-drop state. */
+/* Active ui-drop state. */
 /**
-     * The pick-drop’s pointer and holder.
+     * The ui-drop’s pointer and holder.
      */
-.pick-drop__pointer,
-.pick-drop__holder {
+.ui-drop__pointer,
+.ui-drop__holder {
   /* Set the width. */
 
   width: 280px;
 }
 /**
-     * The pick-drop’s pointer and pseudo-borders.
+     * The ui-drop’s pointer and pseudo-borders.
      */
-.pick-drop__pointer {
+.ui-drop__pointer {
   /* Give room for the pseudo-borders. */
 
   height: 10px;
@@ -81,8 +81,8 @@
   -webkit-transition: max-height 0 0.2s;
 }
 /* The pseudo-borders. */
-.pick-drop__pointer:before,
-.pick-drop__pointer:after {
+.ui-drop__pointer:before,
+.ui-drop__pointer:after {
   content: " ";
   /* Add the base border styling. */
 
@@ -97,7 +97,7 @@
   position: relative;
 }
 /* The pseudo-border background. */
-.pick-drop__pointer:before {
+.ui-drop__pointer:before {
   /* Nudge it up and away from left edge. */
 
   left: 10px;
@@ -107,7 +107,7 @@
   border-bottom-color: #aaaaaa;
 }
 /* The pseudo-border foreground. */
-.pick-drop__pointer:after {
+.ui-drop__pointer:after {
   /* Nudge it back to left edge and down 1px below the border. */
 
   left: -10px;
@@ -116,7 +116,7 @@
 
   border-bottom-color: #f5f5f5;
 }
-.pick-drop--opened .pick-drop__pointer {
+.ui-drop--opened .ui-drop__pointer {
   /* Reveal the content. */
 
   max-height: 10px;
@@ -125,9 +125,9 @@
   -webkit-transition: max-height 0;
 }
 /**
-     * The content holder of the pick-drop.
+     * The content holder of the ui-drop.
      */
-.pick-drop__holder {
+.ui-drop__holder {
   /* Add a background and collapsed border. */
 
   background: #f5f5f5;
@@ -152,7 +152,7 @@
   -webkit-transition: max-height 0 0.2s, border-width 0 0.2s;
 }
 /* The opened content holder. */
-.pick-drop--opened .pick-drop__holder {
+.ui-drop--opened .ui-drop__holder {
   /* Add width to the border. */
 
   border-width: 1px;
@@ -166,15 +166,15 @@
 /**
          * The content frame.
          */
-.pick-drop__frame {
+.ui-drop__frame {
   /* Set the max height before scrolling. */
 
   max-height: 25em;
 }
 /**
- * The center aligned pick-drop.
+ * The center aligned ui-drop.
  */
-.pick-drop--center {
+.ui-drop--center {
   /* Collapse the width. */
 
   width: 0;
@@ -186,20 +186,20 @@
   margin: 0 auto;
 }
 /* Align the pointer and holder to the center using half the width as a negative margin. */
-.pick-drop--center .pick-drop__pointer,
-.pick-drop--center .pick-drop__holder {
+.ui-drop--center .ui-drop__pointer,
+.ui-drop--center .ui-drop__holder {
   margin-left: -140px;
 }
-.pick-drop--center .pick-drop__pointer {
+.ui-drop--center .ui-drop__pointer {
   text-align: center;
 }
 /**
- * The right aligned pick-drop.
+ * The right aligned ui-drop.
  */
-.pick-drop--right {
+.ui-drop--right {
   left: auto;
   right: 0;
 }
-.pick-drop--right .pick-drop__pointer {
+.ui-drop--right .ui-drop__pointer {
   text-align: right;
 }

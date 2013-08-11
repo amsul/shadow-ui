@@ -18,7 +18,7 @@
         $host.append( $outlet )
     }
 
-    Pick.extend({
+    shadow.extend({
         name: 'dropdown',
         alias: 'dropdown',
         dict: {
@@ -26,26 +26,26 @@
             select: [ 0, 3, 4, 5, 10 ]
         },
         init: function() {
-            printSelections( this.dict.select, this.dict.options, this.picker.$host )
+            printSelections( this.dict.select, this.dict.options, this.ui.$host )
         },
         ready: function() {
-            var picker = this.picker,
+            var ui = this.ui,
                 diction = this.dict
-            picker.$root.on( 'change', function( event ) {
+            ui.$root.on( 'change', function( event ) {
                 var value = ~~event.target.value
-                if ( event.target.checked ) picker.add( 'select', value )
-                else picker.remove( 'select', value )
-                printSelections( diction.select, diction.options, picker.$host )
+                if ( event.target.checked ) ui.add( 'select', value )
+                else ui.remove( 'select', value )
+                printSelections( diction.select, diction.options, ui.$host )
             })
         },
         content: function() {
             var selections = this.dict.select,
                 options = this.dict.options
-            return Pick._.node({
+            return shadow._.node({
                 el: 'ul',
                 content: options.map( function( option, index ) {
                     var isSelected = selections.indexOf( index ) > -1
-                    return Pick._.node({
+                    return shadow._.node({
                         el: 'li',
                         content: [
                             '<label>',
@@ -60,7 +60,7 @@
     })
 
     var $div = $( '.div' ).dropdown()
-    var picker = $div.dropdown( 'picker' )
-    // picker.open(true)
+    var ui = $div.dropdown( 'ui' )
+    // ui.open(true)
 
 </script>

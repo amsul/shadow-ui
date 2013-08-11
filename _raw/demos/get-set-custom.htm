@@ -1,12 +1,12 @@
 
 <section>
-    <div class="div">Custom dictions</div>
+    <div class="div">Custom get and set</div>
 </section>
 
 <script>
 
-    $.fn.pick.extend({
-        name: 'pick--get-set-custom',
+    $.fn.shadow.extend({
+        name: 'shadow--get-set-custom',
         get: function( thing, options ) {
             var value = this.dict[ thing ]
             return options === true ? value : String.fromCharCode( 65 + value )
@@ -18,15 +18,15 @@
         }
     })
 
-    var $div = $( '.div' ).pick( 'pick--get-set-custom' )
-    var picker = $div.pick( 'picker' )
+    var $div = $( '.div' ).shadow( 'shadow--get-set-custom' )
+    var ui = $div.shadow( 'ui' )
 
-    console.log( picker.get( 'highlight' ) )
-    console.log( picker.get( 'select' ) )
+    console.log( ui.get( 'highlight' ) )
+    console.log( ui.get( 'select' ) )
 
-    picker.set( 'highlight', 'K' )
+    ui.set( 'highlight', 'K' )
 
-    console.log( picker.get( 'highlight' ) )
-    console.log( picker.get( 'select' ) )
+    console.log( ui.get( 'highlight' ) )
+    console.log( ui.get( 'select' ) )
 
 </script>

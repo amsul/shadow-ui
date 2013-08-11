@@ -3,10 +3,10 @@
 var $DOM = $( '#qunit-fixture' )
 var $NODE_DIV = $( '<div/>' )
 var $NODE_INPUT = $( '<input>' )
-var tearDownThePicker = function() {
-    this.picker.stop()
+var tearDownTheUI = function() {
+    this.ui.stop()
     $DOM.empty()
-    ;delete Pick._.EXTENSIONS[ this.picker.i.name ]
+    ;delete shadow.EXTENSIONS[ this.ui.i.name ]
 }
 
 
@@ -16,10 +16,10 @@ var tearDownThePicker = function() {
 module( 'Core' )
 
 test( 'Globals', function() {
-    ok( Pick, 'Object: Pick' )
-    ok( $.isFunction( Pick.extend ), 'Method: Extend picker' )
-    deepEqual( $.fn.pick.extend, Pick.extend, 'Method: Extend picker with jQuery' )
-    ok( $.isFunction( $.fn.pick ), 'Method: Create picker extension' )
+    ok( shadow, 'Object: shadow' )
+    ok( $.isFunction( shadow.extend ), 'Method: Extend shadow' )
+    deepEqual( $.fn.shadow.extend, shadow.extend, 'Method: Extend shadow with jQuery' )
+    ok( $.isFunction( $.fn.shadow ), 'Method: Create shadow extension' )
 })
 
 
@@ -33,92 +33,92 @@ test( 'Globals', function() {
 module( 'API `div` minimal', {
     setup: function() {
         this.extension = {
-            name: 'pick--basic',
-            content: '<div>This is the most basic form of a pick extension.</div>'
+            name: 'shadow--basic',
+            content: '<div>This is the most basic form of a shadow extension.</div>'
         }
-        Pick.extend( this.extension )
+        shadow.extend( this.extension )
         var $clone = $NODE_DIV.clone().appendTo( $DOM )
-        this.picker = $clone.pick( 'pick--basic' ).pick( 'picker' )
+        this.ui = $clone.shadow( 'shadow--basic' ).shadow( 'ui' )
     },
-    teardown: tearDownThePicker
+    teardown: tearDownTheUI
 })
 
 test( 'Extension', function() {
 
-    // Confirm the picker instance has the extension.
-    deepEqual( this.picker.r.extension, this.extension, 'Check: instance extension' )
+    // Confirm the shadow instance has the extension.
+    deepEqual( this.ui.r.extension, this.extension, 'Check: instance extension' )
 
     // Confirm it also stored appropriately.
-    deepEqual( Pick._.EXTENSIONS[ 'pick--basic' ], this.extension, 'Check: collected extension' )
+    deepEqual( shadow.EXTENSIONS[ 'shadow--basic' ], this.extension, 'Check: collected extension' )
 
     // Confirm the host is the source.
-    deepEqual( this.picker.$host, this.picker.$source, 'Check: host `div` is the source element' )
+    deepEqual( this.ui.$host, this.ui.$source, 'Check: host `div` is the source element' )
 })
 
 test( 'Start and stop with extension data', function() {
 
-    var picker = this.picker
-    var $host = picker.$host
+    var ui = this.ui
+    var $host = ui.$host
 
     // Confirm the data exists.
-    ok( $host.data( 'pick.pick--basic' ), 'Exists: pick data' )
+    ok( $host.data( 'shadow' ) instanceof shadow.UI, 'Exists: shadow data' )
 
-    // Confirm the picker started.
-    strictEqual( picker.is( 'started' ), true, 'Check: started' )
+    // Confirm the ui started.
+    strictEqual( ui.is( 'started' ), true, 'Check: started' )
 
-    // Destroy a pick extension on the element.
-    ok( picker.stop(), 'Trigger: stop' )
-    strictEqual( $host.data( 'pick.pick--basic' ), undefined, 'Destroy: pick data' )
+    // Destroy a shadow extension on the element.
+    ok( ui.stop(), 'Trigger: stop' )
+    strictEqual( $host.data( 'shadow' ), undefined, 'Destroy: shadow data' )
 
-    // Confirm the picker stopped.
-    strictEqual( picker.is( 'started' ), false, 'Check: stopped' )
+    // Confirm the ui stopped.
+    strictEqual( ui.is( 'started' ), false, 'Check: stopped' )
 
-    // Re-create a pick extension on the element.
-    ok( picker.start(), 'Trigger: start' )
-    ok( $host.data( 'pick.pick--basic' ), 'Exists: pick data' )
+    // Re-create a shadow extension on the element.
+    ok( ui.start(), 'Trigger: start' )
+    ok( $host.data( 'shadow' ) instanceof shadow.UI, 'Exists: shadow data' )
 
-    // Confirm the picker started again.
-    strictEqual( picker.is( 'started' ), true, 'Check: started' )
+    // Confirm the ui started again.
+    strictEqual( ui.is( 'started' ), true, 'Check: started' )
 })
 
 test( 'Open, close, focus, and blur', function() {
 
-    var picker = this.picker
-    var $host = picker.$host
+    var ui = this.ui
+    var $host = ui.$host
 
     // Confirm the starting state.
-    strictEqual( picker.is( 'opened' ), false, 'Check: closed' )
-    strictEqual( picker.is( 'focused' ), false, 'Check: unfocused' )
+    strictEqual( ui.is( 'opened' ), false, 'Check: closed' )
+    strictEqual( ui.is( 'focused' ), false, 'Check: unfocused' )
 
     // Click to open it.
     ok( $host.click(), 'Open: node click' )
-    strictEqual( picker.is( 'opened' ), true, 'Check: opened' )
-    strictEqual( picker.is( 'focused' ), true, 'Check: focused' )
+    strictEqual( ui.is( 'opened' ), true, 'Check: opened' )
+    strictEqual( ui.is( 'focused' ), true, 'Check: focused' )
 
     // Click to close it.
     ok( $DOM.click(), 'Close: doc click' )
-    strictEqual( picker.is( 'opened' ), false, 'Check: closed' )
-    strictEqual( picker.is( 'focused' ), false, 'Check: unfocused' )
+    strictEqual( ui.is( 'opened' ), false, 'Check: closed' )
+    strictEqual( ui.is( 'focused' ), false, 'Check: unfocused' )
 
-    // Open the picker and confirm the change.
-    ok( picker.open(), 'Trigger: open' )
-    strictEqual( picker.is( 'opened' ), true, 'Check: opened' )
-    strictEqual( picker.is( 'focused' ), false, 'Check: unfocused' )
+    // Open the ui and confirm the change.
+    ok( ui.open(), 'Trigger: open' )
+    strictEqual( ui.is( 'opened' ), true, 'Check: opened' )
+    strictEqual( ui.is( 'focused' ), false, 'Check: unfocused' )
 
-    // Close the picker and confirm the change.
-    ok( picker.close(), 'Trigger: close' )
-    strictEqual( picker.is( 'opened' ), false, 'Check: closed' )
-    strictEqual( picker.is( 'focused' ), false, 'Check: unfocused' )
+    // Close the ui and confirm the change.
+    ok( ui.close(), 'Trigger: close' )
+    strictEqual( ui.is( 'opened' ), false, 'Check: closed' )
+    strictEqual( ui.is( 'focused' ), false, 'Check: unfocused' )
 
-    // Open the picker with focus and confirm the change.
-    ok( picker.open( true ), 'Trigger: open with focus' )
-    strictEqual( picker.is( 'opened' ), true, 'Check: opened' )
-    strictEqual( picker.is( 'focused' ), true, 'Check: focused' )
+    // Open the ui with focus and confirm the change.
+    ok( ui.open( true ), 'Trigger: open with focus' )
+    strictEqual( ui.is( 'opened' ), true, 'Check: opened' )
+    strictEqual( ui.is( 'focused' ), true, 'Check: focused' )
 
-    // Close the picker with focus and confirm the change.
-    ok( picker.close( true ), 'Trigger: close with focus' )
-    strictEqual( picker.is( 'opened' ), false, 'Check: closed' )
-    strictEqual( picker.is( 'focused' ), true, 'Check: focused' )
+    // Close the ui with focus and confirm the change.
+    ok( ui.close( true ), 'Trigger: close with focus' )
+    strictEqual( ui.is( 'opened' ), false, 'Check: closed' )
+    strictEqual( ui.is( 'focused' ), true, 'Check: focused' )
 })
 
 
@@ -132,92 +132,92 @@ test( 'Open, close, focus, and blur', function() {
 module( 'API `input` minimal', {
     setup: function() {
         this.extension = {
-            name: 'pick--basic-input',
-            content: '<div>This is the most basic form of an `input` pick extension.</div>'
+            name: 'shadow--basic-input',
+            content: '<div>This is the most basic form of an `input` shadow extension.</div>'
         }
-        Pick.extend( this.extension )
+        shadow.extend( this.extension )
         var $clone = $NODE_INPUT.clone().appendTo( $DOM )
-        this.picker = $clone.pick( 'pick--basic-input' ).pick( 'picker' )
+        this.ui = $clone.shadow( 'shadow--basic-input' ).shadow( 'ui' )
     },
-    teardown: tearDownThePicker
+    teardown: tearDownTheUI
 })
 
 test( 'Extension', function() {
 
-    // Confirm the picker instance has the extension.
-    deepEqual( this.picker.r.extension, this.extension, 'Check: instance extension' )
+    // Confirm the shadow instance has the extension.
+    deepEqual( this.ui.r.extension, this.extension, 'Check: instance extension' )
 
     // Confirm it also stored appropriately.
-    deepEqual( Pick._.EXTENSIONS[ 'pick--basic-input' ], this.extension, 'Check: collected extension' )
+    deepEqual( shadow.EXTENSIONS[ 'shadow--basic-input' ], this.extension, 'Check: collected extension' )
 
     // Confirm the `input` is the source.
-    deepEqual( this.picker.$input, this.picker.$source, 'Check: `input` is the source element' )
+    deepEqual( this.ui.$input, this.ui.$source, 'Check: `input` is the source element' )
 })
 
 test( 'Start and stop with extension data', function() {
 
-    var picker = this.picker
-    var $input = picker.$input
+    var ui = this.ui
+    var $input = ui.$input
 
     // Confirm the data exists.
-    ok( $input.data( 'pick.pick--basic-input' ), 'Exists: pick data' )
+    ok( $input.data( 'shadow' ) instanceof shadow.UI, 'Exists: shadow data' )
 
-    // Confirm the picker started.
-    strictEqual( picker.is( 'started' ), true, 'Check: started' )
+    // Confirm the ui started.
+    strictEqual( ui.is( 'started' ), true, 'Check: started' )
 
-    // Destroy a pick extension on the element.
-    ok( picker.stop(), 'Trigger: stop' )
-    strictEqual( $input.data( 'pick.pick--basic-input' ), undefined, 'Destroy: pick data' )
+    // Destroy a shadow extension on the element.
+    ok( ui.stop(), 'Trigger: stop' )
+    strictEqual( $input.data( 'shadow' ), undefined, 'Destroy: shadow data' )
 
-    // Confirm the picker stopped.
-    strictEqual( picker.is( 'started' ), false, 'Check: stopped' )
+    // Confirm the ui stopped.
+    strictEqual( ui.is( 'started' ), false, 'Check: stopped' )
 
-    // Re-create a pick extension on the element.
-    ok( picker.start(), 'Trigger: start' )
-    ok( $input.data( 'pick.pick--basic-input' ), 'Exists: pick data' )
+    // Re-create a shadow extension on the element.
+    ok( ui.start(), 'Trigger: start' )
+    ok( $input.data( 'shadow' ) instanceof shadow.UI, 'Exists: shadow data' )
 
-    // Confirm the picker started again.
-    strictEqual( picker.is( 'started' ), true, 'Check: started' )
+    // Confirm the ui started again.
+    strictEqual( ui.is( 'started' ), true, 'Check: started' )
 })
 
 test( 'Open, close, focus, and blur', function() {
 
-    var picker = this.picker
-    var $input = picker.$input
+    var ui = this.ui
+    var $input = ui.$input
 
     // Confirm the starting state.
-    strictEqual( picker.is( 'opened' ), false, 'Check: closed' )
-    strictEqual( picker.is( 'focused' ), false, 'Check: unfocused' )
+    strictEqual( ui.is( 'opened' ), false, 'Check: closed' )
+    strictEqual( ui.is( 'focused' ), false, 'Check: unfocused' )
 
     // Click to open it.
     ok( $input.click(), 'Open: node click' )
-    strictEqual( picker.is( 'opened' ), true, 'Check: opened' )
-    strictEqual( picker.is( 'focused' ), true, 'Check: focused' )
+    strictEqual( ui.is( 'opened' ), true, 'Check: opened' )
+    strictEqual( ui.is( 'focused' ), true, 'Check: focused' )
 
     // Click to close it.
     ok( $DOM.click(), 'Close: doc click' )
-    strictEqual( picker.is( 'opened' ), false, 'Check: closed' )
-    strictEqual( picker.is( 'focused' ), false, 'Check: unfocused' )
+    strictEqual( ui.is( 'opened' ), false, 'Check: closed' )
+    strictEqual( ui.is( 'focused' ), false, 'Check: unfocused' )
 
-    // Open the picker and confirm the change.
-    ok( picker.open(), 'Trigger: open' )
-    strictEqual( picker.is( 'opened' ), true, 'Check: opened' )
-    strictEqual( picker.is( 'focused' ), false, 'Check: unfocused' )
+    // Open the ui and confirm the change.
+    ok( ui.open(), 'Trigger: open' )
+    strictEqual( ui.is( 'opened' ), true, 'Check: opened' )
+    strictEqual( ui.is( 'focused' ), false, 'Check: unfocused' )
 
-    // Close the picker and confirm the change.
-    ok( picker.close(), 'Trigger: close' )
-    strictEqual( picker.is( 'opened' ), false, 'Check: closed' )
-    strictEqual( picker.is( 'focused' ), false, 'Check: unfocused' )
+    // Close the ui and confirm the change.
+    ok( ui.close(), 'Trigger: close' )
+    strictEqual( ui.is( 'opened' ), false, 'Check: closed' )
+    strictEqual( ui.is( 'focused' ), false, 'Check: unfocused' )
 
-    // Open the picker with focus and confirm the change.
-    ok( picker.open( true ), 'Trigger: open with focus' )
-    strictEqual( picker.is( 'opened' ), true, 'Check: opened' )
-    strictEqual( picker.is( 'focused' ), true, 'Check: focused' )
+    // Open the ui with focus and confirm the change.
+    ok( ui.open( true ), 'Trigger: open with focus' )
+    strictEqual( ui.is( 'opened' ), true, 'Check: opened' )
+    strictEqual( ui.is( 'focused' ), true, 'Check: focused' )
 
-    // Close the picker with focus and confirm the change.
-    ok( picker.close( true ), 'Trigger: close with focus' )
-    strictEqual( picker.is( 'opened' ), false, 'Check: closed' )
-    strictEqual( picker.is( 'focused' ), true, 'Check: focused' )
+    // Close the ui with focus and confirm the change.
+    ok( ui.close( true ), 'Trigger: close with focus' )
+    strictEqual( ui.is( 'opened' ), false, 'Check: closed' )
+    strictEqual( ui.is( 'focused' ), true, 'Check: focused' )
 })
 
 
@@ -230,19 +230,19 @@ test( 'Open, close, focus, and blur', function() {
  */
 module( 'API alias', {
     setup: function() {
-        Pick.extend({
-            name: 'pick--alias',
-            alias: 'pickAliased'
+        shadow.extend({
+            name: 'shadow--alias',
+            alias: 'shadowAliased'
         })
         var $clone = $NODE_DIV.clone().appendTo( $DOM )
-        this.picker = $clone.pickAliased().pickAliased( 'picker' )
+        this.ui = $clone.shadowAliased().shadowAliased( 'ui' )
     },
-    teardown: tearDownThePicker
+    teardown: tearDownTheUI
 })
 
 test( 'Alias extension', function() {
-    var picker = this.picker
-    strictEqual( Pick._.EXTENSIONS[ picker.i.alias ], picker.i.name, 'Check: extension alias linked' )
+    var ui = this.ui
+    strictEqual( shadow.EXTENSIONS[ ui.i.alias ], ui.i.name, 'Check: extension alias linked' )
 })
 
 
@@ -255,20 +255,20 @@ test( 'Alias extension', function() {
  */
 module( 'API prefix', {
     setup: function() {
-        Pick.extend({
-            name: 'pick--prefix',
+        shadow.extend({
+            name: 'shadow--prefix',
             prefix: 'prefix-ftw'
         })
         var $clone = $NODE_DIV.clone().appendTo( $DOM )
-        this.picker = $clone.pick( 'pick--prefix' ).pick( 'picker' )
+        this.ui = $clone.shadow( 'shadow--prefix' ).shadow( 'ui' )
     },
-    teardown: tearDownThePicker
+    teardown: tearDownTheUI
 })
 
 test( 'Prefix class names', function() {
-    var picker = this.picker
-    ok( picker.$root[0].className.match( /^prefix-ftw$/ ), 'Check: prefix root element' )
-    ok( picker.$host[0].className.match( /^prefix-ftw-/ ), 'Check: prefix host element' )
+    var ui = this.ui
+    ok( ui.$root[0].className.match( /^prefix-ftw$/ ), 'Check: prefix root element' )
+    ok( ui.$host[0].className.match( /^prefix-ftw-/ ), 'Check: prefix host element' )
 })
 
 
@@ -281,41 +281,41 @@ test( 'Prefix class names', function() {
  */
 module( 'API dict', {
     setup: function() {
-        Pick.extend({
-            name: 'pick--dict',
+        shadow.extend({
+            name: 'shadow--dict',
             content: function() {
                 var to_select = ~~(Math.random()*1000),
                     to_highlight = ~~(Math.random()*1000)
                 return '<div class="content">' +
-                    'Select: <u>' + this.picker.get('select') + '</u><br>' +
-                    'Highlight: <u>' + this.picker.get('highlight') + '</u><hr>' +
+                    'Select: <u>' + this.ui.get('select') + '</u><br>' +
+                    'Highlight: <u>' + this.ui.get('highlight') + '</u><hr>' +
                     '<button id="select" data-pick="select:' + to_select + '">Set select to ' + to_select + '</button>' +
                     '<button id="highlight" data-pick="highlight:' + to_highlight + '">Set highlight to ' + to_highlight + '</button>' +
                 '</div>'
             }
         })
         var $clone = $NODE_DIV.clone().appendTo( $DOM )
-        this.picker = $clone.pick( 'pick--dict' ).pick( 'picker' )
+        this.ui = $clone.shadow( 'shadow--dict' ).shadow( 'ui' )
     },
-    teardown: tearDownThePicker
+    teardown: tearDownTheUI
 })
 
 test( 'Get and set', function() {
 
-    var picker = this.picker
+    var ui = this.ui
 
-    strictEqual( picker.get( 'select' ), 0, 'Check: default selection' )
-    strictEqual( picker.get( 'highlight' ), 0, 'Check: default highlight' )
+    strictEqual( ui.get( 'select' ), 0, 'Check: default selection' )
+    strictEqual( ui.get( 'highlight' ), 0, 'Check: default highlight' )
 
-    var $highlight = picker.$root.find( '#highlight' )
+    var $highlight = ui.$root.find( '#highlight' )
     ok( $highlight.click(), 'Click: highlight button' )
-    notStrictEqual( picker.get( 'highlight' ), 0, 'Check: highlight changed' )
-    strictEqual( picker.get( 'select' ), 0, 'Check: select unchanged' )
+    notStrictEqual( ui.get( 'highlight' ), 0, 'Check: highlight changed' )
+    strictEqual( ui.get( 'select' ), 0, 'Check: select unchanged' )
 
-    var $select = picker.$root.find( '#select' )
+    var $select = ui.$root.find( '#select' )
     ok( $select.click(), 'Click: select button' )
-    notStrictEqual( picker.get( 'select' ), 0, 'Check: select changed' )
-    strictEqual( picker.get( 'select' ), picker.get( 'highlight' ), 'Check: highlight updated' )
+    notStrictEqual( ui.get( 'select' ), 0, 'Check: select changed' )
+    strictEqual( ui.get( 'select' ), ui.get( 'highlight' ), 'Check: highlight updated' )
 })
 
 
@@ -328,8 +328,8 @@ test( 'Get and set', function() {
  */
 module( 'API formats', {
     setup: function() {
-        Pick.extend({
-            name: 'pick--dict-formatter',
+        shadow.extend({
+            name: 'shadow--dict-formatter',
             formats: {
                 lol: 'Laugh Out Loud!',
                 c: function( value ) {
@@ -342,20 +342,20 @@ module( 'API formats', {
             }
         })
         var $clone = $NODE_DIV.clone().appendTo( $DOM )
-        this.picker = $clone.pick( 'pick--dict-formatter' ).pick( 'picker' )
+        this.ui = $clone.shadow( 'shadow--dict-formatter' ).shadow( 'ui' )
     },
-    teardown: tearDownThePicker
+    teardown: tearDownTheUI
 })
 
 test( 'Get and set with formats', function() {
 
-    var picker = this.picker
+    var ui = this.ui
 
-    strictEqual( picker.get( 'select', 'lol [That’s kinda funny, lol].' ), 'Laugh Out Loud! That’s kinda funny, lol.', 'Check: abbreviation expansion' )
-    strictEqual( picker.get( 'select', 'c [Let’s count up to c what happens].' ), '01234 Let’s count up to c what happens.', 'Check: value expansion' )
+    strictEqual( ui.get( 'select', 'lol [That’s kinda funny, lol].' ), 'Laugh Out Loud! That’s kinda funny, lol.', 'Check: abbreviation expansion' )
+    strictEqual( ui.get( 'select', 'c [Let’s count up to c what happens].' ), '01234 Let’s count up to c what happens.', 'Check: value expansion' )
 
-    ok( picker.set( 'select', 9 ), 'Change: selection value' )
-    strictEqual( picker.get( 'select', 'c [Let’s count up to c what happens].' ), '910111213 Let’s count up to c what happens.', 'Check: updated value epansion' )
+    ok( ui.set( 'select', 9 ), 'Change: selection value' )
+    strictEqual( ui.get( 'select', 'c [Let’s count up to c what happens].' ), '910111213 Let’s count up to c what happens.', 'Check: updated value epansion' )
 })
 
 
@@ -368,8 +368,8 @@ test( 'Get and set with formats', function() {
  */
 module( 'API custom dict', {
     setup: function() {
-        Pick.extend({
-            name: 'pick--dict-custom',
+        shadow.extend({
+            name: 'shadow--dict-custom',
             dict: {
                 sup: 'not much',
                 highlight: 400,
@@ -381,44 +381,44 @@ module( 'API custom dict', {
             }
         })
         var $clone = $NODE_DIV.clone().appendTo( $DOM )
-        this.picker = $clone.pick( 'pick--dict-custom' ).pick( 'picker' )
+        this.ui = $clone.shadow( 'shadow--dict-custom' ).shadow( 'ui' )
     },
-    teardown: tearDownThePicker
+    teardown: tearDownTheUI
 })
 
 test( 'Get and set with dict and cascades', function() {
 
-    var picker = this.picker
+    var ui = this.ui
 
-    strictEqual( picker.get( 'sup' ), 'not much', 'Check: custom value' )
+    strictEqual( ui.get( 'sup' ), 'not much', 'Check: custom value' )
 
-    strictEqual( picker.get( 'select' ), 0, 'Check: default value' )
-    strictEqual( picker.get( 'highlight' ), 400, 'Check: default override' )
+    strictEqual( ui.get( 'select' ), 0, 'Check: default value' )
+    strictEqual( ui.get( 'highlight' ), 400, 'Check: default override' )
 
-    ok( picker.set( 'select', 50 ), 'Change: default value' )
+    ok( ui.set( 'select', 50 ), 'Change: default value' )
 
-    strictEqual( picker.get( 'select' ), 50, 'Check: default updated' )
-    strictEqual( picker.get( 'highlight' ), 400, 'Check: cascade override' )
+    strictEqual( ui.get( 'select' ), 50, 'Check: default updated' )
+    strictEqual( ui.get( 'highlight' ), 400, 'Check: cascade override' )
 
-    ok( picker.set( 'sup', 'just chillin’' ), 'Change: custom value' )
+    ok( ui.set( 'sup', 'just chillin’' ), 'Change: custom value' )
 
-    strictEqual( picker.get( 'sup' ), 'just chillin’', 'Check: custom value updated' )
-    strictEqual( picker.get( 'highlight' ), 'just chillin’', 'Check: custom cascade to default' )
+    strictEqual( ui.get( 'sup' ), 'just chillin’', 'Check: custom value updated' )
+    strictEqual( ui.get( 'highlight' ), 'just chillin’', 'Check: custom cascade to default' )
 })
 
 test( 'Add and remove with dict collections', function() {
 
-    var picker = this.picker
+    var ui = this.ui
 
-    deepEqual( picker.get( 'lucky_ones' ), [ 0, 3, 4, 5, 10 ], 'Check: initial value' )
+    deepEqual( ui.get( 'lucky_ones' ), [ 0, 3, 4, 5, 10 ], 'Check: initial value' )
 
-    ok( picker.add( 'lucky_ones', 2 ), 'Change: updated collection' )
+    ok( ui.add( 'lucky_ones', 2 ), 'Change: updated collection' )
 
-    deepEqual( picker.get( 'lucky_ones' ), [ 0, 3, 4, 5, 10, 2 ], 'Check: added new item' )
+    deepEqual( ui.get( 'lucky_ones' ), [ 0, 3, 4, 5, 10, 2 ], 'Check: added new item' )
 
-    ok( picker.remove( 'lucky_ones', 3 ), 'Change: updated collection' )
+    ok( ui.remove( 'lucky_ones', 3 ), 'Change: updated collection' )
 
-    deepEqual( picker.get( 'lucky_ones' ), [ 0, 4, 5, 10, 2 ], 'Check: removed item' )
+    deepEqual( ui.get( 'lucky_ones' ), [ 0, 4, 5, 10, 2 ], 'Check: removed item' )
 })
 
 
@@ -431,8 +431,8 @@ test( 'Add and remove with dict collections', function() {
  */
 module( 'API custom get/set methods', {
     setup: function() {
-        Pick.extend({
-            name: 'pick--get-set-custom',
+        shadow.extend({
+            name: 'shadow--get-set-custom',
             get: function( thing, options ) {
                 var value = this.dict[ thing ]
                 return options === true ? value : String.fromCharCode( 65 + value )
@@ -444,22 +444,22 @@ module( 'API custom get/set methods', {
             }
         })
         var $clone = $NODE_DIV.clone().appendTo( $DOM )
-        this.picker = $clone.pick( 'pick--get-set-custom' ).pick( 'picker' )
+        this.ui = $clone.shadow( 'shadow--get-set-custom' ).shadow( 'ui' )
     },
-    teardown: tearDownThePicker
+    teardown: tearDownTheUI
 })
 
 test( 'Get and set with custom methods', function() {
 
-    var picker = this.picker
+    var ui = this.ui
 
-    strictEqual( picker.get( 'highlight' ), 'A', 'Check: custom get' )
-    strictEqual( picker.get( 'highlight', true ), 0, 'Check: custom get with options' )
+    strictEqual( ui.get( 'highlight' ), 'A', 'Check: custom get' )
+    strictEqual( ui.get( 'highlight', true ), 0, 'Check: custom get with options' )
 
-    ok( picker.set( 'highlight', 'K' ), 'Change: custom set for value' )
+    ok( ui.set( 'highlight', 'K' ), 'Change: custom set for value' )
 
-    strictEqual( picker.get( 'highlight' ), 'K', 'Check: value updated' )
-    strictEqual( picker.get( 'highlight', true ), 10, 'Check: stored value updated' )
+    strictEqual( ui.get( 'highlight' ), 'K', 'Check: value updated' )
+    strictEqual( ui.get( 'highlight', true ), 10, 'Check: stored value updated' )
 })
 
 
@@ -471,8 +471,8 @@ test( 'Get and set with custom methods', function() {
  */
 module( 'API keys', {
     setup: function() {
-        Pick.extend({
-            name: 'pick--keys',
+        shadow.extend({
+            name: 'shadow--keys',
             keys: {
                 65: function( /*event*/ ) {
                     ++this.dict.highlight
@@ -480,29 +480,29 @@ module( 'API keys', {
             }
         })
         var $clone = $NODE_DIV.clone().appendTo( $DOM )
-        this.picker = $clone.pick( 'pick--keys' ).pick( 'picker' )
+        this.ui = $clone.shadow( 'shadow--keys' ).shadow( 'ui' )
     },
-    teardown: tearDownThePicker
+    teardown: tearDownTheUI
 })
 
 test( 'Default bindings', function() {
 
-    var picker = this.picker
+    var ui = this.ui
 
-    ok( picker.$host.focus(), 'Focus: picker node' )
+    ok( ui.$host.focus(), 'Focus: shadow host node' )
 
-    strictEqual( picker.is( 'opened' ), true, 'Check: opened' )
-    strictEqual( picker.is( 'focused' ), true, 'Check: focused' )
+    strictEqual( ui.is( 'opened' ), true, 'Check: opened' )
+    strictEqual( ui.is( 'focused' ), true, 'Check: focused' )
 })
 
 test( 'Custom bindings', function() {
 
-    var picker = this.picker
+    var ui = this.ui
 
-    ok( picker.$host.focus(), 'Focus: picker node' )
+    ok( ui.$host.focus(), 'Focus: shadow host node' )
 
-    ok( picker.$host.trigger( $.Event( 'keydown', { keyCode: 65 } ) ), 'Trigger: keydown event' )
-    strictEqual( picker.get( 'highlight' ), 1, 'Check: fired custom binding' )
+    ok( ui.$host.trigger( $.Event( 'keydown', { keyCode: 65 } ) ), 'Trigger: keydown event' )
+    strictEqual( ui.get( 'highlight' ), 1, 'Check: fired custom binding' )
 })
 
 
@@ -514,8 +514,8 @@ test( 'Custom bindings', function() {
  */
 module( 'API inputs', {
     setup: function() {
-        Pick.extend({
-            name: 'pick--input',
+        shadow.extend({
+            name: 'shadow--input',
             formats: {
                 dd: function( value ) {
                     return '0' + value
@@ -535,32 +535,32 @@ module( 'API inputs', {
             }
         })
         var $clone = $NODE_INPUT.clone().attr({  value: '06', name: 'value_input' }).appendTo( $DOM )
-        this.picker = $clone.pick( 'pick--input' ).pick( 'picker' )
+        this.ui = $clone.shadow( 'shadow--input' ).shadow( 'ui' )
     },
-    teardown: tearDownThePicker
+    teardown: tearDownTheUI
 })
 
 test( 'Values', function() {
 
-    var picker = this.picker
+    var ui = this.ui
 
-    strictEqual( picker.get( 'select' ), 6, 'Check: select updated' )
-    strictEqual( picker.get( 'value' ), '06', 'Check: input value' )
-    strictEqual( picker.get( 'valueHidden' ), '006', 'Check: hidden input value' )
+    strictEqual( ui.get( 'select' ), 6, 'Check: select updated' )
+    strictEqual( ui.get( 'value' ), '06', 'Check: input value' )
+    strictEqual( ui.get( 'valueHidden' ), '006', 'Check: hidden input value' )
 
-    ok( picker.set( 'select', 9 ), 'Change: select updated' )
+    ok( ui.set( 'select', 9 ), 'Change: select updated' )
 
-    strictEqual( picker.get( 'select' ), 9, 'Check: select updated' )
-    strictEqual( picker.get( 'value' ), '09', 'Check: input value' )
-    strictEqual( picker.get( 'valueHidden' ), '009', 'Check: hidden input value' )
+    strictEqual( ui.get( 'select' ), 9, 'Check: select updated' )
+    strictEqual( ui.get( 'value' ), '09', 'Check: input value' )
+    strictEqual( ui.get( 'valueHidden' ), '009', 'Check: hidden input value' )
 })
 
 test( 'Names', function() {
 
-    var picker = this.picker
+    var ui = this.ui
 
-    strictEqual( picker.$input[0].name, 'value_input', 'Check: input name' )
-    strictEqual( picker._hidden.name, 'value_input_hidden', 'Check: hidden input name' )
+    strictEqual( ui.$input[0].name, 'value_input', 'Check: input name' )
+    strictEqual( ui._hidden.name, 'value_input_hidden', 'Check: hidden input name' )
 })
 
 
@@ -574,8 +574,8 @@ module( 'API events', {
     setup: function() {
         var mod = this
         mod.has = {}
-        Pick.extend({
-            name: 'pick--loudmouth',
+        shadow.extend({
+            name: 'shadow--loudmouth',
             content: '<div>This extension says exactly what it’s doing.</div>',
             init: function() {
                 mod.has.initialized = true
@@ -611,9 +611,9 @@ module( 'API events', {
             }
         }
         var $clone = $NODE_DIV.clone().appendTo( $DOM )
-        this.picker = $clone.pick( 'pick--loudmouth', this.options ).pick( 'picker' )
+        this.ui = $clone.shadow( 'shadow--loudmouth', this.options ).shadow( 'ui' )
     },
-    teardown: tearDownThePicker
+    teardown: tearDownTheUI
 })
 
 test( 'Instance events', 2, function() {
@@ -627,36 +627,36 @@ test( 'Instance events', 2, function() {
 test( 'Extension options', 8, function() {
 
     var mod = this
-    var picker = this.picker
+    var ui = this.ui
 
     strictEqual( mod.has.opts_started, true, 'Check: `onStart`' )
     strictEqual( mod.has.opts_rendered, true, 'Check: `onRender`' )
 
-    picker.open()
+    ui.open()
     strictEqual( mod.has.opts_opened, true, 'Check: `onOpen`' )
 
-    picker.close()
+    ui.close()
     strictEqual( mod.has.opts_closed, true, 'Check: `onClose`' )
 
-    picker.focus()
+    ui.focus()
     strictEqual( mod.has.opts_focused, true, 'Check: `onFocus`' )
 
-    picker.blur()
+    ui.blur()
     strictEqual( mod.has.opts_blurred, true, 'Check: `onBlur`' )
 
-    picker.set( 'select' )
+    ui.set( 'select' )
     strictEqual( mod.has.opts_selected, true, 'Check: `onSet`' )
 
-    picker.stop()
+    ui.stop()
     strictEqual( mod.has.opts_stopped, true, 'Check: `onStop`' )
 })
 
 test( 'Extension multiple bindings', 8, function() {
 
-    var picker = this.picker
+    var ui = this.ui
 
     // Register the events.
-    picker.
+    ui.
         on( 'start', function() {
             ok( true, 'Check: `on(‘start’)`' )
         }).
@@ -684,7 +684,7 @@ test( 'Extension multiple bindings', 8, function() {
 
 
     // Trigger the events.
-    picker.
+    ui.
         trigger( 'start' ).
         trigger( 'open' ).
         trigger( 'close' ).
@@ -696,10 +696,10 @@ test( 'Extension multiple bindings', 8, function() {
 
 test( 'Extension single bindings', 8, function() {
 
-    var picker = this.picker
+    var ui = this.ui
 
     // Register the events.
-    picker.on({
+    ui.on({
         start: function() {
             ok( true, 'Check: `on(‘start’)`' )
         },
@@ -728,7 +728,7 @@ test( 'Extension single bindings', 8, function() {
 
 
     // Trigger the events.
-    picker.
+    ui.
         trigger( 'start' ).
         trigger( 'open' ).
         trigger( 'close' ).

@@ -1,0 +1,48 @@
+@charset "utf-8";
+@import "_variables.less";
+
+
+/*------------------------------------*\
+    $UI-BLOB
+\*------------------------------------*/
+
+/**
+ * The root of the ui-blob.
+ */
+.ui-blob {}
+
+/* Opened ui-blob state. */
+.ui-blob--opened {}
+
+/* Active ui-blob state. */
+.ui-blob--active {}
+
+
+    /**
+     * The content holder of the ui-blob.
+     */
+    .ui-blob__holder {
+
+        /* Add a background and border. */
+        background: @background--ui-blob;
+        border: @border-width--ui-blob solid @border-color--ui-blob;
+
+        /* Round the corners. */
+        border-radius: @border-radius--ui-blob;
+    }
+
+    /* The opened content holder. */
+    .ui-blob--opened .ui-blob__holder {}
+
+
+        /**
+         * The content frame.
+         */
+        .ui-drop__frame {
+
+            /* Set the max height before scrolling. */
+            max-height: @max-height--ui-blob;
+        }
+
+
+

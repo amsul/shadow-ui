@@ -5,21 +5,21 @@
 
 <script>
 
-    $.fn.pick.extend({
-        name: 'pick--keys',
+    $.fn.shadow.extend({
+        name: 'shadow--keys',
         keys: {
             65: function( /*event*/ ) {
                 ++this.dict.highlight
-                this.picker.$host.trigger( 'key_change' )
+                this.ui.$host.trigger( 'key_change' )
             }
         }
     })
 
-    var $div = $( '.div' ).pick( 'pick--keys' )
-    var picker = $div.pick( 'picker' )
+    var $div = $( '.div' ).shadow( 'shadow--keys' )
+    var ui = $div.shadow( 'ui' )
 
-    picker.$host.on( 'key_change', function() {
-        console.log( picker.get( 'highlight' ) )
+    ui.$host.on( 'key_change', function() {
+        console.log( ui.get( 'highlight' ) )
     })
 
 </script>

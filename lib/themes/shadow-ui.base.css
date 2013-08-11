@@ -26,33 +26,33 @@
 /**
  * The extended host element.
  */
-.pick-drop-host,
-.pick-modal-host,
-.pick-box-host {
+.ui-drop-host,
+.ui-modal-host,
+.ui-blob-host {
   position: relative;
 }
 /* The host state when it is focused. */
-.pick-drop-host:focus,
-.pick-modal-host:focus,
-.pick-box-host:focus {
+.ui-drop-host:focus,
+.ui-modal-host:focus,
+.ui-blob-host:focus {
   outline: 0;
   box-shadow: 0 0 0 2px #0089ec;
 }
-/* The host state while the picker is actively focused. */
+/* The host state while the shadow is actively focused. */
 /**
-     * The input node that carries the picker value.
+     * The input node that carries the shadow value.
      */
-.pick-drop-host__input,
-.pick-modal-host__input,
-.pick-box-host__input {
+.ui-drop-host__input,
+.ui-modal-host__input,
+.ui-blob-host__input {
   /* Make sure IE shows the correct cursor with the disabled attribute. */
 
   cursor: default;
 }
 /* The input state when it is focused. */
-.pick-drop-host__input:focus,
-.pick-modal-host__input:focus,
-.pick-box-host__input:focus {
+.ui-drop-host__input:focus,
+.ui-modal-host__input:focus,
+.ui-blob-host__input:focus {
   outline: 0;
   border-color: #0089ec;
 }
@@ -60,12 +60,12 @@
     $BASE
 \*------------------------------------*/
 /**
- * The root of the picker.
+ * The root of the ui.
  */
-.pick-drop,
-.pick-box,
-.pick-modal {
-  /* Make sure nothing covers the picker. */
+.ui-drop,
+.ui-blob,
+.ui-modal {
+  /* Make sure nothing covers the ui. */
 
   z-index: 10000;
   /* Set the base text stylings. */
@@ -76,11 +76,11 @@
   text-align: left;
 }
 /**
-     * The content frame of the picker.
+     * The content frame of the ui.
      */
-.pick-drop__frame,
-.pick-box__frame,
-.pick-modal__frame {
+.ui-drop__frame,
+.ui-blob__frame,
+.ui-modal__frame {
   /* This is the only “scrollable” top-level container element. */
 
   overflow-y: auto;

@@ -1,13 +1,13 @@
 
 <section>
-    <div class="div">Input picker<input class="input" type="text" value="06" name="value_input"></div>
+    <div class="div">Input shadow<input class="input" type="text" value="06" name="value_input"></div>
 </section>
 
 <script>
 
-    $.fn.pick.extend({
-        name: 'pick--input',
-        prefix: 'pick-modal',
+    $.fn.shadow.extend({
+        name: 'shadow--input',
+        prefix: 'ui-modal',
         formats: {
             dd: function( value ) {
                 return '0' + value
@@ -36,20 +36,20 @@
             if ( 'ddd' in formatValueHash ) this.dict.select = ~~formatValueHash.ddd
         },
         ready: function() {
-            var picker = this.picker
-            picker.on( 'set', function( event ) {
+            var ui = this.ui
+            ui.on( 'set', function( event ) {
                 var focusedWithin
                 if ( 'select' in event.data ) {
-                    var activeElement = picker.get( 'activeElement' )
-                    if ( activeElement && activeElement != picker.$input[0] ) focusedWithin = true
-                    picker.render()
-                    if ( focusedWithin ) picker.$root.find( '[data-pick="select:' + event.data.select + '"]' ).focus()
+                    var activeElement = ui.get( 'activeElement' )
+                    if ( activeElement && activeElement != ui.$input[0] ) focusedWithin = true
+                    ui.render()
+                    if ( focusedWithin ) ui.$root.find( '[data-pick="select:' + event.data.select + '"]' ).focus()
                 }
             })
         }
     })
 
-    var $input = $( '.input' ).pick( 'pick--input' )
-    var picker = $input.pick( 'picker' )
+    var $input = $( '.input' ).shadow( 'shadow--input' )
+    var ui = $input.shadow( 'ui' )
 
 </script>

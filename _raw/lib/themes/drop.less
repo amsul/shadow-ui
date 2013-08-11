@@ -3,13 +3,13 @@
 
 
 /*------------------------------------*\
-    $PICK-DROP
+    $UI-DROP
 \*------------------------------------*/
 
 /**
- * The root of the pick-drop.
+ * The root of the ui-drop.
  */
-.pick-drop {
+.ui-drop {
 
     /* Make sure elements around aren’t affected. */
     position: absolute;
@@ -24,11 +24,11 @@
     -webkit-transform: translateY(-1em) perspective(600px) rotateX(25deg);
 
     /* Make it a smooth transition. */
-    -webkit-transition: all @transition-speed--pick-drop ease-out;
+    -webkit-transition: all @transition-speed--ui-drop ease-out;
 }
 
-/* Opened pick-drop state. */
-.pick-drop--opened {
+/* Opened ui-drop state. */
+.ui-drop--opened {
 
     /* Reveal the content. */
     opacity: 1;
@@ -37,28 +37,28 @@
     -webkit-transform: translateY(0) perspective(600px) rotateX(0);
 }
 
-/* Active pick-drop state. */
-.pick-drop--active {}
+/* Active ui-drop state. */
+.ui-drop--active {}
 
 
     /**
-     * The pick-drop’s pointer and holder.
+     * The ui-drop’s pointer and holder.
      */
-    .pick-drop__pointer,
-    .pick-drop__holder {
+    .ui-drop__pointer,
+    .ui-drop__holder {
 
         /* Set the width. */
-        width: @width--pick-drop;
+        width: @width--ui-drop;
     }
 
 
     /**
-     * The pick-drop’s pointer and pseudo-borders.
+     * The ui-drop’s pointer and pseudo-borders.
      */
-    .pick-drop__pointer {
+    .ui-drop__pointer {
 
         /* Give room for the pseudo-borders. */
-        height: @height-pointer--pick-drop;
+        height: @height-pointer--ui-drop;
 
         /* Make sure it’s above the holder shadow. */
         position: relative;
@@ -68,16 +68,16 @@
         max-height: 0;
 
         /* When closing, height should wait till the animation is done. */
-        -webkit-transition: max-height 0 @transition-speed--pick-drop;
+        -webkit-transition: max-height 0 @transition-speed--ui-drop;
     }
 
     /* The pseudo-borders. */
-    .pick-drop__pointer:before,
-    .pick-drop__pointer:after {
+    .ui-drop__pointer:before,
+    .ui-drop__pointer:after {
         content: " ";
 
         /* Add the base border styling. */
-        border: @height-pointer--pick-drop solid transparent;
+        border: @height-pointer--ui-drop solid transparent;
 
         /* Collapse the width to make triangles. */
         width: 0;
@@ -89,31 +89,31 @@
     }
 
     /* The pseudo-border background. */
-    .pick-drop__pointer:before {
+    .ui-drop__pointer:before {
 
         /* Nudge it up and away from left edge. */
         left: 10px;
-        top: -(@height-pointer--pick-drop - 1px);
+        top: -(@height-pointer--ui-drop - 1px);
 
         /* Add the border color. */
-        border-bottom-color: @border-color--pick-drop;
+        border-bottom-color: @border-color--ui-drop;
     }
 
     /* The pseudo-border foreground. */
-    .pick-drop__pointer:after {
+    .ui-drop__pointer:after {
 
         /* Nudge it back to left edge and down 1px below the border. */
         left: -10px;
-        top: -(@height-pointer--pick-drop - 2px);
+        top: -(@height-pointer--ui-drop - 2px);
 
         /* Add the foreground color. */
-        border-bottom-color: @background--pick-drop;
+        border-bottom-color: @background--ui-drop;
     }
 
-    .pick-drop--opened .pick-drop__pointer {
+    .ui-drop--opened .ui-drop__pointer {
 
         /* Reveal the content. */
-        max-height: @height-pointer--pick-drop;
+        max-height: @height-pointer--ui-drop;
 
         /* Immediately open the height and animate the rest. */
         -webkit-transition: max-height 0;
@@ -121,22 +121,22 @@
 
 
     /**
-     * The content holder of the pick-drop.
+     * The content holder of the ui-drop.
      */
-    .pick-drop__holder {
+    .ui-drop__holder {
 
         /* Add a background and collapsed border. */
-        background: @background--pick-drop;
-        border: 0 solid @border-color--pick-drop;
+        background: @background--ui-drop;
+        border: 0 solid @border-color--ui-drop;
 
         /* Play nice with borders. */
         box-sizing: border-box;
 
         /* Round the corners. */
-        border-radius: @border-radius--pick-drop;
+        border-radius: @border-radius--ui-drop;
 
         /* Add a drop shadow. */
-        box-shadow: @box-shadow--pick-drop;
+        box-shadow: @box-shadow--ui-drop;
 
         /* Hide overflowing content. */
         overflow: hidden;
@@ -145,17 +145,17 @@
         max-height: 0;
 
         /* When closing, height should wait till the animation is done. */
-        -webkit-transition: max-height 0 @transition-speed--pick-drop, border-width 0 @transition-speed--pick-drop;
+        -webkit-transition: max-height 0 @transition-speed--ui-drop, border-width 0 @transition-speed--ui-drop;
     }
 
     /* The opened content holder. */
-    .pick-drop--opened .pick-drop__holder {
+    .ui-drop--opened .ui-drop__holder {
 
         /* Add width to the border. */
-        border-width: @border-width--pick-drop;
+        border-width: @border-width--ui-drop;
 
         /* Reveal the content. */
-        max-height: @max-height--pick-drop;
+        max-height: @max-height--ui-drop;
 
         /* Immediately open the height and animate the rest. */
         -webkit-transition: max-height 0, border-width 0;
@@ -165,19 +165,19 @@
         /**
          * The content frame.
          */
-        .pick-drop__frame {
+        .ui-drop__frame {
 
             /* Set the max height before scrolling. */
-            max-height: @max-height--pick-drop;
+            max-height: @max-height--ui-drop;
         }
 
 
 
 
 /**
- * The center aligned pick-drop.
+ * The center aligned ui-drop.
  */
-.pick-drop--center {
+.ui-drop--center {
 
     /* Collapse the width. */
     width: 0;
@@ -190,12 +190,12 @@
 }
 
     /* Align the pointer and holder to the center using half the width as a negative margin. */
-    .pick-drop--center .pick-drop__pointer,
-    .pick-drop--center .pick-drop__holder {
-        margin-left: -(@width--pick-drop/2);
+    .ui-drop--center .ui-drop__pointer,
+    .ui-drop--center .ui-drop__holder {
+        margin-left: -(@width--ui-drop/2);
     }
 
-    .pick-drop--center .pick-drop__pointer {
+    .ui-drop--center .ui-drop__pointer {
         text-align: center;
     }
 
@@ -203,14 +203,14 @@
 
 
 /**
- * The right aligned pick-drop.
+ * The right aligned ui-drop.
  */
-.pick-drop--right {
+.ui-drop--right {
     left: auto;
     right: 0;
 }
 
-    .pick-drop--right .pick-drop__pointer {
+    .ui-drop--right .ui-drop__pointer {
         text-align: right;
     }
 

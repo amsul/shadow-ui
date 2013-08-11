@@ -5,12 +5,12 @@
 
 <script>
 
-    $.fn.pick.extend({
-        name: 'pick--basic',
-        content: '<div class="content">This is the most basic form of a picker.</div>'
+    $.fn.shadow.extend({
+        name: 'shadow--basic',
+        content: '<div class="content">This is the most basic form of a shadow instance.</div>'
     })
 
-    var $div = $( '.div' ).pick( 'pick--basic' )
-    var picker = $div.pick( 'picker' )
+    var $div = $( '.div' ).shadow( 'shadow--basic' )
+    var ui = $div.shadow( 'ui' )
 
 </script>

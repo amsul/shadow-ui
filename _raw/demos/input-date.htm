@@ -1,0 +1,292 @@
+
+<style>
+    body {
+        max-width: 540px;
+        margin: 40px auto;
+    }
+</style>
+
+<br><br><br>
+
+<style>
+    .ui-drop--calendar .ui-drop__holder {
+        width: 300px;
+    }
+</style>
+
+<input type="text" class="shadow shadow--input-date" value="Date input">
+<script>
+
+    // The constants.
+    WEEKS_IN_CAL = 6
+    DAYS_IN_WEEK = 7
+
+
+    // Create the shadow extension.
+    shadow.extend({
+        name: 'input-date',
+
+        dict: {
+            select: [],
+            highlight: [],
+            today: null,
+            view: null,
+            min: -Infinity,
+            max: Infinity
+        },
+
+        queue: {
+            today: 'now create',
+            highlight: 'navigate create',
+            view: 'create viewset'
+        },
+
+        cascades: {
+            // select: 'highlight', //(optional)
+            highlight: 'view'
+        },
+
+        klasses: {
+            root: [ '', '--calendar' ]
+        },
+
+        defaults: {
+
+            // Months and weekdays.
+            monthsFull: [ 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' ],
+            monthsShort: [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ],
+            weekdaysFull: [ 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday' ],
+            weekdaysShort: [ 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat' ],
+
+            // Today and clear.
+            today: 'Today',
+            clear: 'Clear',
+
+            // The format to show on the `input` element.
+            format: 'd mmmm, yyyy',
+
+            // Classes.
+            klasses: shadow._.prefix( 'calendar', {
+
+                table: 'table',
+
+                header: 'header',
+
+                navPrev: 'nav--prev',
+                navNext: 'nav--next',
+                navDisabled: 'nav--disabled',
+
+                month: 'month',
+                year: 'year',
+
+                selectMonth: 'select--month',
+                selectYear: 'select--year',
+
+                weekdays: 'weekday',
+
+                day: 'day',
+                disabled: 'day--disabled',
+                selected: 'day--selected',
+                highlighted: 'day--highlighted',
+                now: 'day--today',
+                infocus: 'day--infocus',
+                outfocus: 'day--outfocus',
+
+                footer: 'footer',
+
+                buttonClear: 'button--clear',
+                buttonToday: 'button--today'
+            })
+        },
+
+        init: function() {
+
+            var component = this,
+                ui = component.ui
+
+            // Set the starting values.
+            var today = component.update( 'today', component.now() )
+            component.update( 'select', today )
+
+            ui.on('set', function( event ) {
+                if ( event.item == 'highlight' && event.options == 'nav' ) {
+                    ui.render()
+                }
+            })
+        },
+
+        template: function() {
+
+            var component = this,
+
+                settings = component.ui.settings,
+
+                dateView = component.fetch('view'),
+                dateToday = component.fetch('today'),
+
+                // Create the next/prev labels.
+                labelNav = function( next ) {
+                    return shadow._.node({
+                        el: 'button',
+                        content: ' ',
+                        attrs: {
+                            'data-action': 'highlight:' + (next ? 1 : -1) + ':nav'
+                        }
+                    })
+                },
+
+                // Create the month label.
+                labelMonth = shadow._.node({
+                    content: settings.monthsFull[ dateView.month ],
+                    klass: settings.klasses.month
+                }),
+
+                // Create the year label.
+                labelYear = shadow._.node({
+                    content: dateView.year,
+                    klass: settings.klasses.year
+                }),
+
+                // Create the table head with the weekdays.
+                tableHead = shadow._.node({
+                    el: 'thead',
+                    content: shadow._.node({
+                        el: 'tr',
+                        content: function() {
+                            var row = ''
+                            for ( var count = 0; count < DAYS_IN_WEEK; count += 1 ) {
+                                row += shadow._.node({
+                                    el: 'th',
+                                    content: settings.weekdaysShort[ count ]
+                                })
+                            }
+                            return row
+                        }
+                    })
+                }), //tableHead
+
+                // Create the table body as a matrix of dates (7x6).
+                tableBody = shadow._.node({
+                    el: 'tbody',
+                    content: function() {
+
+                        var rows = [],
+                            shiftWeekday = dateView.day - ( settings.firstDay ? 1 : 0 ),
+                            createNodeDate = function ( dayOfCalendar ) {
+                                var date = component.create([ dateView.year, dateView.month, dayOfCalendar ])
+                                return '<td>' + shadow._.node({
+                                    el: 'button',
+                                    content: date.date,
+                                    attrs: {
+                                        'data-action': 'select:' + date.time,
+                                        'tabindex': -1
+                                    }
+                                }) + '</td>'
+                            }
+
+                        // Go through the weeks and days to fill up the collection.
+                        for ( var countWeek = 0; countWeek < WEEKS_IN_CAL; countWeek += 1 ) {
+
+                            // Create a collection for this week’s days.
+                            rows[ countWeek ] = []
+
+                            // Go through the days in this week to fill up the collection.
+                            for ( var countWeekday = 1; countWeekday <= DAYS_IN_WEEK; countWeekday += 1 ) {
+
+                                // Calculate the days up to this week.
+                                var countDay = countWeek * DAYS_IN_WEEK + countWeekday - shiftWeekday
+
+                                // Create the day cells and add it to the collection.
+                                rows[ countWeek ].push( createNodeDate( countDay ) )
+                            }
+
+                            // Create the week row and update the collection.
+                            rows[ countWeek ] = shadow._.node({
+                                el: 'tr',
+                                content: rows[ countWeek ]
+                            })
+                        }
+
+                        return rows.join('')
+                    }
+                }), //tableBody
+
+                // Create the “today” button.
+                buttonToday = shadow._.node({
+                    el: 'button',
+                    content: 'Today',
+                    attrs: {
+                        'data-action': 'select:' + dateToday.time
+                    }
+                }),
+
+                // Create the “clear” button.
+                buttonClear = shadow._.node({
+                    el: 'button',
+                    content: 'Clear',
+                    attrs: {
+                        'data-action': 'clear'
+                    }
+                })
+
+
+            // Return the composed the calendar.
+            return shadow._.node({
+                content: [
+                    shadow._.node({
+                        content: [ labelNav(), labelNav(1), labelMonth, labelYear ]
+                    }),
+                    shadow._.node({
+                        el: 'table',
+                        content: [ tableHead, tableBody ]
+                    }),
+                    shadow._.node({
+                        content: [ buttonToday, buttonClear ]
+                    })
+                ]
+            })
+        }, //template
+
+        now: function() {
+            return this.normalize( new Date() )
+        },
+        normalize: function( date ) {
+            date.setHours(0,0,0,0)
+            return date
+        },
+        navigate: function( value, options ) {
+            if ( options == 'nav' ) {
+                var dateView = this.fetch('view')
+                value = [ dateView.year, dateView.month + value, 1 ]
+            }
+            return value
+        },
+        viewset: function( value, options ) {
+            return this.create([ value.year, value.month, 1 ])
+        },
+        create: function( value, options ) {
+
+            if ( shadow._.isDate( value ) ) {
+                // silently pass through..
+            }
+            else if ( shadow._.isInteger( value ) ) {
+                value = this.normalize( new Date( value ) )
+            }
+            else if ( $.isArray( value ) ) {
+                value = new Date( value[0], value[1], value[2] )
+            }
+
+            return value instanceof ShadowDate ? value : new ShadowDate( value )
+        }
+    })
+    var ui = $('.shadow--input-date').shadow('input-date').shadow('ui')
+    ui.open()
+    function ShadowDate( value ) {
+        this.year = value.getFullYear()
+        this.month = value.getMonth()
+        this.date = value.getDate()
+        this.day = value.getDay()
+        this.time = value.getTime()
+        this.obj = value
+    }
+</script>

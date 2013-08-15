@@ -41,54 +41,40 @@
 
 
     
-<section>
-    <div class="div" data-value="006">Custom input shadow</div>
+<section class="section">
+    <div class="section__block section__block--scoped">
+
+        <h2>Alias a shadow extension</h2>
+
+        <p>While creating the instance, pass an <code>alias</code> option as a short-hand:</p>
+
+        <pre><code data-language="javascript">shadow.extend({
+    name: 'pindrop',
+    alias: 'pindrop',
+    template: '&lt;div class="ui-face ui-face--padded">This is an aliased extension&lt;/div>'
+})</code></pre>
+
+        <p>Next, we create the aliased shadow on any element:</p>
+
+        <pre class="codeblock"><code
+            data-language="html">&lt;div id="pindrop">This is a pindrop instance.&lt;/div></code><br><code
+            data-language="javascript">$('#pindrop').pindrop()</code>
+        </pre>
+        <div class="codeblock-demo">
+            <div id="pindrop">This is a pindrop instance.</div>
+        </div>
+
+    </div>
 </section>
 
 <script>
-
-    $.fn.shadow.extend({
-        name: 'shadow--input-custom',
-        formats: {
-            dd: function( value ) {
-                return '0' + value
-            },
-            ddd: function( value ) {
-                return '00' + value
-            }
-        },
-        defaults: {
-            format: 'dd',
-            formatHidden: 'ddd',
-            suffixHidden: '_submit'
-        },
-        template: function() {
-            var string = '<input class="input" type="text" name="value_input">'
-            return '<p>' + string + '</p>'
-        },
-        init: function( formatValueHash ) {
-
-            var ui = this.ui
-
-            if ( 'ddd' in formatValueHash ) this.update( 'select', ~~formatValueHash.ddd )
-
-            ui.on( 'render', function() {
-                ui.$input = ui.$root.find( 'input' ).first().on( 'blur', function() {
-                    ui.set( 'select', ~~this.value )
-                })
-                ui.$host.trigger( 'change' )
-            })
-
-            ui.$host.on( 'change', function() {
-                ui.$input[0].value = ui.get( 'select', { format: ui.settings.format } )
-            })
-        }
+    shadow.extend({
+        name: 'pindrop',
+        template: '<div class="ui-face ui-face--padded">This is an aliased extension</div>'
     })
-
-    var $input = $( '.div' ).shadow( 'shadow--input-custom' )
-    var ui = $input.shadow( 'ui' )
-
+    $('#pindrop').shadow('pindrop')
 </script>
+
 
 
 

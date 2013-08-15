@@ -7,20 +7,20 @@
 
     $.fn.shadow.extend({
         name: 'shadow--dict',
-        content: function() {
+        template: function() {
             var to_select = ~~(Math.random()*1000),
                 to_highlight = ~~(Math.random()*1000)
             return '<div class="content">' +
                 'Select: <u>' + this.ui.get('select') + '</u><br>' +
                 'Highlight: <u>' + this.ui.get('highlight') + '</u><hr>' +
-                '<button data-pick="select:' + to_select + '">Set select to ' + to_select + '</button>' +
-                '<button data-pick="highlight:' + to_highlight + '">Set highlight to ' + to_highlight + '</button>' +
+                '<button data-action="select:' + to_select + '">Set select to ' + to_select + '</button>' +
+                '<button data-action="highlight:' + to_highlight + '">Set highlight to ' + to_highlight + '</button>' +
             '</div>'
         },
-        ready: function() {
+        init: function() {
             var ui = this.ui
             ui.on( 'set', function( event ) {
-                if ( 'highlight' in event.data || 'select' in event.data ) {
+                if ( event.item == 'highlight' || event.item == 'select' ) {
                     ui.render()
                 }
             })

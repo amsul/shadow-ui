@@ -1,0 +1,50 @@
+
+<style>
+    .ui-drop--tooltip {
+        font-size: .625em;
+        -webkit-transform: none;
+    }
+        .ui-drop--tooltip .ui-drop__pointer {
+            display: none;
+        }
+        .ui-drop--tooltip .ui-drop__holder {
+            border-color: #000;
+            background: #333;
+            color: #fff;
+            width: auto;
+        }
+            .ui-drop--tooltip .ui-drop__wrap {
+                padding: 5px 8px;
+            }
+</style>
+<div class="shadow shadow--tooltip" data-title="This is a title dropdown">Tooltip <small class="text-dim">(hover and wait a sec)</small></div>
+<script>
+    shadow.extend({
+        name: 'tooltip',
+        template: function() {
+            return this.ui.$host.data('title')
+        },
+        klasses: {
+            root: [ '', '--tooltip' ]
+        },
+        init: function() {
+
+            var ui = this.ui,
+                timeout = null
+
+            // Turn off the default events to open the ui.
+            ui.$host.off( 'click focusin' )
+
+            // Bind our own hover events to open/close the ui with a delay.
+            // If IE<=9 is not a concern, delayed CSS transitions would be better.
+            ui.$host.on( 'mouseenter focusin', function() {
+                timeout = setTimeout( ui.open.bind( ui ), 1000 )
+            }).
+            on( 'mouseleave click focusout', function() {
+                clearTimeout( timeout )
+                ui.close()
+            })
+        }
+    })
+    $('.shadow--tooltip').shadow('tooltip')
+</script>

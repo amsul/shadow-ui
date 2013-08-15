@@ -60,7 +60,7 @@
 .ui-drop__holder {
   /* Set the width. */
 
-  width: 280px;
+  width: 250px;
 }
 /**
      * The ui-drop’s pointer and pseudo-borders.
@@ -188,7 +188,7 @@
 /* Align the pointer and holder to the center using half the width as a negative margin. */
 .ui-drop--center .ui-drop__pointer,
 .ui-drop--center .ui-drop__holder {
-  margin-left: -140px;
+  margin-left: -125px;
 }
 .ui-drop--center .ui-drop__pointer {
   text-align: center;

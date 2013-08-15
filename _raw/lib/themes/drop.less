@@ -92,7 +92,7 @@
     .ui-drop__pointer:before {
 
         /* Nudge it up and away from left edge. */
-        left: 10px;
+        left: @height-pointer--ui-drop;
         top: -(@height-pointer--ui-drop - 1px);
 
         /* Add the border color. */
@@ -103,7 +103,7 @@
     .ui-drop__pointer:after {
 
         /* Nudge it back to left edge and down 1px below the border. */
-        left: -10px;
+        left: -(@height-pointer--ui-drop);
         top: -(@height-pointer--ui-drop - 2px);
 
         /* Add the foreground color. */

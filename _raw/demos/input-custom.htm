@@ -20,19 +20,20 @@
             formatHidden: 'ddd',
             suffixHidden: '_submit'
         },
-        content: function() {
+        template: function() {
             var string = '<input class="input" type="text" name="value_input">'
             return '<p>' + string + '</p>'
         },
         init: function( formatValueHash ) {
-            if ( 'ddd' in formatValueHash ) this.dict.select = ~~formatValueHash.ddd
-        },
-        ready: function() {
 
             var ui = this.ui
 
+            if ( 'ddd' in formatValueHash ) this.update( 'select', ~~formatValueHash.ddd )
+
             ui.on( 'render', function() {
-                ui.$input = ui.$root.find( 'input' ).first()
+                ui.$input = ui.$root.find( 'input' ).first().on( 'blur', function() {
+                    ui.set( 'select', ~~this.value )
+                })
                 ui.$host.trigger( 'change' )
             })
 

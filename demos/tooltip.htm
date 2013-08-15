@@ -41,53 +41,54 @@
 
 
     
-<section>
-    <div class="div" data-value="006">Custom input shadow</div>
-</section>
-
-<script>
-
-    $.fn.shadow.extend({
-        name: 'shadow--input-custom',
-        formats: {
-            dd: function( value ) {
-                return '0' + value
-            },
-            ddd: function( value ) {
-                return '00' + value
+<style>
+    .ui-drop--tooltip {
+        font-size: .625em;
+        -webkit-transform: none;
+    }
+        .ui-drop--tooltip .ui-drop__pointer {
+            display: none;
+        }
+        .ui-drop--tooltip .ui-drop__holder {
+            border-color: #000;
+            background: #333;
+            color: #fff;
+            width: auto;
+        }
+            .ui-drop--tooltip .ui-drop__wrap {
+                padding: 5px 8px;
             }
-        },
-        defaults: {
-            format: 'dd',
-            formatHidden: 'ddd',
-            suffixHidden: '_submit'
-        },
+</style>
+<div class="shadow shadow--tooltip" data-title="This is a title dropdown">Tooltip <small class="text-dim">(hover and wait a sec)</small></div>
+<script>
+    shadow.extend({
+        name: 'tooltip',
         template: function() {
-            var string = '<input class="input" type="text" name="value_input">'
-            return '<p>' + string + '</p>'
+            return this.ui.$host.data('title')
         },
-        init: function( formatValueHash ) {
+        klasses: {
+            root: [ '', '--tooltip' ]
+        },
+        init: function() {
 
-            var ui = this.ui
+            var ui = this.ui,
+                timeout = null
 
-            if ( 'ddd' in formatValueHash ) this.update( 'select', ~~formatValueHash.ddd )
+            // Turn off the default events to open the ui.
+            ui.$host.off( 'click focusin' )
 
-            ui.on( 'render', function() {
-                ui.$input = ui.$root.find( 'input' ).first().on( 'blur', function() {
-                    ui.set( 'select', ~~this.value )
-                })
-                ui.$host.trigger( 'change' )
-            })
-
-            ui.$host.on( 'change', function() {
-                ui.$input[0].value = ui.get( 'select', { format: ui.settings.format } )
+            // Bind our own hover events to open/close the ui with a delay.
+            // If IE<=9 is not a concern, delayed CSS transitions would be better.
+            ui.$host.on( 'mouseenter focusin', function() {
+                timeout = setTimeout( ui.open.bind( ui ), 1000 )
+            }).
+            on( 'mouseleave click focusout', function() {
+                clearTimeout( timeout )
+                ui.close()
             })
         }
     })
-
-    var $input = $( '.div' ).shadow( 'shadow--input-custom' )
-    var ui = $input.shadow( 'ui' )
-
+    $('.shadow--tooltip').shadow('tooltip')
 </script>
 
 

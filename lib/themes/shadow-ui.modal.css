@@ -49,7 +49,7 @@
   background: rgba(0, 0, 0, 0.32);
   /* Fade out it out, then immediately shift the holder out of view. */
 
-  transition: opacity 0.2s ease-in, top 0s 0.2s;
+  -webkit-transition: opacity 0.19999999999999998s 0.1s ease-in, top 0s 0.3s;
 }
 /* Opened ui-modal state. */
 .ui-modal--opened {
@@ -61,7 +61,7 @@
   opacity: 1;
   /* Animate in the opacity. */
 
-  transition: opacity 0.2s ease-out;
+  -webkit-transition: opacity 0.3s ease-out;
 }
 /* Active ui-modal state. */
 /**
@@ -111,7 +111,7 @@
   -webkit-transform: translateY(20%);
   /* Animate the holder out of view a bit faster. */
 
-  -webkit-transition: -webkit-transform 0.15000000000000002s ease-in;
+  -webkit-transition: -webkit-transform 0.19999999999999998s ease-in;
 }
 /* For greater than `tiny` screens... */
 @media (min-height: 26.5em) {
@@ -198,9 +198,9 @@
   /* Bring it back into position. */
 
   -webkit-transform: translateY(0%);
-  /* Animate the holder in to view a bit slower. */
+  /* Animate the holder in to view after a tick. */
 
-  -webkit-transition: -webkit-transform 0.15000000000000002s 0.05s ease-out;
+  -webkit-transition: -webkit-transform 0.29s 0.01s ease-out;
 }
 /**
          * The frame creates a ui-modal boundary.

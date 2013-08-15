@@ -2,6 +2,8 @@
 
 <meta charset="utf-8">
 
+
+
 <link rel="stylesheet" href="../demos/styles/main.css">
 <link rel="stylesheet" href="../lib/themes/shadow-ui.base.css">
 <link rel="stylesheet" href="../lib/themes/shadow-ui.drop.css">
@@ -15,10 +17,28 @@
     <script src="../lib/legacy.js"></script>
     <script src="../lib/shadow-ui.js"></script>
 
-    <a href="../">home</a>
-    <a href="../demos">demos</a>
-    <a href="../docs">docs</a>
-    <hr>
+
+    <header class="section">
+        <div class="section__block section__block--scoped">
+            <nav class="navigation navigation--header">
+                <ul class="navigation__list">
+                    <li class="navigation__item">
+                        <a class="navigation__link" href="../">Home</a>
+                    </li><!--
+                 --><li class="navigation__item">
+                        <a class="navigation__link" href="../demos">Demos</a>
+                    </li><!--
+                 --><li class="navigation__item">
+                        <a class="navigation__link" href="../docs">Docs</a>
+                    </li><!--
+                 --><li class="navigation__item">
+                        <a class="navigation__link" href="https://github.com/amsul/shadow-ui">Github</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
 
     
 <section>
@@ -36,6 +56,7 @@
     var ui = $div.shadowAliased( 'ui' )
 
 </script>
+
 
 
 </body>

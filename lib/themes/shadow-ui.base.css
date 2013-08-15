@@ -36,23 +36,25 @@
 .ui-modal-host:focus,
 .ui-blob-host:focus {
   outline: 0;
-  box-shadow: 0 0 0 2px #0089ec;
 }
 /* The host state while the shadow is actively focused. */
+/*------------------------------------*\
+    $INPUT
+\*------------------------------------*/
 /**
-     * The input node that carries the shadow value.
-     */
-.ui-drop-host__input,
-.ui-modal-host__input,
-.ui-blob-host__input {
+ * The input node that carries the shadow value.
+ */
+.ui-drop-input,
+.ui-modal-input,
+.ui-blob-input {
   /* Make sure IE shows the correct cursor with the disabled attribute. */
 
   cursor: default;
 }
 /* The input state when it is focused. */
-.ui-drop-host__input:focus,
-.ui-modal-host__input:focus,
-.ui-blob-host__input:focus {
+.ui-drop-input:focus,
+.ui-modal-input:focus,
+.ui-blob-input:focus {
   outline: 0;
   border-color: #0089ec;
 }
@@ -85,4 +87,18 @@
 
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+}
+/*------------------------------------*\
+    $HELPERS
+\*------------------------------------*/
+/**
+ * The face of the ui.
+ */
+.ui-face--padded {
+  padding: 10px;
+}
+.ui-face__menu {
+  list-style: none;
+  padding: 0;
+  margin: .5em 0;
 }

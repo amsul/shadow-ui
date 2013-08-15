@@ -1,55 +1,9 @@
 
-<section>
-    <div class="div">Input shadow<input class="input" type="text" value="06" name="value_input"></div>
-</section>
-
+<input type="text" class="shadow shadow--input" value="Input extension">
 <script>
-
-    $.fn.shadow.extend({
-        name: 'shadow--input',
-        prefix: 'ui-modal',
-        formats: {
-            dd: function( value ) {
-                return '0' + value
-            },
-            ddd: function( value ) {
-                return '00' + value
-            }
-        },
-        defaults: {
-            format: 'dd',
-            formatHidden: 'ddd',
-            suffixHidden: '_submit'
-        },
-        content: function() {
-            var is, i = 0,
-                string = '',
-                selected = this.dict.select
-            for ( ; i < 10; i += 1 ) {
-                is = selected === i ? '<b><u>' + i + '</u></b>' : i
-                string += '<button data-pick="select:' + i + '">' + is + '</button>'
-            }
-            return string + '<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p><p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p><p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p><p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p><p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p><p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>'
-        },
-        init: function( formatValueHash ) {
-            if ( 'dd' in formatValueHash ) this.dict.select = ~~formatValueHash.dd
-            if ( 'ddd' in formatValueHash ) this.dict.select = ~~formatValueHash.ddd
-        },
-        ready: function() {
-            var ui = this.ui
-            ui.on( 'set', function( event ) {
-                var focusedWithin
-                if ( 'select' in event.data ) {
-                    var activeElement = ui.get( 'activeElement' )
-                    if ( activeElement && activeElement != ui.$input[0] ) focusedWithin = true
-                    ui.render()
-                    if ( focusedWithin ) ui.$root.find( '[data-pick="select:' + event.data.select + '"]' ).focus()
-                }
-            })
-        }
+    shadow.extend({
+        name: 'input',
+        template: '<div class="ui-face ui-face--padded">This is an input component extension</div>'
     })
-
-    var $input = $( '.input' ).shadow( 'shadow--input' )
-    var ui = $input.shadow( 'ui' )
-
+    $('.shadow--input').shadow('input')
 </script>

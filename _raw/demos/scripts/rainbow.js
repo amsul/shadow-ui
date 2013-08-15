@@ -990,6 +990,16 @@ Rainbow.extend('html', [
         },
         'pattern': /&lt;\?=?(?!xml)(php)?([\s\S]*?)(\?&gt;)/gm
     },
+
+    /**
+     * matches the `this` keyword
+     */
+    {
+        'matches': {
+            1: 'keyword-falsey'
+        },
+        'pattern': /(this)/gi
+    },
     {
         'name': 'source.css.embedded',
         'matches': {

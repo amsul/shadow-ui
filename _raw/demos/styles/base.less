@@ -209,8 +209,8 @@ input[type=date],
 input[type=number],
 input[type=search],
 textarea {
-    border: 3px solid @grey;
-    padding: .6em 1em;
+    border: 2px solid @grey;
+    padding: .5em .75em;
     font-weight: 200;
     width: 100%;
     box-shadow: none;
@@ -267,6 +267,21 @@ select {
     .demo-tag( "Demo" );
 }
 
+    pre code[data-language],
+    .codeblock code[data-language] {
+        position: relative;
+        padding-top: 1.25em;
+    }
+    pre code[data-language]:before,
+    .codeblock code[data-language]:before {
+        content: attr(data-language) ":";
+        position: absolute;
+        top: 0;
+        left: 0;
+        font-size: .625em;
+        color: #a5a8a8;
+    }
+
 
 
 
@@ -291,6 +306,61 @@ select {
         max-width: 760px;
         margin: 0 auto;
     }
+
+
+
+
+
+/*------------------------------------*\
+    $GRIDS
+\*------------------------------------*/
+
+.grid {
+    margin-left: -20px;
+}
+.grid--spaced {
+    margin-bottom: 2em;
+}
+
+    .grid__column {
+        display: inline-block;
+        vertical-align: top;
+        padding-left: 20px;
+        width: 100%;
+    }
+    .grid__column--half {
+        width: 100% / 2;
+    }
+    .grid__column--third {
+        width: 100% / 3;
+    }
+    .grid__column--quarter {
+        width: 100% / 4;
+    }
+
+
+
+
+
+/*------------------------------------*\
+    $NAVIGATIONS
+\*------------------------------------*/
+
+.navigation {}
+.navigation--header {
+    font-size: .75em;
+    margin-top: 1em;
+}
+
+    .navigation__list {
+        margin: 0 0 0 -20px;
+        padding: 0;
+    }
+        .navigation__item {
+            display: inline-block;
+            padding-left: 20px;
+        }
+
 
 
 
@@ -342,6 +412,18 @@ select {
 .operator {
     color: #585856;
 }
+
+
+
+
+/*------------------------------------*\
+    $TEXT-HELPERS
+\*------------------------------------*/
+
+.text-dim {
+    color: #bbb;
+}
+
 
 
 

@@ -2,6 +2,8 @@
 
 <meta charset="utf-8">
 
+
+
 <link rel="stylesheet" href="../demos/styles/main.css">
 <link rel="stylesheet" href="../lib/themes/shadow-ui.base.css">
 <link rel="stylesheet" href="../lib/themes/shadow-ui.drop.css">
@@ -15,77 +17,39 @@
     <script src="../lib/legacy.js"></script>
     <script src="../lib/shadow-ui.js"></script>
 
-    <a href="../">home</a>
-    <a href="../demos">demos</a>
-    <a href="../docs">docs</a>
-    <hr>
+
+    <header class="section">
+        <div class="section__block section__block--scoped">
+            <nav class="navigation navigation--header">
+                <ul class="navigation__list">
+                    <li class="navigation__item">
+                        <a class="navigation__link" href="../">Home</a>
+                    </li><!--
+                 --><li class="navigation__item">
+                        <a class="navigation__link" href="../demos">Demos</a>
+                    </li><!--
+                 --><li class="navigation__item">
+                        <a class="navigation__link" href="../docs">Docs</a>
+                    </li><!--
+                 --><li class="navigation__item">
+                        <a class="navigation__link" href="https://github.com/amsul/shadow-ui">Github</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
 
     
-<section>
-    <div class="div">
-        <h4>Multiple option dropdown</h4>
-        <div class="outlet"></div>
-    </div>
-</section>
-
+<div class="shadow shadow--dropdown">Dropdown</div>
 <script>
-
-    function printSelections( selections, options, $host ) {
-        $outlet = $host.children( '.outlet' ).detach().empty()
-        selections.
-            sort(function( a, b ) { return b > a ? -1 : 1 }).
-            forEach(function( selection ) {
-                $outlet.append( '&nbsp;<kbd>' + options[ selection ] + '</kbd>&nbsp;' )
-            })
-        $host.append( $outlet )
-    }
-
     shadow.extend({
         name: 'dropdown',
-        alias: 'dropdown',
-        dict: {
-            options: [ 'All', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten' ],
-            select: [ 0, 3, 4, 5, 10 ]
-        },
-        init: function() {
-            printSelections( this.dict.select, this.dict.options, this.ui.$host )
-        },
-        ready: function() {
-            var ui = this.ui,
-                diction = this.dict
-            ui.$root.on( 'change', function( event ) {
-                var value = ~~event.target.value
-                if ( event.target.checked ) ui.add( 'select', value )
-                else ui.remove( 'select', value )
-                printSelections( diction.select, diction.options, ui.$host )
-            })
-        },
-        content: function() {
-            var selections = this.dict.select,
-                options = this.dict.options
-            return shadow._.node({
-                el: 'ul',
-                content: options.map( function( option, index ) {
-                    var isSelected = selections.indexOf( index ) > -1
-                    return shadow._.node({
-                        el: 'li',
-                        content: [
-                            '<label>',
-                                '<input value="' + index + '"' + (isSelected ? ' checked' : '') + ' type=checkbox>',
-                                option,
-                            '</label>'
-                        ]
-                    })
-                })
-            })
-        }
+        template: '<div class="ui-face ui-face--padded">This is a dropdown</div>'
     })
-
-    var $div = $( '.div' ).dropdown()
-    var ui = $div.dropdown( 'ui' )
-    // ui.open(true)
-
+    $('.shadow--dropdown').shadow('dropdown')
 </script>
+
 
 
 </body>

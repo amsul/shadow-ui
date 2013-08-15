@@ -60,7 +60,7 @@ module.exports = function( grunt ) {
             tests: [ '<%= dirs.dest.tests %>' ],
             demos: [ '<%= dirs.dest.demos %>' ],
             docs: [ '<%= dirs.dest.docs %>' ],
-            pkg: [ '*.jquery.json', '*.md' ]
+            pkg: [ '*.jquery.json', '*.md' ]
         },
 
 
@@ -100,9 +100,13 @@ module.exports = function( grunt ) {
             }
         },
         htmlify: {
-            // pkg: {
-            //     // todo..
-            // },
+            index: {
+                expand: true,
+                cwd: '<%= dirs.src.raw %>',
+                src: [ 'index.htm' ],
+                dest: '.',
+                base: 'base.htm'
+            },
             demos: {
                 expand: true,
                 cwd: '<%= dirs.src.demos %>',
@@ -180,8 +184,8 @@ module.exports = function( grunt ) {
         // Watch the project files.
         watch: {
             pkg: {
-                files: [ 'package.json', '<%= dirs.src.raw %>/*md', '<%= dirs.src.raw %>/*.htm' ],
-                tasks: [ 'copy:pkg', 'htmlify' ]
+                files: [ 'package.json', '<%= dirs.src.raw %>/*md' ],
+                tasks: [ 'copy:pkg' ]
             },
             lib: {
                 files: [ '<%= dirs.src.lib %>/*.js' ],
@@ -196,12 +200,12 @@ module.exports = function( grunt ) {
                 tasks: [ 'copy:tests' ]
             },
             demos: {
-                files: [ '<%= dirs.src.demos %>/*.htm', '<%= dirs.src.demos %>/styles/*.less' ],
-                tasks: [ 'htmlify:demos', 'less:demos' ]
+                files: [ '<%= dirs.src.raw %>/index.htm', '<%= dirs.src.demos %>/*.htm', '<%= dirs.src.demos %>/styles/*.less' ],
+                tasks: [ 'htmlify:index', 'htmlify:demos', 'less:demos' ]
             },
             docs: {
-                files: [ '<%= dirs.src.docs %>/*.htm', '<%= dirs.src.demos %>/styles/*.less' ],
-                tasks: [ 'htmlify:docs', 'less:demos' ]
+                files: [ '<%= dirs.src.raw %>/index.htm', '<%= dirs.src.docs %>/*.htm', '<%= dirs.src.demos %>/styles/*.less' ],
+                tasks: [ 'htmlify:index', 'htmlify:docs', 'less:demos' ]
             },
             gruntfile: {
                 files: [ 'Gruntfile.js' ],

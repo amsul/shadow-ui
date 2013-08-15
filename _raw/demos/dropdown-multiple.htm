@@ -1,0 +1,70 @@
+
+<section>
+    <div class="div">
+        <h4>Multiple option dropdown</h4>
+        <div class="outlet"></div>
+    </div>
+</section>
+
+<script>
+
+    function printSelections( selections, options, $host ) {
+        $outlet = $host.children( '.outlet' ).detach().empty()
+        selections.
+            sort(function( a, b ) { return b > a ? -1 : 1 }).
+            forEach(function( selection ) {
+                $outlet.append( '&nbsp;<kbd>' + options[ selection ] + '</kbd>&nbsp;' )
+            })
+        $host.append( $outlet )
+    }
+
+    shadow.extend({
+        name: 'dropdown',
+        alias: 'dropdown',
+        dict: {
+            options: [ 'All', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten' ],
+            select: [ 0, 3, 4, 5, 10 ]
+        },
+        init: function() {
+
+            var ui = this.ui,
+                dict = this.dict
+
+            printSelections( dict.select, dict.options, ui.$host )
+
+            ui.on( 'start', function() {
+
+                ui.$root.on( 'change', function( event ) {
+                    var value = ~~event.target.value
+                    if ( event.target.checked ) ui.add( 'select', value )
+                    else ui.remove( 'select', value )
+                    printSelections( dict.select, dict.options, ui.$host )
+                })
+            })
+        },
+        template: function() {
+            var selections = this.dict.select,
+                options = this.dict.options
+            return shadow._.node({
+                el: 'ul',
+                content: options.map( function( option, index ) {
+                    var isSelected = selections.indexOf( index ) > -1
+                    return shadow._.node({
+                        el: 'li',
+                        content: [
+                            '<label>',
+                                '<input value="' + index + '"' + (isSelected ? ' checked' : '') + ' type=checkbox>',
+                                option,
+                            '</label>'
+                        ]
+                    })
+                })
+            })
+        }
+    })
+
+    var $div = $( '.div' ).dropdown()
+    var ui = $div.dropdown( 'ui' )
+    // ui.open(true)
+
+</script>

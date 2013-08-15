@@ -2,6 +2,8 @@
 
 <meta charset="utf-8">
 
+
+
 <link rel="stylesheet" href="../demos/styles/main.css">
 <link rel="stylesheet" href="../lib/themes/shadow-ui.base.css">
 <link rel="stylesheet" href="../lib/themes/shadow-ui.drop.css">
@@ -15,10 +17,28 @@
     <script src="../lib/legacy.js"></script>
     <script src="../lib/shadow-ui.js"></script>
 
-    <a href="../">home</a>
-    <a href="../demos">demos</a>
-    <a href="../docs">docs</a>
-    <hr>
+
+    <header class="section">
+        <div class="section__block section__block--scoped">
+            <nav class="navigation navigation--header">
+                <ul class="navigation__list">
+                    <li class="navigation__item">
+                        <a class="navigation__link" href="../">Home</a>
+                    </li><!--
+                 --><li class="navigation__item">
+                        <a class="navigation__link" href="../demos">Demos</a>
+                    </li><!--
+                 --><li class="navigation__item">
+                        <a class="navigation__link" href="../docs">Docs</a>
+                    </li><!--
+                 --><li class="navigation__item">
+                        <a class="navigation__link" href="https://github.com/amsul/shadow-ui">Github</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
 
     
 <section>
@@ -29,20 +49,20 @@
 
     $.fn.shadow.extend({
         name: 'shadow--dict',
-        content: function() {
+        template: function() {
             var to_select = ~~(Math.random()*1000),
                 to_highlight = ~~(Math.random()*1000)
             return '<div class="content">' +
                 'Select: <u>' + this.ui.get('select') + '</u><br>' +
                 'Highlight: <u>' + this.ui.get('highlight') + '</u><hr>' +
-                '<button data-pick="select:' + to_select + '">Set select to ' + to_select + '</button>' +
-                '<button data-pick="highlight:' + to_highlight + '">Set highlight to ' + to_highlight + '</button>' +
+                '<button data-action="select:' + to_select + '">Set select to ' + to_select + '</button>' +
+                '<button data-action="highlight:' + to_highlight + '">Set highlight to ' + to_highlight + '</button>' +
             '</div>'
         },
-        ready: function() {
+        init: function() {
             var ui = this.ui
             ui.on( 'set', function( event ) {
-                if ( 'highlight' in event.data || 'select' in event.data ) {
+                if ( event.item == 'highlight' || event.item == 'select' ) {
                     ui.render()
                 }
             })
@@ -53,6 +73,7 @@
     var ui = $div.shadow( 'ui' )
 
 </script>
+
 
 
 </body>

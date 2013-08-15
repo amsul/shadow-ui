@@ -34,7 +34,7 @@ module( 'API `div` minimal', {
     setup: function() {
         this.extension = {
             name: 'shadow--basic',
-            content: '<div>This is the most basic form of a shadow extension.</div>'
+            template: '<div>This is the most basic form of a shadow extension.</div>'
         }
         shadow.extend( this.extension )
         var $clone = $NODE_DIV.clone().appendTo( $DOM )
@@ -133,7 +133,7 @@ module( 'API `input` minimal', {
     setup: function() {
         this.extension = {
             name: 'shadow--basic-input',
-            content: '<div>This is the most basic form of an `input` shadow extension.</div>'
+            template: '<div>This is the most basic form of an `input` shadow extension.</div>'
         }
         shadow.extend( this.extension )
         var $clone = $NODE_INPUT.clone().appendTo( $DOM )
@@ -283,14 +283,14 @@ module( 'API dict', {
     setup: function() {
         shadow.extend({
             name: 'shadow--dict',
-            content: function() {
+            template: function() {
                 var to_select = ~~(Math.random()*1000),
                     to_highlight = ~~(Math.random()*1000)
                 return '<div class="content">' +
                     'Select: <u>' + this.ui.get('select') + '</u><br>' +
                     'Highlight: <u>' + this.ui.get('highlight') + '</u><hr>' +
-                    '<button id="select" data-pick="select:' + to_select + '">Set select to ' + to_select + '</button>' +
-                    '<button id="highlight" data-pick="highlight:' + to_highlight + '">Set highlight to ' + to_highlight + '</button>' +
+                    '<button id="select" data-action="select:' + to_select + '">Set select to ' + to_select + '</button>' +
+                    '<button id="highlight" data-action="highlight:' + to_highlight + '">Set highlight to ' + to_highlight + '</button>' +
                 '</div>'
             }
         })
@@ -433,11 +433,11 @@ module( 'API custom get/set methods', {
     setup: function() {
         shadow.extend({
             name: 'shadow--get-set-custom',
-            get: function( thing, options ) {
+            fetch: function( thing, options ) {
                 var value = this.dict[ thing ]
                 return options === true ? value : String.fromCharCode( 65 + value )
             },
-            set: function( thing, value/*, options*/ ) {
+            update: function( thing, value/*, options*/ ) {
                 value = value.charCodeAt(0) - 65
                 this.dict[ thing ] = value
                 return value
@@ -576,12 +576,9 @@ module( 'API events', {
         mod.has = {}
         shadow.extend({
             name: 'shadow--loudmouth',
-            content: '<div>This extension says exactly what it’s doing.</div>',
+            template: '<div>This extension says exactly what it’s doing.</div>',
             init: function() {
                 mod.has.initialized = true
-            },
-            ready: function() {
-                mod.has.readied = true
             }
         })
         this.options = {
@@ -616,12 +613,11 @@ module( 'API events', {
     teardown: tearDownTheUI
 })
 
-test( 'Instance events', 2, function() {
+test( 'Instance init', 1, function() {
 
     var mod = this
 
     strictEqual( mod.has.initialized, true, 'Check: `init`' )
-    strictEqual( mod.has.readied, true, 'Check: `ready`' )
 })
 
 test( 'Extension options', 8, function() {

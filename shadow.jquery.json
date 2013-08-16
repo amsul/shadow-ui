@@ -1,8 +1,8 @@
 {
-  "name": "shadow-ui",
-  "version": "0.4.0",
+  "name": "shadow",
+  "version": "0.5.0",
   "title": "Shadow UI",
-  "description": "Create Shadow DOM based UI extensions, such as dropdowns, modals, popups, tooltips, blobs, etc.",
+  "description": "Create Shadow DOM based UI components, such as dropdowns, modals, popups, tooltips, blobs, etc.",
   "author": {
     "name": "Amsul",
     "email": "reach@amsul.ca",
@@ -15,7 +15,9 @@
     }
   ],
   "keywords": [
-    "shadow dom",
+    "shadow",
+    "dom",
+    "components",
     "picker",
     "dropdown",
     "modal",
@@ -24,10 +26,10 @@
     "ui"
   ],
   "main": "lib/shadow-ui.js",
-  "homepage": "http://amsul.github.io/shadow-ui.js",
-  "docs": "http://amsul.github.io/shadow-ui.js",
-  "demo": "http://amsul.github.io/shadow-ui.js",
-  "bugs": "https://github.com/amsul/shadow-ui.js/issues",
+  "homepage": "http://amsul.github.io/shadow-ui",
+  "docs": "http://amsul.github.io/shadow-ui",
+  "demo": "http://amsul.github.io/shadow-ui",
+  "bugs": "https://github.com/amsul/shadow-ui/issues",
   "repository": {
     "type": "git",
     "url": "https://github.com/amsul/shadow-ui.git"

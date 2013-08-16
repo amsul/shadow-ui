@@ -45,7 +45,8 @@ module.exports = function( grunt ) {
             },
             dest: {
                 lib: 'lib',
-                themes: 'lib/themes',
+                themes: 'lib/less',
+                themes_compiled: 'lib/css',
                 tests: 'tests',
                 demos: 'demos',
                 docs: 'docs'
@@ -56,10 +57,11 @@ module.exports = function( grunt ) {
         // Clean the destination files and directories.
         clean: {
             lib: [ '<%= dirs.dest.lib %>' ],
-            themes: [ '<%= dirs.dest.themes %>' ],
+            themes: [ '<%= dirs.dest.themes %>', '<%= dirs.dest.themes_compiled %>' ],
             tests: [ '<%= dirs.dest.tests %>' ],
             demos: [ '<%= dirs.dest.demos %>' ],
             docs: [ '<%= dirs.dest.docs %>' ],
+            index: [ 'index.htm' ],
             pkg: [ '*.jquery.json', '*.md' ]
         },
 
@@ -81,10 +83,16 @@ module.exports = function( grunt ) {
                 ]
             },
             lib: {
+                files: {
+                    '<%= dirs.dest.lib %>/<%= pkg.name %>.js': '<%= dirs.src.lib %>/main.js',
+                    '<%= dirs.dest.lib %>/legacy.js': '<%= dirs.src.lib %>/legacy.js'
+                }
+            },
+            themes: {
                 expand: true,
-                cwd: '<%= dirs.src.lib %>',
-                src: [ '*.js' ],
-                dest: '<%= dirs.dest.lib %>'
+                cwd: '<%= dirs.src.themes %>',
+                src: [ '*', '*/**' ],
+                dest: '<%= dirs.dest.themes %>'
             },
             tests: {
                 expand: true,
@@ -131,15 +139,15 @@ module.exports = function( grunt ) {
             },
             themes: {
                 files: {
-                    '<%= dirs.dest.themes %>/<%= pkg.name %>.base.css': '<%= dirs.src.themes %>/base.less',
-                    '<%= dirs.dest.themes %>/<%= pkg.name %>.blob.css': '<%= dirs.src.themes %>/blob.less',
-                    '<%= dirs.dest.themes %>/<%= pkg.name %>.drop.css': '<%= dirs.src.themes %>/drop.less',
-                    '<%= dirs.dest.themes %>/<%= pkg.name %>.modal.css': '<%= dirs.src.themes %>/modal.less'
+                    '<%= dirs.dest.themes_compiled %>/<%= pkg.name %>.base.css': '<%= dirs.src.themes %>/base.less',
+                    '<%= dirs.dest.themes_compiled %>/<%= pkg.name %>.blob.css': '<%= dirs.src.themes %>/blob.less',
+                    '<%= dirs.dest.themes_compiled %>/<%= pkg.name %>.drop.css': '<%= dirs.src.themes %>/drop.less',
+                    '<%= dirs.dest.themes_compiled %>/<%= pkg.name %>.modal.css': '<%= dirs.src.themes %>/modal.less'
                 }
             },
             demos: {
                 files: {
-                    '<%= dirs.dest.demos %>/styles/main.css': '<%= dirs.src.demos %>/styles/base.less'
+                    '<%= dirs.dest.demos %>/styles/main.css': '<%= dirs.src.demos %>/styles/main.less'
                 }
             }
         },

@@ -391,7 +391,9 @@ shadow.UI.prototype = {
             instance = ui.i
 
         // If nothing within is focused, pass focus to the source element.
-        if ( !ui.get( 'activeElement' ) ) ui.$source.trigger( 'focus' )
+        // * Trigger the focus on the actual element because jQuery 1.9+ has
+        //   blur/focus bindings that cause an infinite loop when already focused.
+        if ( !ui.get( 'activeElement' ) ) ui.$source[0].focus()
 
         // If it’s already focused, do nothing.
         if ( instance.is.focused ) return ui

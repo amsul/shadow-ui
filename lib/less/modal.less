@@ -1,0 +1,222 @@
+@charset "utf-8";
+@import "_variables.less";
+
+
+/*------------------------------------*\
+    $UI-MODAL
+\*------------------------------------*/
+
+/**
+ * The root of the ui-modal.
+ */
+.ui-modal {
+
+    /* Make the holder and frame fullscreen. */
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    /* Nudge everything off-screen to begin with. */
+    top: 100%;
+
+    /* Hide it to begin with. */
+    opacity: 0;
+
+    /* Center align the holder. */
+    text-align: center;
+
+    /* Fill the screen and fix the position. */
+    position: fixed;
+
+    /* Give it a translucent overlay. */
+    background: @overlay--ui-modal;
+
+    /* Fade out it out, then immediately shift the holder out of view. */
+    -webkit-transition: opacity (@transition-speed--ui-modal - .1s) .1s ease-in, top 0s @transition-speed--ui-modal;
+}
+
+/* Opened ui-modal state. */
+.ui-modal--opened {
+
+    /* Immediately move the holder to the top edge. */
+    top: 0;
+
+    /* Ånd then reveal the content. */
+    opacity: 1;
+
+    /* Animate in the opacity. */
+    -webkit-transition: opacity @transition-speed--ui-modal ease-out;
+}
+
+/* Active ui-modal state. */
+.ui-modal--active {}
+
+
+    /**
+     * The pointer as a helper to vertically align.
+     */
+    .ui-modal__pointer {}
+
+    /* For greater than `small` screens... */
+    @media (min-height: @break-small--height) {
+
+        .ui-modal__pointer {
+
+            /* Fill up the height without a width. */
+            height: 100%;
+
+            /* Align it in the middle. */
+            display: inline-block;
+            vertical-align: middle;
+        }
+    }
+
+
+    /**
+     * The content holder of the ui-modal.
+     */
+    .ui-modal__holder {
+
+        position: relative;
+
+        /* Re-align the text. */
+        text-align: left;
+
+        /* Fill the width. */
+        width: 100%;
+
+        /* Specify the min & max widths. */
+        min-width: @min-width--ui-modal;
+        max-width: @max-width--ui-modal;
+
+        /* Center align it if the width is restricted. */
+        margin: 0 auto;
+
+        /* Fill the height. */
+        height: 100%;
+
+        /* Add a background. */
+        background: @background--ui-modal;
+
+        /* Play nice with the widths. */
+        box-sizing: border-box;
+
+        /* Nudge it slightly down. */
+        -webkit-transform: translateY(20%);
+
+        /* Animate the holder out of view a bit faster. */
+        -webkit-transition: -webkit-transform (@transition-speed--ui-modal - .1s) ease-in;
+    }
+
+    /* For greater than `tiny` screens... */
+    @media (min-height: @break-tiny--height) {
+
+        .ui-modal__holder {
+
+            /* Increase the font size a bit. */
+            font-size: 1.25em;
+        }
+    }
+
+    /* For greater than `small` screens... */
+    @media (min-height: @break-small--height) {
+
+        .ui-modal__holder {
+
+            /* Increase the font size a bit more */
+            font-size: 1.33em;
+
+            /* Align it in the vertical bottom. */
+            display: inline-block;
+            vertical-align: bottom;
+
+            /* Reduce the height to give spacing above. */
+            height: 100% - @spacing-vertical--ui-modal;
+
+            /* Add the borders. */
+            border: @border-width--ui-modal solid @border-color--ui-modal;
+            border-top-color: lighten( @border-color--ui-modal, 7% );
+
+            /* Make ‘em rounded at the top corners */
+            border-radius: @border-radius--ui-modal @border-radius--ui-modal 0 0;
+
+            /* Hide the bottom border this way so margins within don’t collapse */
+            bottom: -@border-width--ui-modal;
+
+            /* And finally, add a nice shadow. */
+            box-shadow: @box-shadow--ui-modal;
+        }
+    }
+
+    /* For greater than `medium` screens... */
+    @media (min-height: @break-medium--height) {
+
+        .ui-modal__holder {
+
+            /* Increase the font size. */
+            font-size: 1.5em;
+
+            /* Align it in the vertical center. */
+            vertical-align: middle;
+
+            /* Reduce the height to give spacing below. */
+            height: 100% - @spacing-vertical--ui-modal - @spacing-vertical--ui-modal;
+
+            /* Round off the corners. */
+            border-radius: @border-radius--ui-modal;
+
+            /* Reveal the bottom border. */
+            bottom: 0;
+        }
+    }
+
+    /* For smaller than the holder’s `min-width` screens... */
+    @media (max-width: @min-width--ui-modal) {
+
+        .ui-modal__holder {
+
+            /* Make the holder fill-up the entire screen. */
+            position: absolute;
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+
+            /* Remove any borders. */
+            border: 0;
+
+            /* Straighten off the corners. */
+            border-radius: 0;
+
+            /* Remove any width restrictions. */
+            min-width: 0;
+
+            /* Remove any height restrictions. */
+            height: 100%;
+        }
+    }
+
+    /* The opened content holder. */
+    .ui-modal--opened .ui-modal__holder {
+
+        /* Bring it back into position. */
+        -webkit-transform: translateY(0%);
+
+        /* Animate the holder in to view after a tick. */
+        -webkit-transition: -webkit-transform (@transition-speed--ui-modal - .01s) .01s ease-out;
+    }
+
+
+        /**
+         * The frame creates a ui-modal boundary.
+         */
+        .ui-modal__frame {
+            position: absolute;
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+
+

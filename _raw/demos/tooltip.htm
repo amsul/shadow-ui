@@ -38,11 +38,11 @@
             // Bind our own hover events to open/close the ui with a delay.
             // If IE<=9 is not a concern, delayed CSS transitions would be better.
             ui.$host.on( 'mouseenter focusin', function() {
-                timeout = setTimeout( ui.open.bind( ui ), 1000 )
-            }).
-            on( 'mouseleave click focusout', function() {
                 clearTimeout( timeout )
-                ui.close()
+                timeout = setTimeout( ui.open.bind( ui ), 1000 )
+            }).on( 'mouseleave focusout', function() {
+                setTimeout( ui.close.bind( ui ), 100 )
+                clearTimeout( timeout )
             })
         }
     })

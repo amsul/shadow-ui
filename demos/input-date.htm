@@ -5,17 +5,17 @@
 
 
 <link rel="stylesheet" href="../demos/styles/main.css">
-<link rel="stylesheet" href="../lib/themes/shadow-ui.base.css">
-<link rel="stylesheet" href="../lib/themes/shadow-ui.drop.css">
-<link rel="stylesheet" href="../lib/themes/shadow-ui.modal.css">
-<link rel="stylesheet" href="../lib/themes/shadow-ui.blob.css">
+<link rel="stylesheet" href="../lib/less/shadow.base.css">
+<link rel="stylesheet" href="../lib/less/shadow.drop.css">
+<link rel="stylesheet" href="../lib/less/shadow.modal.css">
+<link rel="stylesheet" href="../lib/less/shadow.blob.css">
 
 <body>
 
     <script src="../demos/scripts/jquery.js"></script>
     <script src="../demos/scripts/rainbow.js"></script>
     <script src="../lib/legacy.js"></script>
-    <script src="../lib/shadow-ui.js"></script>
+    <script src="../lib/shadow.js"></script>
 
 
     <header class="section">
@@ -41,15 +41,6 @@
 
 
     
-<style>
-    body {
-        max-width: 540px;
-        margin: 40px auto;
-    }
-</style>
-
-<br><br><br>
-
 <style>
     .ui-drop--calendar .ui-drop__holder {
         width: 300px;
@@ -322,7 +313,6 @@
         }
     })
     var ui = $('.shadow--input-date').shadow('input-date').shadow('ui')
-    ui.open()
     function ShadowDate( value ) {
         this.year = value.getFullYear()
         this.month = value.getMonth()

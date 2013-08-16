@@ -2,8 +2,7 @@
 
 {%= pkg.description %}
 
-- [Homepage]({%= pkg.homepage %})
-- [Docs]({%= pkg.homepage %}/{%= dirs.dest.docs %})
+> _**This project is in active development. The api is bound to be tweaked before v1 is ready.**_
 
 
 ### Get started:
@@ -11,6 +10,11 @@
 - [Download the package]({%= meta.gitrepo_url %}/archive/{%= pkg.version %}.zip), or
 - `git clone git://github.com/amsul/{%= pkg.name %}.git`, or
 - `bower install {%= pkg.name %}`
+
+
+### Dependencies:
+
+- jQuery >=1.7
 
 
 ### Browser support:

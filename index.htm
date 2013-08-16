@@ -5,17 +5,17 @@
 
 
 <link rel="stylesheet" href="demos/styles/main.css">
-<link rel="stylesheet" href="lib/themes/shadow-ui.base.css">
-<link rel="stylesheet" href="lib/themes/shadow-ui.drop.css">
-<link rel="stylesheet" href="lib/themes/shadow-ui.modal.css">
-<link rel="stylesheet" href="lib/themes/shadow-ui.blob.css">
+<link rel="stylesheet" href="lib/less/shadow.base.css">
+<link rel="stylesheet" href="lib/less/shadow.drop.css">
+<link rel="stylesheet" href="lib/less/shadow.modal.css">
+<link rel="stylesheet" href="lib/less/shadow.blob.css">
 
 <body>
 
     <script src="demos/scripts/jquery.js"></script>
     <script src="demos/scripts/rainbow.js"></script>
     <script src="lib/legacy.js"></script>
-    <script src="lib/shadow-ui.js"></script>
+    <script src="lib/shadow.js"></script>
 
 
     <header class="section">
@@ -44,7 +44,7 @@
 <section class="section">
     <div class="section__block section__block--scoped">
 
-        <h1>Shadow UI v0.4.1</h1>
+        <h1>Shadow UI v0.5.0</h1>
         <p>Create Shadow DOM based UI components, such as dropdowns, modals, popups, tooltips, blobs, etc.</p>
 
         <hr>
@@ -121,11 +121,11 @@
             // Bind our own hover events to open/close the ui with a delay.
             // If IE<=9 is not a concern, delayed CSS transitions would be better.
             ui.$host.on( 'mouseenter focusin', function() {
-                timeout = setTimeout( ui.open.bind( ui ), 1000 )
-            }).
-            on( 'mouseleave click focusout', function() {
                 clearTimeout( timeout )
-                ui.close()
+                timeout = setTimeout( ui.open.bind( ui ), 1000 )
+            }).on( 'mouseleave focusout', function() {
+                setTimeout( ui.close.bind( ui ), 100 )
+                clearTimeout( timeout )
             })
         }
     })
@@ -153,15 +153,6 @@
 
          --><div class="grid__column grid__column--half">
                 
-<style>
-    body {
-        max-width: 540px;
-        margin: 40px auto;
-    }
-</style>
-
-<br><br><br>
-
 <style>
     .ui-drop--calendar .ui-drop__holder {
         width: 300px;
@@ -434,7 +425,6 @@
         }
     })
     var ui = $('.shadow--input-date').shadow('input-date').shadow('ui')
-    ui.open()
     function ShadowDate( value ) {
         this.year = value.getFullYear()
         this.month = value.getMonth()

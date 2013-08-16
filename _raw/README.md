@@ -1,4 +1,4 @@
-# {%= pkg.title %} v{%= pkg.version %} [![{%= pkg.title %} build status](https://travis-ci.org/amsul/{%= pkg.name %}.png)](https://travis-ci.org/amsul/{%= pkg.name %})
+# {%= pkg.title %} v{%= pkg.version %} [![{%= pkg.title %} build status](https://travis-ci.org/amsul/shadow-ui.png)](https://travis-ci.org/amsul/shadow-ui)
 
 {%= pkg.description %}
 

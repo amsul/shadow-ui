@@ -1,0 +1,16 @@
+
+<section>
+    <div class="shadow" id="shadowModal">Modal</div>
+</section>
+
+<script>
+    shadow.extend({
+        name: 'modal',
+        prefix: 'ui-modal',
+        template: '<div class="ui-face ui-face--padded">This is a modal popup</div>'
+    })
+</script>
+<script>
+    var $shadowModal = $( '#shadowModal' ).shadow( 'modal' )
+    var shadowModalUI = $shadowModal.shadow( 'ui' )
+</script>

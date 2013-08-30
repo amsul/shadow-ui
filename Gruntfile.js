@@ -1,28 +1,13 @@
 
-/**
- * Build the project files.
- */
 module.exports = function( grunt ) {
 
 
-    // Read the package manifest.
-    var packageJSON = grunt.file.readJSON( 'package.json' )
+    // Read the configuration file.
+    var config = grunt.file.readYAML( '_config.yml' )
 
 
     // Add the “curly” template delimiters.
     grunt.template.addDelimiters( 'curly', '{%', '%}' )
-
-
-    // Load the NPM tasks.
-    grunt.loadNpmTasks( 'grunt-contrib-concat' )
-    grunt.loadNpmTasks( 'grunt-contrib-watch' )
-    grunt.loadNpmTasks( 'grunt-contrib-jshint' )
-    grunt.loadNpmTasks( 'grunt-contrib-qunit' )
-    grunt.loadNpmTasks( 'grunt-contrib-copy' )
-    grunt.loadNpmTasks( 'grunt-contrib-less' )
-    grunt.loadNpmTasks( 'grunt-contrib-clean' )
-    grunt.loadNpmTasks( 'grunt-contrib-cssmin' )
-    grunt.loadNpmTasks( 'grunt-contrib-uglify' )
 
 
     // Setup the initial configurations.
@@ -30,104 +15,32 @@ module.exports = function( grunt ) {
 
 
         // Add the package data.
-        pkg: packageJSON,
-
-
-        // Set up the directories.
-        dirs: {
-            src: {
-                raw: '_raw',
-                lib: '_raw/lib',
-                themes: '_raw/lib/themes',
-                tests: '_raw/tests',
-                demos: '_raw/demos',
-                docs: '_raw/docs'
-            },
-            dest: {
-                lib: 'lib',
-                themes: 'lib/less',
-                themes_compiled: 'lib/css',
-                tests: 'tests',
-                demos: 'demos',
-                docs: 'docs'
-            }
-        },
-
-
-        // Clean the destination files and directories.
-        clean: {
-            lib: [ '<%= dirs.dest.lib %>' ],
-            themes: [ '<%= dirs.dest.themes %>', '<%= dirs.dest.themes_compiled %>' ],
-            tests: [ '<%= dirs.dest.tests %>' ],
-            demos: [ '<%= dirs.dest.demos %>' ],
-            docs: [ '<%= dirs.dest.docs %>' ],
-            index: [ 'index.htm' ],
-            pkg: [ '*.jquery.json', '*.md' ]
-        },
+        pkg: config,
 
 
         // Copy over files to destination directions.
         copy: {
-            options: {
-                processContent: function( content ) {
-                    return grunt.template.process( content, { delimiters: 'curly' } )
-                }
-            },
             pkg: {
+                options: {
+                    processContent: function() {
+                        return grunt.template.process( JSON.stringify( config ) )
+                    }
+                },
                 files: [
-                    { '<%= pkg.name %>.jquery.json': 'package.json' },
-                    { 'README.md': '<%= dirs.src.raw %>/README.md' },
-                    { 'LICENSE.md': '<%= dirs.src.raw %>/LICENSE.md' },
-                    { 'CHANGELOG.md': '<%= dirs.src.raw %>/CHANGELOG.md' },
-                    { 'CONTRIBUTING.md': '<%= dirs.src.raw %>/CONTRIBUTING.md' }
+                    { 'shadow.jquery.json': '_config.yml' },
+                    { 'package.json': '_config.yml' }
                 ]
             },
-            lib: {
-                files: {
-                    '<%= dirs.dest.lib %>/<%= pkg.name %>.js': '<%= dirs.src.lib %>/main.js',
-                    '<%= dirs.dest.lib %>/legacy.js': '<%= dirs.src.lib %>/legacy.js'
-                }
-            },
-            themes: {
-                expand: true,
-                cwd: '<%= dirs.src.themes %>',
-                src: [ '*', '*/**' ],
-                dest: '<%= dirs.dest.themes %>'
-            },
-            tests: {
-                expand: true,
-                cwd: '<%= dirs.src.tests %>',
-                src: [ '*', '*/**' ],
-                dest: '<%= dirs.dest.tests %>'
-            },
-            demos: {
-                expand: true,
-                cwd: '<%= dirs.src.demos %>',
-                src: [ 'styles/*.css', 'scripts/*.js' ],
-                dest: '<%= dirs.dest.demos %>'
-            }
-        },
-        htmlify: {
-            index: {
-                expand: true,
-                cwd: '<%= dirs.src.raw %>',
-                src: [ 'index.htm' ],
-                dest: '.',
-                base: 'base.htm'
-            },
-            demos: {
-                expand: true,
-                cwd: '<%= dirs.src.demos %>',
-                src: [ '*.htm' ],
-                dest: '<%= dirs.dest.demos %>',
-                base: '../base.htm'
-            },
-            docs: {
-                expand: true,
-                cwd: '<%= dirs.src.docs %>',
-                src: [ '*.htm' ],
-                dest: '<%= dirs.dest.docs %>',
-                base: '../base.htm'
+            main: {
+                options: {
+                    processContent: function( content ) {
+                        return grunt.template.process( content, { delimiters: 'curly' } )
+                    }
+                },
+                files: [
+                    { 'README.md': 'README.source.md' },
+                    { 'js/shadow.js': 'js/shadow.source.js' }
+                ]
             }
         },
 
@@ -138,16 +51,15 @@ module.exports = function( grunt ) {
                 style: 'expanded'
             },
             themes: {
-                files: {
-                    '<%= dirs.dest.themes_compiled %>/<%= pkg.name %>.base.css': '<%= dirs.src.themes %>/base.less',
-                    '<%= dirs.dest.themes_compiled %>/<%= pkg.name %>.blob.css': '<%= dirs.src.themes %>/blob.less',
-                    '<%= dirs.dest.themes_compiled %>/<%= pkg.name %>.drop.css': '<%= dirs.src.themes %>/drop.less',
-                    '<%= dirs.dest.themes_compiled %>/<%= pkg.name %>.modal.css': '<%= dirs.src.themes %>/modal.less'
-                }
+                expand: true,
+                cwd: 'less',
+                src: [ '*.less', '!_*.less' ],
+                dest: 'css',
+                ext: '.css'
             },
-            demos: {
+            assets: {
                 files: {
-                    '<%= dirs.dest.demos %>/styles/main.css': '<%= dirs.src.demos %>/styles/main.less'
+                    'assets/css/main.css': 'assets/less/main.less'
                 }
             }
         },
@@ -179,54 +91,37 @@ module.exports = function( grunt ) {
                 jshintrc: '.jshintrc'
             },
             gruntfile: 'Gruntfile.js',
-            lib: [ '<%= dirs.dest.lib %>/*.js' ]
+            main: [ 'js/shadow.js' ],
+            extensions: [ 'js/extensions/*.js' ],
+            tests: [ 'js/tests/units/*.js' ]
         },
 
 
         // Unit test the files.
         qunit: {
-            all: [ '<%= dirs.dest.tests %>/units/all.htm' ]
+            all: [ 'js/tests/units/index.html' ]
         },
 
 
         // Watch the project files.
         watch: {
-            pkg: {
-                files: [ 'package.json', '<%= dirs.src.raw %>/*md' ],
-                tasks: [ 'copy:pkg' ]
-            },
-            lib: {
-                files: [ '<%= dirs.src.lib %>/*.js' ],
-                tasks: [ 'copy:lib', 'jshint:lib' ]
+            main: {
+                files: [ 'js/*.source.js', '*.source.md' ],
+                tasks: [ 'copy:main' ]
             },
             themes: {
-                files: [ '<%= dirs.src.themes %>/*.less' ],
+                files: [ 'less/*.less' ],
                 tasks: [ 'less:themes' ]
             },
             tests: {
-                files: [ '<%= dirs.src.tests %>/**/*' ],
-                tasks: [ 'copy:tests' ]
-            },
-            demos: {
-                files: [ '<%= dirs.src.raw %>/index.htm', '<%= dirs.src.demos %>/*.htm', '<%= dirs.src.demos %>/styles/*.less' ],
-                tasks: [ 'htmlify:index', 'htmlify:demos', 'less:demos' ]
-            },
-            docs: {
-                files: [ '<%= dirs.src.raw %>/index.htm', '<%= dirs.src.docs %>/*.htm', '<%= dirs.src.demos %>/styles/*.less' ],
-                tasks: [ 'htmlify:index', 'htmlify:docs', 'less:demos' ]
-            },
-            gruntfile: {
-                files: [ 'Gruntfile.js' ],
-                tasks: [ 'jshint:gruntfile', 'default' ]
+                files: [ 'js/tests/**/*' ],
+                tasks: [ 'qunit' ]
             }
         },
 
 
         // Any extra data needed in rendering static files.
         meta: {
-
-            // The clean github repo url.
-            repo_url: packageJSON.repository.url.replace( /.git$/, '' ),
 
             // Get the min & gzip size of a text file.
             fileSize: function( content ) {
@@ -239,46 +134,22 @@ module.exports = function( grunt ) {
     }) //grunt.initConfig
 
 
+    // Load the NPM tasks.
+    grunt.loadNpmTasks( 'grunt-contrib-concat' )
+    grunt.loadNpmTasks( 'grunt-contrib-watch' )
+    grunt.loadNpmTasks( 'grunt-contrib-jshint' )
+    grunt.loadNpmTasks( 'grunt-contrib-qunit' )
+    grunt.loadNpmTasks( 'grunt-contrib-copy' )
+    grunt.loadNpmTasks( 'grunt-contrib-less' )
+    grunt.loadNpmTasks( 'grunt-contrib-clean' )
+    grunt.loadNpmTasks( 'grunt-contrib-cssmin' )
+    grunt.loadNpmTasks( 'grunt-contrib-uglify' )
+
+
     // Register the tasks.
-    grunt.registerTask( 'default', [ 'clean', 'copy', 'htmlify', 'less' ] )
-    grunt.registerTask( 'strict', [ 'clean', 'copy', 'htmlify', 'less', 'jshint', 'qunit' ] )
+    grunt.registerTask( 'default', [ 'copy', 'less' ] )
+    grunt.registerTask( 'strict', [ 'copy', 'less', 'jshint', 'qunit' ] )
     grunt.registerTask( 'travis', [ 'jshint', 'qunit' ] )
 
-
-    // Create and register the task to build out the static HTML files.
-    grunt.registerMultiTask( 'htmlify', 'Recursively build static HTML files', function() {
-
-        var task = this,
-
-            // Process the base file using the source file content.
-            processFile = function( fileSource ) {
-
-                var processedContent = ''
-
-                // Recursively process the base template using the file source content.
-                grunt.verbose.writeln( 'Processing ' + fileSource )
-                processedContent = grunt.template.process( grunt.file.read( task.data.cwd + '/' + task.data.base ), {
-                    delimiters: 'curly',
-                    data: {
-                        pkg: packageJSON,
-                        page: fileSource.match( /[\w-]+(?=\.htm$)/ )[ 0 ],
-                        content: grunt.file.read( fileSource ),
-                        meta: grunt.config.data.meta,
-                        dirs: grunt.config.data.dirs
-                    }
-                })
-
-                // Write the destination file by cleaning the file name.
-                grunt.log.writeln( 'Writing ' + fileSource.cyan )
-                grunt.file.write( task.data.dest + '/' + fileSource.match( /[\w-]+\.htm$/ )[ 0 ], processedContent )
-            }
-
-
-        // Map through the task directory and process the HTML files.
-        grunt.log.writeln( 'Expanding ' + task.data.cwd.cyan )
-        grunt.file.expand( task.data.cwd + '/' + task.data.src ).map( processFile )
-    })
-
 } //module.exports
-
 

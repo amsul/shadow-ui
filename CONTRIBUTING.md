@@ -32,13 +32,10 @@ If you’re submitting a pull request, please respect the coding standards used 
 A few other things to keep in mind:
 
 - Make sure the changes are suitable within the scope of this project.
-- Discuss any significant features before endeavoring into developing them. I’d hate to have anyone spend effort on something only for me to not merge it into the main project.
-- Include the relevant test coverage if any JavaScript files are involved.
+- Discuss any significant features before endeavoring into developing them. I’d hate to have anyone spend effort on something only for me to not merge it into the project.
+- Include the relevant test coverage for any JavaScript files involved.
 - Compile the project using `grunt --verbose` to make sure everything passes with a green flag.
-- Use the Semantic Versioning guide, as mentioned in the [readme file](https://github.com/amsul/shadow-ui/blob/0.5.0/README.md), in the case that a version bump is due.
-
-
-#### All pull requests should be submitted to the `dev` branch.
+- Use the Semantic Versioning guide in the case that a version bump is due.
 
 
 

@@ -1,0 +1,41 @@
+<!doctype html>
+
+<meta charset="utf-8">
+
+<meta name="viewport" content="width=device-width">
+<meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+
+<title>{% if page.title %}{{ page.title }}{% else %}{{ site.title }}{% endif %}</title>
+
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="stylesheet" href="/css/ui.css">
+<link rel="stylesheet" href="/css/ui-drop.css">
+<link rel="stylesheet" href="/css/ui-modal.css">
+<link rel="stylesheet" href="/css/ui-blob.css">
+
+<script src="/assets/js/jquery.js"></script>
+<script src="/assets/js/rainbow.js"></script>
+<script src="/js/legacy.js"></script>
+<script src="/js/shadow.js"></script>
+
+<body>
+
+    <header class="section">
+        <div class="section__block section__block--scoped">
+            <nav class="navigation navigation--header">
+                <ul class="navigation__list">
+                    <li class="navigation__item">
+                        <a class="navigation__link" href="/">Home</a>
+                    </li><!--
+                 --><li class="navigation__item">
+                        <a class="navigation__link" href="{{ site.repo }}">Github</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    {{ content }}
+
+</body>
+

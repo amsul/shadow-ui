@@ -1,0 +1,29 @@
+---
+layout: extension
+extension_name: pickadate.js
+---
+
+<link rel="stylesheet" href="/css/pickadate-drop.css">
+<link rel="stylesheet" href="/css/pickadate-modal.css">
+<link rel="stylesheet" href="/css/pickadate.css">
+
+<div>
+    <input type="text" id="shadowPickadate" placeholder="Date input">
+</div>
+
+<div id="shadowPickadateDiv">Calendar as a div</div>
+
+<script src="/js/ui-pickadate.js"></script>
+<script>
+    var $shadowPickadate = $('#shadowPickadate').pickadate({
+        format: '[date:] d mmmm, yyyy'
+    })
+    var shadowPickadateUI = $shadowPickadate.pickadate('ui')
+    // shadowPickadateUI.open(true)
+    var $shadowPickadateDiv = $('#shadowPickadateDiv').pickadate({
+        format: '[date:] d mmmm, yyyy',
+        type: 'dropdown'
+    })
+    var shadowPickadateDivUI = $shadowPickadateDiv.pickadate('ui')
+    shadowPickadateDivUI.open(true)
+</script>

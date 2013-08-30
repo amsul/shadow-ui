@@ -1,0 +1,41 @@
+@charset "utf-8";
+/*------------------------------------*\
+    $VARIABLES
+\*------------------------------------*/
+/**
+ * Colors.
+ */
+/**
+ * Positionings.
+ */
+/**
+ * Text styles.
+ */
+/**
+ * Animations.
+ */
+/**
+ * Sizes.
+ */
+/**
+ * Breakpoints.
+ */
+/**
+ * Functions.
+ */
+/*------------------------------------*\
+    $UI-MODAL-PICKADATE
+\*------------------------------------*/
+/**
+ * The shadow holder elements.
+ */
+.ui-drop--pickadate .ui-drop__holder {
+  width: 360px;
+}
+.ui-drop--pickadate .ui-drop__wrap {
+  border-top: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+  background: #fff;
+  margin: .5em 0 .75em;
+  padding: .15em .5em;
+}

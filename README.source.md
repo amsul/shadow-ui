@@ -1,20 +1,20 @@
-# Shadow UI v0.5.0 [![Shadow UI build status](https://travis-ci.org/amsul/shadow-ui.png)](https://travis-ci.org/amsul/shadow-ui)
+# {%= pkg.title %} v{%= pkg.version %} [![{%= pkg.title %} build status](https://travis-ci.org/amsul/shadow-ui.png)](https://travis-ci.org/amsul/shadow-ui)
 
-Create Shadow DOM based UI components, such as dropdowns, modals, popups, tooltips, blobs, etc.
+{%= pkg.description %}
 
 > _**This project is in active development. The api is bound to be tweaked before v1 is ready.**_
 
 
 ### Get started:
 
-- [Download the package](https://github.com/amsul/shadow-ui/archive/0.5.0.zip), or
-- `git clone https://github.com/amsul/shadow-ui.git`, or
-- `bower install shadow`
+- [Download the package]({%= pkg.repo %}/archive/{%= pkg.version %}.zip), or
+- `git clone {%= pkg.repository.url %}`, or
+- `bower install {%= pkg.name %}`
 
 
 ### Dependencies:
 
-- jQuery >=1.7
+- jQuery {%= pkg.dependencies.jquery %}
 
 
 ### Browser support:
@@ -34,7 +34,7 @@ Aim for v1.0 is to support the following browsers:
 <br>
 ## Building
 
-[Grunt](http://gruntjs.com/) `~0.4.1` is used to build the project files. To get started, clone the project and then run:
+[Grunt](http://gruntjs.com/) `{%= pkg.devDependencies.grunt %}` is used to build the project files. To get started, clone the project and then run:
 
 - `npm install` to get the required node modules.
 - `grunt strict --verbose` to confirm you have all the dependencies.
@@ -62,7 +62,7 @@ Where:
 <br>
 ---
 
-© 2013 [Amsul](http://twitter.com/amsul_)
+© {%= grunt.template.date('yyyy') %} [Amsul](http://twitter.com/amsul_)
 
-Licensed under [MIT](http://amsul.ca/MIT)
+Licensed under [{%= pkg.licenses[0].type %}]({%= pkg.licenses[0].url %})
 

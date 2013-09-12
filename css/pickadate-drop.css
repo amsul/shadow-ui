@@ -27,8 +27,15 @@
     $UI-MODAL-PICKADATE
 \*------------------------------------*/
 /**
- * The shadow holder elements.
+ * Styles particular to pickadate in modal mode.
  */
+.ui-drop--pickadate {
+  /**
+     * Set the width.
+     */
+
+}
+.ui-drop--pickadate .ui-drop__pointer,
 .ui-drop--pickadate .ui-drop__holder {
   width: 360px;
 }

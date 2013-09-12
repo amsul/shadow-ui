@@ -6,24 +6,10 @@
 var WEEKS_IN_CAL = 6,
     DAYS_IN_WEEK = 7
 
-// The shadow date constructor.
-function ShadowDate( date ) {
-    this.year = date.getFullYear()
-    this.month = date.getMonth()
-    this.date = date.getDate()
-    this.day = date.getDay()
-    this.time = date.getTime()
-    this.obj = date
-}
-
-// Lead numbers less than 10 with a zero.
-function leadZero( number ) {
-    return number > 9 ? number : '0' + number
-}
-
 
 // Create the shadow extension.
 shadow.extend({
+
     name: 'input-date',
     alias: 'pickadate',
     prefix: 'ui-modal',
@@ -31,17 +17,119 @@ shadow.extend({
     dict: {
         select: [],
         highlight: [],
+        disable: [],
+        flipDisabled: 0,
         today: null,
         view: null,
-        min: -Infinity,
-        max: Infinity
+        min: null,
+        max: null
     },
 
-    queue: {
-        today: 'now create',
-        select: 'create',
-        highlight: 'navigate create',
-        view: 'create viewset'
+    find: {
+        disable: function( loopedItem ) {
+            var value = this
+            if ( shadow._.isInteger( value ) ) {
+                return value === loopedItem
+            }
+            else {
+                return createShadowDate( value ).time === createShadowDate( loopedItem ).time
+            }
+        }
+    },
+
+    create: {
+        disable: function( value/*, options*/ ) {
+
+            var ui = this.ui
+
+            // Flip the enabled and disabled dates.
+            if ( value == 'flip' ) {
+                ui.set('flipDisabled')
+                value = ui.get('disable')
+            }
+
+            // If it’s a collection, just set the collection.
+            else if ( $.isArray( value ) ) {
+                value = value
+            }
+
+            // If it’s a literal false, remove any disabled dates.
+            else if ( value === false ) {
+                value = []
+            }
+
+            // If it’s an integer, don’t change anything.
+            else if ( shadow._.isInteger( value ) ) {
+                value = value
+            }
+
+            return value
+        },
+        flipDisabled: function( value ) {
+            return value === 0 || value === 1 ?
+                value :
+                this.ui.get('flipDisabled') ? 0 : 1
+        },
+        select: function( value, options ) {
+            // value = parseShadowDate( value )
+            value = createShadowDate( value )
+            value = validateShadowDate( value, options, this.ui )
+            return value
+        },
+        highlight: function( value, options ) {
+
+            // Navigate the highlight change if needed.
+            if ( options == 'nav' ) {
+                value = navigateShadowDate( value, this.ui.get('view'), this.ui.get('highlight')[0] )
+            }
+
+            // If it’s a relative move, shift the date.
+            else if ( options == 'relative' ) {
+                var highlight = this.ui.get('highlight')[0]
+                value = [ highlight.year, highlight.month, highlight.date + value ]
+            }
+
+            value = createShadowDate( value )
+            value = validateShadowDate( value, options, this.ui )
+            return value
+        },
+        view: function( value, options ) {
+            value = createShadowDate( value, options )
+            value = validateShadowDate( value, options, this.ui )
+            return viewsetShadowDate( value )
+        },
+        today: function( value, options ) {
+            value = relativeShadowDate( value, options )
+            return createShadowDate( value )
+        },
+        min: function( value/*, options*/ ) {
+
+            // If it's anything false-y, remove the limits.
+            if ( !value ) {
+                value = -Infinity
+            }
+
+            // If it's an integer, get a date relative to today.
+            else if ( shadow._.isInteger( value ) ) {
+                value = relativeShadowDate( value, { rel: value } )
+            }
+
+            return createShadowDate( value )
+        },
+        max: function( value/*, options*/ ) {
+
+            // If it's anything false-y, remove the limits.
+            if ( !value ) {
+                value = Infinity
+            }
+
+            // If it's an integer, get a date relative to today.
+            else if ( shadow._.isInteger( value ) ) {
+                value = relativeShadowDate( value, { rel: value } )
+            }
+
+            return createShadowDate( value )
+        }
     },
 
     cascades: {
@@ -51,6 +139,34 @@ shadow.extend({
 
     klasses: {
         root: [ '', '--pickadate' ]
+    },
+
+    keys: {
+
+        // Enter.
+        13: function() {
+            this.ui.set( 'select', this.ui.get('highlight')[0] )
+        },
+
+        // Left.
+        37: function() {
+            this.ui.set( 'highlight', -1, 'relative' )
+        },
+
+        // Up.
+        38: function() {
+            this.ui.set( 'highlight', -7, 'relative' )
+        },
+
+        // Right.
+        39: function() {
+            this.ui.set( 'highlight', 1, 'relative' )
+        },
+
+        // Down.
+        40: function() {
+            this.ui.set( 'highlight', 7, 'relative' )
+        }
     },
 
     defaults: {
@@ -67,6 +183,10 @@ shadow.extend({
 
         // The format to show on the `input` element.
         format: 'd mmmm, yyyy',
+
+        // The min/max range.
+        min: -Infinity,
+        max: Infinity,
 
         // Classes.
         klasses: shadow._.prefix( 'pickadate', {
@@ -104,61 +224,120 @@ shadow.extend({
         })
     },
 
+    is: {
+
+        // Check if a date is disabled.
+        disabled: function( dateObject ) {
+
+            dateObject = createShadowDate( dateObject )
+
+            var ui = this.ui,
+
+                // Filter through the disabled dates to check if this is one.
+                isDisabledDate = !!ui.get('disable').filter( function( dateDisabled ) {
+
+                    // Match the weekday with 0index and `firstDay` check.
+                    if ( shadow._.isInteger( dateDisabled ) ) {
+                        return dateObject.day === ( ui.settings.firstDay ? dateDisabled : dateDisabled - 1 ) % 7
+                    }
+
+                    // Otherwise create the object and match the exact time.
+                    return dateObject.time === createShadowDate( dateDisabled ).time
+                }).length
+
+            // It’s disabled beyond the min/max limits. If within the limits, check if
+            // the “enabled” flag is flipped and respectively flip the condition.
+            return dateObject.time < ui.get('min').time ||
+                dateObject.time > ui.get('max').time ||
+                ui.get('flipDisabled') ? !isDisabledDate : isDisabledDate
+        }
+    },
+
     formats: {
-        d: function( value/*, isParsing*/ ) {
-            return value && value[0].date
+        d: function( value, isParsing ) {
+            if ( isParsing ) {
+                var match = value.match( /^\d+/ )
+                return match ? match[0].length : 0
+            }
+            return value && value.date
         },
-        dd: function( value/*, isParsing*/ ) {
-            return value && leadZero( value[0].date )
+        dd: function( value, isParsing ) {
+            return isParsing ? 2 : value && leadZero( value.date )
         },
-        ddd: function( value/*, isParsing*/ ) {
-
-            // Get the selected weekday from the “short” list.
-            return value && this.ui.settings.weekdaysShort[ value[0].day ]
+        ddd: function( value, isParsing ) {
+            if ( isParsing ) {
+                var match = value.match( /^\w+/ )
+                return match ? match[0].length : 0
+            }
+            return value && this.ui.settings.weekdaysShort[ value.day ]
         },
-        dddd: function( value/*, isParsing*/ ) {
-
-            // Get the selected weekday from the “full” list..
-            return value && this.ui.settings.weekdaysFull[ value[0].day ]
+        dddd: function( value, isParsing ) {
+            if ( isParsing ) {
+                var match = value.match( /^\w+/ )
+                return match ? match[0].length : 0
+            }
+            return value && this.ui.settings.weekdaysFull[ value.day ]
         },
-        m: function( value/*, isParsing*/ ) {
-
-            // Get the selected month with 0index compensation.
-            return value && value[0].month + 1
+        m: function( value, isParsing ) {
+            if ( isParsing ) {
+                var match = value.match( /^\d+/ )
+                return match ? match[0].length : 0
+            }
+            return value && value.month + 1
         },
-        mm: function( value/*, isParsing*/ ) {
-
-            // Get the selected month with 0index and leading zero.
-            return value && leadZero( value[0].month + 1 )
+        mm: function( value, isParsing ) {
+            return isParsing ? 2 : value && leadZero( value.month + 1 )
         },
-        mmm: function( value/*, isParsing*/ ) {
-
-            // Get the selected month from the “short” list.
-            return value && this.ui.settings.monthsShort[ value[0].month ]
+        mmm: function( value, isParsing ) {
+            if ( isParsing ) {
+                var match = value.match( /^\w+/ )
+                return match ? match[0].length : 0
+            }
+            return value && this.ui.settings.monthsShort[ value.month ]
         },
-        mmmm: function( value/*, isParsing*/ ) {
-
-            // Get the selected month from the “full” list.
-            return value && this.ui.settings.monthsFull[ value[0].month ]
+        mmmm: function( value, isParsing ) {
+            if ( isParsing ) {
+                var match = value.match( /^\w+/ )
+                return match ? match[0].length : 0
+            }
+            return value && this.ui.settings.monthsFull[ value.month ]
         },
-        yy: function( value/*, isParsing*/ ) {
-
-            // Get the selected year by removing the first 2 digits.
-            return value && ( '' + value[0].year ).slice( 2 )
+        yy: function( value, isParsing ) {
+            return isParsing ? 2 : value && ( '' + value.year ).slice( 2 )
         },
-        yyyy: function( value/*, isParsing*/ ) {
-
-            // Get the selected year.
-            return value && value[0].year
+        yyyy: function( value, isParsing ) {
+            return isParsing ? 4 : value && value.year
         }
     }, //formats
 
-    init: function() {
+    init: function( formatValueHash, isHiddenValue ) {
 
-        var today,
-            component = this,
-            ui = component.ui
+        var component = this,
+            ui = component.ui,
+            disabledCollection = ( ui.settings.disable || [] ).slice(0),
+            startValue = [
+                formatValueHash.yyyy || formatValueHash.yy,
+                formatValueHash.mm || formatValueHash.m,
+                formatValueHash.dd || formatValueHash.d
+            ]
 
+        // Make sure we have a starting month.
+        if ( startValue[1] == null ) {
+            startValue[1] = ( formatValueHash.mmmm ? ui.settings.monthsFull : ui.settings.monthsShort ).
+                indexOf( formatValueHash.mmmm || formatValueHash.mmm )
+        }
+
+        // If we have a hidden value parsing, compensate for month 0index.
+        if ( isHiddenValue ) {
+            startValue[1] -= 1
+        }
+
+        // Make sure we have a usable date.
+        startValue = startValue.filter( function( item ) {
+            return item >= 0 && item !== ''
+        })
+
+        // Set the theme based on the type.
         if ( component.ui.settings.type == 'dropdown' ) {
             component.prefix = 'ui-drop'
         }
@@ -166,30 +345,43 @@ shadow.extend({
         // Make sure we are dealing with a text type element.
         ui.$source[0].type = 'text'
 
-        // Set the starting values.
-        today = ui.set( 'today', component.now() )
-        ui.set( 'select', today )
+        // Set the starting values. * Set the min & max first.
+        ui.set({
+            min: ui.settings.min,
+            max: ui.settings.max
+        }).set({
+            today: relativeShadowDate(),
+            flipDisabled: disabledCollection[0] === true ? +disabledCollection.shift() : 0,
+            disable: disabledCollection,
+            select: startValue.length ? startValue : relativeShadowDate()
+        })
 
         // Bind the ui events.
         ui.on({
 
             // When something is set, render the UI if needed.
             set: function( event ) {
-                if ( event.item == 'select' || ( event.item == 'highlight' && event.options == 'nav' ) ) {
+                if ( event.item == 'select' || event.item == 'view' || ( event.item == 'highlight' && event.options == 'nav' ) ) {
                     ui.render()
                 }
                 if ( event.options == 'close' ) {
                     ui.close( true )
                 }
+            },
+
+            // Bind stuff to new elements whenever the ui is rendered.
+            render: function() {
+                ui.$root.find( '.' + ui.settings.klasses.selectMonth ).on( 'change', function() {
+                    ui.set( 'highlight', [ ui.get('view').year, this.value, ui.get('highlight')[0].date ] )
+                })
+                ui.$root.find( '.' + ui.settings.klasses.selectYear ).on( 'change', function() {
+                    ui.set( 'highlight', [ this.value, ui.get('view').month, ui.get('highlight')[0].date ] )
+                })
             }
         })
 
     }, //init
 
-
-    /**
-     * Create the template for the face of the extension.
-     */
     template: function() {
 
         var component = this,
@@ -197,6 +389,8 @@ shadow.extend({
 
             settings = ui.settings,
 
+            dateMin = ui.get('min'),
+            dateMax = ui.get('max'),
             dateView = ui.get('view'),
             dateToday = ui.get('today'),
             dateSelected = ui.get('select')[0],
@@ -210,25 +404,114 @@ shadow.extend({
                     attrs: {
                         'data-action': 'highlight:' + (next ? 1 : -1) + ':nav'
                     },
-                    klass: settings.klasses[ next ? 'navNext' : 'navPrev' ]
+                    klass: [
+                        ui.klasses[ next ? 'navNext' : 'navPrev' ],
 
-                    // // If the focused month is outside the range, disabled the button.
-                    // ( next && viewsetObject.year >= maxLimitObject.year && viewsetObject.month >= maxLimitObject.month ) ||
-                    // ( !next && viewsetObject.year <= minLimitObject.year && viewsetObject.month <= minLimitObject.month ) ?
-                    // ' ' + settings.klass.navDisabled : ''
+                        // If the focused month is outside the range, disabled the button.
+                        ( next && dateView.year >= dateMax.year && dateView.month >= dateMax.month ) ||
+                        ( !next && dateView.year <= dateMin.year && dateView.month <= dateMin.month ) ?
+                            settings.klasses.navDisabled : ''
+                    ]
                 })
             },
 
             // Create the month label.
             labelMonth = shadow._.node({
-                content: settings.monthsFull[ dateView.month ],
-                klass: settings.klasses.month
+                klass: ui.klasses.month,
+                content: function() {
+
+                    var monthsCollection = settings.showMonthsShort ? settings.monthsShort : settings.monthsFull
+
+                    if ( settings.selectMonths ) {
+
+                        this.el = 'select'
+                        this.klass = ui.klasses.selectMonth
+
+                        return monthsCollection.map( function( month, monthIndex ) {
+
+                            var attrs = { value: monthIndex }
+
+                            if ( dateView.month === monthIndex ) attrs.selected = ''
+
+                            if (
+                                ( dateView.year === dateMin.year && monthIndex < dateMin.month ) ||
+                                ( dateView.year === dateMax.year && monthIndex > dateMax.month )
+                            ) attrs.disabled = 'disabled'
+
+                            return shadow._.node({
+                                el: 'option',
+                                content: month,
+                                attrs: attrs
+                            })
+                        })
+                    }
+
+                    return monthsCollection[ dateView.month ]
+                }
             }),
 
             // Create the year label.
             labelYear = shadow._.node({
-                content: dateView.year,
-                klass: settings.klasses.year
+                klass: ui.klasses.year,
+                content: function() {
+
+                    var focusedYear = dateView.year,
+
+                        // If years selector is set to a literal "true", set it to 5. Otherwise
+                        // divide in half to get half before and half after focused year.
+                        numberYears = settings.selectYears === true ? 5 : ~~( settings.selectYears / 2 )
+
+
+                    // Show a select menu if needed.
+                    if ( numberYears ) {
+
+                        this.el = 'select'
+                        this.klass = ui.klasses.selectYear
+
+                        var minYear = dateMin.year,
+                            maxYear = dateMax.year,
+                            lowestYear = focusedYear - numberYears,
+                            highestYear = focusedYear + numberYears
+
+                        // If the min year is greater than the lowest year, increase the highest year
+                        // by the difference and set the lowest year to the min year.
+                        if ( minYear > lowestYear ) {
+                            highestYear += minYear - lowestYear
+                            lowestYear = minYear
+                        }
+
+                        // If the max year is less than the highest year, decrease the lowest year
+                        // by the lower of the two: available and needed years. Then set the
+                        // highest year to the max year.
+                        if ( maxYear < highestYear ) {
+
+                            var availableYears = lowestYear - minYear,
+                                neededYears = highestYear - maxYear
+
+                            lowestYear -= availableYears > neededYears ? neededYears : availableYears
+                            highestYear = maxYear
+                        }
+
+
+                        // Create an array (the size of the difference in years) to map through
+                        // and set all the content by increasing lowest year up to the highest.
+                        return Array.
+                            apply( null, new Array( highestYear - lowestYear + 1 ) ).
+                            map( function() {
+                                var attrs = {}
+                                if ( lowestYear === focusedYear ) attrs.selected = ''
+                                return shadow._.node({
+                                    el: 'option',
+                                    content: lowestYear++, // Increment *after* setting the content.
+                                    attrs: attrs
+                                })
+                            }).
+                            join('')
+                    }
+
+                    // Otherwise just use the focused year.
+                    return focusedYear
+                }
             }),
 
             // Create the table head with the weekdays.
@@ -251,7 +534,7 @@ shadow.extend({
                             return shadow._.node({
                                 el: 'th',
                                 content: weekday,
-                                klass: settings.klasses.weekdays
+                                klass: ui.klasses.weekdays
                             })
                         }).join('')
                     }
@@ -270,7 +553,7 @@ shadow.extend({
                         shiftWeekday = settings.firstDay ? dateView.day === 0 ? -6 : 1 : 0,
 
                         createNodeDate = function ( dayOfCalendar ) {
-                            var loopedDate = component.create([ dateView.year, dateView.month, dayOfCalendar ])
+                            var loopedDate = createShadowDate([ dateView.year, dateView.month, dayOfCalendar ])
                             return '<td>' + shadow._.node({
                                 el: 'button',
                                 content: loopedDate.date,
@@ -281,26 +564,22 @@ shadow.extend({
                                 klass: [
 
                                     // The default “day” class.
-                                    settings.klasses.day,
+                                    ui.klasses.day,
 
                                     // Add the `infocus` or `outfocus` classes based on month in view.
-                                    dateView.month === loopedDate.month ? settings.klasses.infocus : settings.klasses.outfocus,
+                                    dateView.month === loopedDate.month ? ui.klasses.infocus : ui.klasses.outfocus,
 
                                     // Add the `today` class if needed.
-                                    dateToday.time === loopedDate.time ? settings.klasses.now : '',
+                                    dateToday.time === loopedDate.time ? ui.klasses.now : '',
 
                                     // Add the `selected` class if something's selected and the time matches.
-                                    dateSelected && dateSelected.time === loopedDate.time ? settings.klasses.selected : '',
+                                    dateSelected.time === loopedDate.time ? ui.klasses.selected : '',
 
                                     // Add the `highlighted` class if something's highlighted and the time matches.
-                                    dateHighlighted && dateHighlighted.time === loopedDate.time ? settings.klasses.highlighted : '',
+                                    dateHighlighted.time === loopedDate.time ? ui.klasses.highlighted : '',
 
-                                    // Add the `disabled` class if something's disabled and the object matches.
-                                    // disabledCollection && calendar.disabled( targetDate ) ||
-                                    // targetDate.pick < minLimitObject.pick ||
-                                    // targetDate.pick > maxLimitObject.pick ?
-                                    //     settings.klass.disabled :
-                                    //     ''
+                                    // Add the `disabled` class if something's disabled or outside the range.
+                                    ui.is( 'disabled', loopedDate ) ? ui.klasses.disabled : ''
                                 ]
                             }) + '</td>'
                         }
@@ -340,7 +619,7 @@ shadow.extend({
                 attrs: {
                     'data-action': 'select:' + dateToday.time
                 },
-                klass: settings.klasses.buttonToday
+                klass: ui.klasses.buttonToday
             }),
 
             // Create the “clear” button.
@@ -350,647 +629,234 @@ shadow.extend({
                 attrs: {
                     'data-action': 'clear'
                 },
-                klass: settings.klasses.buttonClear
+                klass: ui.klasses.buttonClear
             })
 
 
         // Return the composed the calendar.
         return shadow._.node({
-            klass: settings.klasses.face,
+            klass: ui.klasses.face,
             content: [
                 shadow._.node({
-                    content: [ labelNav(), labelNav(1), labelMonth, labelYear ],
-                    klass: settings.klasses.header
+                    content: [ labelMonth, labelYear, labelNav(), labelNav(1) ],
+                    klass: ui.klasses.header
                 }),
                 shadow._.node({
                     el: 'table',
                     content: [ tableHead, tableBody ],
-                    klass: settings.klasses.table
+                    klass: ui.klasses.table
                 }),
                 shadow._.node({
                     content: [ buttonToday, buttonClear ],
-                    klass: settings.klasses.footer
+                    klass: ui.klasses.footer
                 })
             ]
         })
-    }, //template
+    } //template
+
+}) //shadow.extend
 
 
-    /**
-     * Get the date today or relative to today.
-     */
-    now: function( value, options ) {
+// The shadow date constructor.
+function ShadowDate( year, month, date, day, time, obj ) {
+    this.year = year
+    this.month = month
+    this.date = date
+    this.day = day
+    this.time = time
+    this.obj = obj
+}
 
-        // Ignore the value and create a new date.
-        value = new Date()
+// Create a shadow date object.
+function createShadowDate( value ) {
 
-        // If it’s relative to today, make the shift.
-        if ( options && options.rel ) value.setDate( value.getDate() + options.rel )
+    var isInfiniteValue
 
-        // Return the normalized date.
-        return this.normalize( value, options )
-    },
+    // If it’s already a shadow date, we’re all done.
+    if ( value instanceof ShadowDate ) return value
 
+    // If it’s a number or date object, make a normalized date.
+    if ( shadow._.isInteger( value ) || shadow._.isDate( value ) ) {
+        value = normalizeShadowDate( new Date( value ) )
+    }
 
-    /**
-     * Normalize a date by setting the hours to midnight.
-     */
-    normalize: function( date ) {
-        date.setHours(0,0,0,0)
-        return date
-    },
+    // If it’s an array, convert it into a date and make sure
+    // that it’s a valid date – otherwise default to today.
+    else if ( $.isArray( value ) ) {
+        value = new Date( value[0], value[1], value[2] )
+        value = shadow._.isDate( value ) ? value : relativeShadowDate()
+    }
 
+    // If it’s infinity, silently pass through.
+    else if ( value == -Infinity || value == Infinity ) {
+        isInfiniteValue = value
+    }
 
-    /**
-     * Navigate a highlight change with month changes if needed.
-     */
-    navigate: function( value, options ) {
+    // If it’s a literal true or any other case, set it to now.
+    else /*if ( value === true )*/ {
+        value = relativeShadowDate()
+    }
 
-        // Only do stuff if it was a “navigating” highlight change.
-        if ( options == 'nav' ) {
+    // Return a new a shadow date instance.
+    return new ShadowDate(
+        isInfiniteValue || value.getFullYear(),
+        isInfiniteValue || value.getMonth(),
+        isInfiniteValue || value.getDate(),
+        isInfiniteValue || value.getDay(),
+        isInfiniteValue || value.getTime(),
+        isInfiniteValue || value
+    )
+}
 
-            var dateView = this.ui.get('view'),
-                dateHighlighted = this.ui.get('highlight'),
-                targetDateObject = new Date( dateView.year, dateView.month + value, 1 ),
-                targetYear = targetDateObject.getFullYear(),
-                targetMonth = targetDateObject.getMonth(),
-                targetDate = dateHighlighted[0].date
+// Normalize a date by setting the hours to midnight.
+function normalizeShadowDate( value ) {
+    value.setHours(0,0,0,0)
+    return value
+}
 
-            // Make sure the date exists. If the target month doesn’t have enough
-            // days, keep decreasing the date until we reach the month’s last date.
-            while ( shadow._.isDate( targetDateObject ) && new Date( targetYear, targetMonth, targetDate ).getMonth() !== targetMonth ) {
-                targetDate -= 1
+// Navigate a highlight change with month changes if needed.
+function navigateShadowDate( value, dateView, dateHighlighted ) {
+
+    var targetDateObject = new Date( dateView.year, dateView.month + value, 1 ),
+        targetYear = targetDateObject.getFullYear(),
+        targetMonth = targetDateObject.getMonth(),
+        targetDate = dateHighlighted.date
+
+    // Make sure the date exists. If the target month doesn’t have enough
+    // days, keep decreasing the date until we reach the month’s last date.
+    while (
+        shadow._.isDate( targetDateObject ) &&
+        new Date( targetYear, targetMonth, targetDate ).getMonth() !== targetMonth
+    ) {
+        targetDate -= 1
+    }
+
+    // Construct the final value.
+    return [ targetYear, targetMonth, targetDate ]
+}
+
+// Create a viewset date for navigation.
+function viewsetShadowDate( value/*, options*/ ) {
+    return createShadowDate([ value.year, value.month, 1 ])
+}
+
+// Get the date today or relative to today.
+function relativeShadowDate( value, options ) {
+
+    // Ignore the value and create a new date.
+    value = new Date()
+
+    // If it’s relative to today, make the shift.
+    if ( options && options.rel ) value.setDate( value.getDate() + options.rel )
+
+    // Return the normalized date.
+    return normalizeShadowDate( value, options )
+}
+
+// Validate a date as enabled and shift if needed.
+function validateShadowDate( dateObject, options, ui ) {
+
+    var
+        // Make sure we have an interval.
+        interval = options && options.interval ? options.interval : 1,
+
+        // Check if the calendar enabled dates are inverted.
+        isInverted = ui.get('flipDisabled') === 1,
+
+        // Check if we have any enabled dates after/before now.
+        hasEnabledBeforeTarget, hasEnabledAfterTarget,
+
+        // Keep a reference to the original date.
+        dateOriginal = dateObject,
+
+        // The min & max limits.
+        dateMin = ui.get('min'),
+        dateMax = ui.get('max'),
+
+        // Check if we’ve reached the limit during shifting.
+        reachedMin, reachedMax,
+
+        // Check if the calendar is inverted and at least one weekday is enabled.
+        hasEnabledWeekdays = isInverted && ui.get('disable').filter( function( value ) {
+
+            // If there’s a date, check where it is relative to the target.
+            if ( Array.isArray( value ) ) {
+                var dateTime = createShadowDate( value ).time
+                if ( dateTime < value.time ) hasEnabledBeforeTarget = true
+                else if ( dateTime > value.time ) hasEnabledAfterTarget = true
             }
 
-            // Construct the final value.
-            value = [ targetYear, targetMonth, targetDate ]
+            // Return only integers for enabled weekdays.
+            return shadow._.isInteger( value )
+        }).length
+
+
+    // Cases to validate for:
+    // [1] Not inverted and date disabled.
+    // [2] Inverted and some dates enabled.
+    // [3] Out of range.
+    //
+    // Cases to **not** validate for:
+    // • Navigating months.
+    // • Not inverted and date enabled.
+    // • Inverted and all dates disabled.
+    // • ..and anything else.
+    if ( options != 'nav' ) if (
+        /* 1 */ ( !isInverted && ui.is( 'disabled', dateObject ) ) ||
+        /* 2 */ ( isInverted && ui.is( 'disabled', dateObject ) && ( hasEnabledWeekdays || hasEnabledBeforeTarget || hasEnabledAfterTarget ) ) ||
+        /* 3 */ ( dateObject.time <= dateMin.time || dateObject.time >= dateMax.time )
+    ) {
+
+
+        // When inverted, flip the direction if there aren’t any enabled weekdays
+        // and there are no enabled dates in the direction of the interval.
+        if ( isInverted && !hasEnabledWeekdays && ( ( !hasEnabledAfterTarget && interval > 0 ) || ( !hasEnabledBeforeTarget && interval < 0 ) ) ) {
+            interval *= -1
         }
 
-        // Return the composed value.
-        return value
-    },
+
+        // Keep looping until we reach an enabled date.
+        while ( ui.is( 'disabled', dateObject ) ) {
 
 
-    /**
-     * Create a viewset date for navigation.
-     */
-    viewset: function( value/*, options*/ ) {
-        return this.create([ value.year, value.month, 1 ])
-    },
+            // If we’ve looped into the next/prev month, return to the original date and flatten the interval.
+            if ( Math.abs( interval ) > 1 && ( dateObject.month < dateOriginal.month || dateObject.month > dateOriginal.month ) ) {
+                dateObject = dateOriginal
+                interval = Math.abs( interval ) / interval
+            }
 
 
-    /**
-     * Create a shadow date object.
-     */
-    create: function( value/*, options*/ ) {
+            // If we’ve reached the min/max limit, reverse the direction and flatten the interval.
+            if ( dateObject.time <= dateMin.time ) {
+                reachedMin = true
+                interval = 1
+            }
+            else if ( dateObject.time >= dateMax.time ) {
+                reachedMax = true
+                interval = -1
+            }
 
-        // If it’s already a shadow date, we’re all done.
-        if ( value instanceof ShadowDate ) return value
 
-        // If it’s a number or date object, make a normalized date.
-        if ( shadow._.isInteger( value ) || shadow._.isDate( value ) ) {
-            value = this.normalize( new Date( value ) )
+            // If we’ve reached both limits, just break out of the loop.
+            if ( reachedMin && reachedMax ) {
+                break
+            }
+
+
+            // Finally, create the shifted date using the interval and keep looping.
+            dateObject = createShadowDate([ dateObject.year, dateObject.month, dateObject.date + interval ])
         }
 
-        // If it’s an array, convert it into a date and make sure
-        // that it’s a valid date – otherwise default to today.
-        else if ( $.isArray( value ) ) {
-            value = new Date( value[0], value[1], value[2] )
-            value = shadow._.isDate( value ) ? value : this.now()
-        }
-
-        // If it’s a literal true or any other case, set it to now.
-        else /*if ( value === true )*/ {
-            value = this.now()
-        }
-
-        // Return a new a shadow date instance.
-        return new ShadowDate( value )
-    }
-})
-
-
-
-
-// /**
-//  * The date picker constructor
-//  */
-// function DatePicker( picker, settings ) {
-
-//     var calendar = this,
-//         elementValue = picker.$node[ 0 ].value,
-//         elementDataValue = picker.$node.data( 'value' ),
-//         valueString = elementDataValue || elementValue,
-//         formatString = elementDataValue ? settings.formatSubmit : settings.format
-
-//     calendar.settings = settings
-
-//     // The queue of methods that will be used to build item objects.
-//     calendar.queue = {
-//         min: 'measure create',
-//         max: 'measure create',
-//         now: 'now create',
-//         select: 'parse create validate',
-//         highlight: 'navigate create validate',
-//         view: 'create validate viewset',
-//         disable: 'flipItem',
-//         enable: 'flipItem'
-//     }
-
-//     // The component's item object.
-//     calendar.item = {}
-
-//     calendar.item.disable = ( settings.disable || [] ).slice( 0 )
-//     calendar.item.enable = -(function( collectionDisabled ) {
-//         return collectionDisabled[ 0 ] === true ? collectionDisabled.shift() : -1
-//     })( calendar.item.disable )
-
-//     calendar.
-//         set( 'min', settings.min ).
-//         set( 'max', settings.max ).
-
-//         // Setting the `select` also sets the `highlight` and `view`.
-//         set( 'select',
-
-//             // Use the value provided or default to selecting “today”.
-//             valueString || calendar.item.now,
-//             {
-//                 // Use the appropriate format.
-//                 format: formatString,
-
-//                 // Set user-provided month data as true when there is a
-//                 // “mm” or “m” used in the relative format string.
-//                 data: (function( formatArray ) {
-//                     return valueString && ( formatArray.indexOf( 'mm' ) > -1 || formatArray.indexOf( 'm' ) > -1 )
-//                 })( calendar.formats.toArray( formatString ) )
-//             }
-//         )
-
-
-//     // The keycode to movement mapping.
-//     calendar.key = {
-//         40: 7, // Down
-//         38: -7, // Up
-//         39: 1, // Right
-//         37: -1, // Left
-//         go: function( timeChange ) {
-//             calendar.set( 'highlight', [ calendar.item.highlight.year, calendar.item.highlight.month, calendar.item.highlight.date + timeChange ], { interval: timeChange } )
-//             this.render()
-//         }
-//     }
-
-
-//     // Bind some picker events.
-//     picker.
-//         on( 'render', function() {
-//             picker.$root.find( '.' + settings.klass.selectMonth ).on( 'change', function() {
-//                 picker.set( 'highlight', [ picker.get( 'view' ).year, this.value, picker.get( 'highlight' ).date ] )
-//                 picker.$root.find( '.' + settings.klass.selectMonth ).focus()
-//             })
-//             picker.$root.find( '.' + settings.klass.selectYear ).on( 'change', function() {
-//                 picker.set( 'highlight', [ this.value, picker.get( 'view' ).month, picker.get( 'highlight' ).date ] )
-//                 picker.$root.find( '.' + settings.klass.selectYear ).focus()
-//             })
-//         }).
-//         on( 'open', function() {
-//             picker.$root.find( 'button, select' ).attr( 'disabled', false )
-//         }).
-//         on( 'close', function() {
-//             picker.$root.find( 'button, select' ).attr( 'disabled', true )
-//         })
-
-// } //DatePicker
-
-
-// /**
-//  * Set a datepicker item object.
-//  */
-// DatePicker.prototype.set = function( type, value, options ) {
-
-//     var calendar = this
-
-//     // Go through the queue of methods, and invoke the function. Update this
-//     // as the time unit, and set the final resultant as this item type.
-//     // * In the case of `enable`, keep the queue but set `disable` instead.
-//     //   And in the case of `flip`, keep the queue but set `enable` instead.
-//     calendar.item[ ( type == 'enable' ? 'disable' : type == 'flip' ? 'enable' : type ) ] = calendar.queue[ type ].split( ' ' ).map( function( method ) {
-//         return value = calendar[ method ]( type, value, options )
-//     }).pop()
-
-//     // Check if we need to cascade through more updates.
-//     if ( ( type == 'flip' || type == 'min' || type == 'max' || type == 'disable' || type == 'enable' ) && calendar.item.select && calendar.item.highlight ) {
-//         calendar.
-//             set( 'select', calendar.item.select, options ).
-//             set( 'highlight', calendar.item.highlight, options )
-//     }
-
-//     return calendar
-// } //DatePicker.prototype.set
-
-
-// /**
-//  * Create a picker date object.
-//  */
-// DatePicker.prototype.create = function( type, value, options ) {
-
-//     var isInfiniteValue,
-//         calendar = this
-
-
-//     // If it’s infinity, update the value.
-//     if ( value == -Infinity || value == Infinity ) {
-//         isInfiniteValue = value
-//     }
-
-
-//     // Return the compiled object.
-//     return {
-//         year: isInfiniteValue || value.getFullYear(),
-//         month: isInfiniteValue || value.getMonth(),
-//         date: isInfiniteValue || value.getDate(),
-//         day: isInfiniteValue || value.getDay(),
-//         obj: isInfiniteValue || value,
-//         pick: isInfiniteValue || value.getTime()
-//     }
-// } //DatePicker.prototype.create
-
-
-// /**
-//  * Measure the range of dates.
-//  */
-// DatePicker.prototype.measure = function( type, value/*, options*/ ) {
-
-//     var calendar = this
-
-//     // If it's anything false-y, remove the limits.
-//     if ( !value ) {
-//         value = type == 'min' ? -Infinity : Infinity
-//     }
-
-//     // If it's an integer, get a date relative to today.
-//     else if ( Picker._.isInteger( value ) ) {
-//         value = calendar.now( type, value, { rel: value } )
-//     }
-
-//     return value
-// } ///DatePicker.prototype.measure
-
-
-// /**
-//  * Validate a date as enabled and shift if needed.
-//  */
-// DatePicker.prototype.validate = function( type, dateObject, options ) {
-
-//     var calendar = this,
-
-//         // Keep a reference to the original date.
-//         originalDateObject = dateObject,
-
-//         // Make sure we have an interval.
-//         interval = options && options.interval ? options.interval : 1,
-
-//         // Check if the calendar enabled dates are inverted.
-//         isInverted = calendar.item.enable === -1,
-
-//         // Check if we have any enabled dates after/before now.
-//         hasEnabledBeforeTarget, hasEnabledAfterTarget,
-
-//         // The min & max limits.
-//         minLimitObject = calendar.item.min,
-//         maxLimitObject = calendar.item.max,
-
-//         // Check if we’ve reached the limit during shifting.
-//         reachedMin, reachedMax,
-
-//         // Check if the calendar is inverted and at least one weekday is enabled.
-//         hasEnabledWeekdays = isInverted && calendar.item.disable.filter( function( value ) {
-
-//             // If there’s a date, check where it is relative to the target.
-//             if ( Array.isArray( value ) ) {
-//                 var dateTime = calendar.create( value ).pick
-//                 if ( dateTime < dateObject.pick ) hasEnabledBeforeTarget = true
-//                 else if ( dateTime > dateObject.pick ) hasEnabledAfterTarget = true
-//             }
-
-//             // Return only integers for enabled weekdays.
-//             return Picker._.isInteger( value )
-//         }).length
-
-
-
-//     // Cases to validate for:
-//     // [1] Not inverted and date disabled.
-//     // [2] Inverted and some dates enabled.
-//     // [3] Out of range.
-//     //
-//     // Cases to **not** validate for:
-//     // • Navigating months.
-//     // • Not inverted and date enabled.
-//     // • Inverted and all dates disabled.
-//     // • ..and anything else.
-//     if ( !options.nav ) if (
-//         /* 1 */ ( !isInverted && calendar.disabled( dateObject ) ) ||
-//         /* 2 */ ( isInverted && calendar.disabled( dateObject ) && ( hasEnabledWeekdays || hasEnabledBeforeTarget || hasEnabledAfterTarget ) ) ||
-//         /* 3 */ ( dateObject.pick <= minLimitObject.pick || dateObject.pick >= maxLimitObject.pick )
-//     ) {
-
-
-//         // When inverted, flip the direction if there aren’t any enabled weekdays
-//         // and there are no enabled dates in the direction of the interval.
-//         if ( isInverted && !hasEnabledWeekdays && ( ( !hasEnabledAfterTarget && interval > 0 ) || ( !hasEnabledBeforeTarget && interval < 0 ) ) ) {
-//             interval *= -1
-//         }
-
-
-//         // Keep looping until we reach an enabled date.
-//         while ( calendar.disabled( dateObject ) ) {
-
-
-//             // If we’ve looped into the next/prev month, return to the original date and flatten the interval.
-//             if ( Math.abs( interval ) > 1 && ( dateObject.month < originalDateObject.month || dateObject.month > originalDateObject.month ) ) {
-//                 dateObject = originalDateObject
-//                 interval = Math.abs( interval ) / interval
-//             }
-
-
-//             // If we’ve reached the min/max limit, reverse the direction and flatten the interval.
-//             if ( dateObject.pick <= minLimitObject.pick ) {
-//                 reachedMin = true
-//                 interval = 1
-//             }
-//             else if ( dateObject.pick >= maxLimitObject.pick ) {
-//                 reachedMax = true
-//                 interval = -1
-//             }
-
-
-//             // If we’ve reached both limits, just break out of the loop.
-//             if ( reachedMin && reachedMax ) {
-//                 break
-//             }
-
-
-//             // Finally, create the shifted date using the interval and keep looping.
-//             dateObject = calendar.create([ dateObject.year, dateObject.month, dateObject.date + interval ])
-//         }
-
-//     } //endif
-
-
-//     // Return the date object settled on.
-//     return dateObject
-// } //DatePicker.prototype.validate
-
-
-// /**
-//  * Check if an object is disabled.
-//  */
-// DatePicker.prototype.disabled = function( dateObject ) {
-
-//     var calendar = this,
-
-//         // Filter through the disabled dates to check if this is one.
-//         isDisabledDate = calendar.item.disable.filter( function( dateToDisable ) {
-
-//             // If the date is a number, match the weekday with 0index and `firstDay` check.
-//             if ( Picker._.isInteger( dateToDisable ) ) {
-//                 return dateObject.day === ( calendar.settings.firstDay ? dateToDisable : dateToDisable - 1 ) % 7
-//             }
-
-//             // If it's an array, create the object and match the exact date.
-//             if ( Array.isArray( dateToDisable ) ) {
-//                 return dateObject.pick === calendar.create( dateToDisable ).pick
-//             }
-//         }).length
-
-
-//     // It’s disabled beyond the min/max limits. If within the limits, check the
-//     // calendar “enabled” flag is flipped and respectively flip the condition.
-//     return dateObject.pick < calendar.item.min.pick ||
-//         dateObject.pick > calendar.item.max.pick ||
-//         calendar.item.enable === -1 ? !isDisabledDate : isDisabledDate
-// } //DatePicker.prototype.disabled
-
-
-// /**
-//  * Various formats to display the object in.
-//  */
-// DatePicker.prototype.formats = (function() {
-
-//     // Return the length of the first word in a collection.
-//     function getWordLengthFromCollection( string, collection, dateObject ) {
-
-//         // Grab the first word from the string.
-//         var word = string.match( /\w+/ )[ 0 ]
-
-//         // If there's no month index, add it to the date object
-//         if ( !dateObject.mm && !dateObject.m ) {
-//             dateObject.m = collection.indexOf( word )
-//         }
-
-//         // Return the length of the word.
-//         return word.length
-//     }
-
-//     // Get the length of the first word in a string.
-//     function getFirstWordLength( string ) {
-//         return string.match( /\w+/ )[ 0 ].length
-//     }
-
-// })() //DatePicker.prototype.formats
-
-
-// /**
-//  * Flip an item as enabled or disabled.
-//  */
-// DatePicker.prototype.flipItem = function( type, value/*, options*/ ) {
-
-//     var calendar = this,
-//         collection = calendar.item.disable,
-//         isInverted = calendar.item.enable === -1
-
-//     // Flip the enabled and disabled dates.
-//     if ( value == 'flip' ) {
-//         calendar.item.enable = isInverted ? 1 : -1
-//     }
-
-//     // Check if we have to add/remove from collection.
-//     else if ( !isInverted && type == 'enable' || isInverted && type == 'disable' ) {
-//         collection = calendar.removeDisabled( collection, value )
-//     }
-//     else if ( !isInverted && type == 'disable' || isInverted && type == 'enable' ) {
-//         collection = calendar.addDisabled( collection, value )
-//     }
-
-//     return collection
-// } //DatePicker.prototype.flipItem
-
-
-// /**
-//  * Add an item to the disabled collection.
-//  */
-// DatePicker.prototype.addDisabled = function( collection, item ) {
-//     var calendar = this
-//     item.map( function( timeUnit ) {
-//         if ( !calendar.filterDisabled( collection, timeUnit ).length ) {
-//             collection.push( timeUnit )
-//         }
-//     })
-//     return collection
-// } //DatePicker.prototype.addDisabled
-
-
-// /**
-//  * Remove an item from the disabled collection.
-//  */
-// DatePicker.prototype.removeDisabled = function( collection, item ) {
-//     var calendar = this
-//     item.map( function( timeUnit ) {
-//         collection = calendar.filterDisabled( collection, timeUnit, 1 )
-//     })
-//     return collection
-// } //DatePicker.prototype.removeDisabled
-
-
-// /**
-//  * Filter through the disabled collection to find a time unit.
-//  */
-// DatePicker.prototype.filterDisabled = function( collection, timeUnit, isRemoving ) {
-//     var timeIsArray = Array.isArray( timeUnit )
-//     return collection.filter( function( disabledTimeUnit ) {
-//         var isMatch = !timeIsArray && timeUnit === disabledTimeUnit ||
-//             timeIsArray && Array.isArray( disabledTimeUnit ) && timeUnit.toString() === disabledTimeUnit.toString()
-//         return isRemoving ? !isMatch : isMatch
-//     })
-// } //DatePicker.prototype.filterDisabled
-
-
-// /**
-//  * Create a string for the nodes in the picker.
-//  */
-// DatePicker.prototype.nodes = function( isOpen ) {
-
-//     var
-//         calendar = this,
-//         settings = calendar.settings,
-//         nowObject = calendar.item.now,
-//         viewsetObject = calendar.item.view,
-//         disabledCollection = calendar.item.disable,
-//         minLimitObject = calendar.item.min,
-//         maxLimitObject = calendar.item.max,
-
-
-//         // Create the month label.
-//         createMonthLabel = function( monthsCollection ) {
-
-//             // If there are months to select, add a dropdown menu.
-//             if ( settings.selectMonths ) {
-
-//                 return Picker._.node( 'select', Picker._.group({
-//                     min: 0,
-//                     max: 11,
-//                     i: 1,
-//                     node: 'option',
-//                     item: function( loopedMonth ) {
-
-//                         return [
-
-//                             // The looped month and no classes.
-//                             monthsCollection[ loopedMonth ], 0,
-
-//                             // Set the value and selected index.
-//                             'value=' + loopedMonth +
-//                             ( viewsetObject.month == loopedMonth ? ' selected' : '' ) +
-//                             (
-//                                 (
-//                                     ( viewsetObject.year == minLimitObject.year && loopedMonth < minLimitObject.month ) ||
-//                                     ( viewsetObject.year == maxLimitObject.year && loopedMonth > maxLimitObject.month )
-//                                 ) ?
-//                                 ' disabled' : ''
-//                             )
-//                         ]
-//                     }
-//                 }), settings.klass.selectMonth, isOpen ? '' : 'disabled' )
-//             }
-
-//             // If there's a need for a month selector
-//             return Picker._.node( 'div', monthsCollection[ viewsetObject.month ], settings.klass.month )
-//         }, //createMonthLabel
-
-
-//         // Create the year label.
-//         createYearLabel = function() {
-
-//             var focusedYear = viewsetObject.year,
-
-//             // If years selector is set to a literal "true", set it to 5. Otherwise
-//             // divide in half to get half before and half after focused year.
-//             numberYears = settings.selectYears === true ? 5 : ~~( settings.selectYears / 2 )
-
-//             // If there are years to select, add a dropdown menu.
-//             if ( numberYears ) {
-
-//                 var
-//                     minYear = minLimitObject.year,
-//                     maxYear = maxLimitObject.year,
-//                     lowestYear = focusedYear - numberYears,
-//                     highestYear = focusedYear + numberYears
-
-//                 // If the min year is greater than the lowest year, increase the highest year
-//                 // by the difference and set the lowest year to the min year.
-//                 if ( minYear > lowestYear ) {
-//                     highestYear += minYear - lowestYear
-//                     lowestYear = minYear
-//                 }
-
-//                 // If the max year is less than the highest year, decrease the lowest year
-//                 // by the lower of the two: available and needed years. Then set the
-//                 // highest year to the max year.
-//                 if ( maxYear < highestYear ) {
-
-//                     var availableYears = lowestYear - minYear,
-//                         neededYears = highestYear - maxYear
-
-//                     lowestYear -= availableYears > neededYears ? neededYears : availableYears
-//                     highestYear = maxYear
-//                 }
-
-//                 return Picker._.node( 'select', Picker._.group({
-//                     min: lowestYear,
-//                     max: highestYear,
-//                     i: 1,
-//                     node: 'option',
-//                     item: function( loopedYear ) {
-//                         return [
-
-//                             // The looped year and no classes.
-//                             loopedYear, 0,
-
-//                             // Set the value and selected index.
-//                             'value=' + loopedYear + ( focusedYear == loopedYear ? ' selected' : '' )
-//                         ]
-//                     }
-//                 }), settings.klass.selectYear, isOpen ? '' : 'disabled' )
-//             }
-
-//             // Otherwise just return the year focused
-//             return Picker._.node( 'div', focusedYear, settings.klass.year )
-//         } //createYearLabel
-
-
-//     // Create and return the entire calendar.
-//     return Picker._.node(
-//         'div',
-//         createMonthLabel( settings.showMonthsShort ? settings.monthsShort : settings.monthsFull ) +
-//         createYearLabel(),
-//     ) +
-
-//     Picker._.node(
-//         'div',
-//         Picker._.node( 'button', settings.today, isOpen ? '' : ' disabled' ) +
-//         Picker._.node( 'button', settings.clear, isOpen ? '' : ' disabled' ),
-//     ) //endreturn
-// } //DatePicker.prototype.nodes
+    } //endif
+
+    // Return the date object settled on.
+    return dateObject
+}
+
+// Lead numbers less than 10 with a zero.
+function leadZero( number ) {
+    return number > 9 ? number : '0' + number
+}
 
 })( jQuery );
 

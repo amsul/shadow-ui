@@ -16,7 +16,7 @@ shadow.extend({
      * Create a dictionary of things.
      */
     dict: {
-        options: null,
+        options: [],
         select: null,
         highlight: null
     },
@@ -55,7 +55,7 @@ shadow.extend({
 
 
             // Return the complete list of options with IDs.
-            return ( this.fetch( 'options' ) || [] ).
+            return this.ui.get( 'options' ).
                 filter( function( option ) {
                     return single ? value === option.id : value.indexOf( option.id ) > -1
                 }).
@@ -86,31 +86,33 @@ shadow.extend({
      */
     init: function( formatValueHash ) {
 
-        var component = this,
-            ui = component.ui,
+        var ui = this.ui,
             single = ui.settings.single
+
+
+        // If it’s not single, allow multiple selections.
+        if ( !single ) {
+            ui.set( 'select', [] )
+        }
 
 
         // Set the starting selections based on the value hash.
         if ( formatValueHash.id ) {
-            component.update( 'select', single ?
+            ui.set( 'select', single ?
                 ~~formatValueHash.id :
                 formatValueHash.id.split(',').map(function(val) { return ~~val })
             )
         }
         else if ( formatValueHash.full ) {
-            component.update( 'select', single ?
+            ui.set( 'select', single ?
                 ~~formatValueHash.full.split(':')[0] :
                 formatValueHash.full.split(',').map(function(val) { return ~~val.split(':')[0] })
             )
         }
-        else if ( !single ) {
-            component.update( 'select', [] )
-        }
 
 
         // Set the options for this instance.
-        component.update( 'options', ui.settings.options )
+        ui.set( 'options', ui.settings.options )
 
 
         // Once the UI is ready, bind stuff.
@@ -135,11 +137,11 @@ shadow.extend({
      */
     template: function() {
 
-        var component = this,
-            options = component.fetch('options'),
-            selections = component.fetch('select'),
-            settings = component.ui.settings,
-            klasses = component.ui.klasses,
+        var ui = this.ui,
+            options = ui.get('options'),
+            selections = ui.get('select'),
+            settings = ui.settings,
+            klasses = ui.klasses,
             single = settings.single
 
 

@@ -7,10 +7,12 @@
 - Added basic “clear” method through `set`
 - Added event context to triggered methods
 - Added `capture` & `release` methods
+- Added `within` method
 - Updated stylings for various themes
 - Updated class name prefixing
 - Updated `render` method with option to render partially
 - Removed `ready` method in place for the `start` event listener
+- Removed `queue` in favor of `find` && `create`
 - Changed `content` ~> `template` for more appropriate name within the context of Web Components
 - Added more tests
 - Bug fixes

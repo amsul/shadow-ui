@@ -100,19 +100,6 @@
         padding-right: 1em;
     }
 
-    // Disabled state.
-    .pickadate__nav--disabled,
-    .pickadate__nav--disabled:hover,
-    .pickadate__nav--disabled:focus,
-    .pickadate__nav--disabled:before,
-    .pickadate__nav--disabled:before:hover,
-    .pickadate__nav--disabled:before:focus {
-        cursor: default;
-        background: none;
-        border-right-color: @border-color--disabled-light;
-        border-left-color: @border-color--disabled-light;
-    }
-
         // The actual pointers.
         .pickadate__nav--prev:before,
         .pickadate__nav--next:before {
@@ -128,6 +115,22 @@
         .pickadate__nav--next:before {
             border-right: 0;
             border-left: .75em solid @color--body;
+        }
+
+    // Disabled state.
+    .pickadate__nav--disabled,
+    .pickadate__nav--disabled:hover,
+    .pickadate__nav--disabled:focus {
+        padding-left: 1.33em;
+        padding-right: 1.33em;
+        cursor: default;
+        background: none;
+    }
+        .pickadate__nav--disabled:before,
+        .pickadate__nav--disabled:before:hover,
+        .pickadate__nav--disabled:before:focus {
+            border-right-color: @border-color--disabled-light;
+            border-left-color: @border-color--disabled-light;
         }
 
 

@@ -1,6 +1,6 @@
 
 /*!
- * Shadow UI v0.5.0, 2013/08/30
+ * Shadow UI v0.5.0, 2013/09/11
  * By Amsul, http://amsul.ca
  * Hosted on http://amsul.github.io/shadow-ui
  * Licensed under MIT
@@ -73,11 +73,14 @@ shadow.UI = function( $element, extension, options ) {
 
     // Right after creating one, trigger the `init` method.
     // If there’s the need, parse the input value into a format-value hash.
-    shadow._.trigger( ui.i.init, ui.i, [
+    shadow._.trigger( ui.i.init, ui.i,
         ui.i.formats ?
-            ui.i.toFormatHash( valueHidden ? ui.settings.formatHidden : ui.settings.format, valueHidden || $element[0].value ) :
+            [
+                ui.i.toFormatHash( valueHidden ? ui.settings.formatHidden : ui.settings.format, valueHidden || $element[0].value ),
+                !!valueHidden
+            ] :
             null
-    ])
+    )
 
     // Create the class names by merging the settings into the prefixed defaults.
     ui.klasses = $.extend( shadow._.prefix( ui.i.prefix, $.extend( {}, ui.i.klasses ) ), ui.settings.klasses )
@@ -123,7 +126,7 @@ shadow.UI.prototype = {
             ui.$host = $( '<div/>' ).on( 'click focusin', ui.open.bind( ui, true ) )
 
             // Add the “input” class and insert the host.
-            ui.$input.addClass( ui.klasses.input ).after( ui.$host )
+            ui.$input.addClass( ui.klasses.input ).after( ui.$host ).on( 'focus', ui.capture.bind( ui ) )
 
             // Listen for changes to update the input value.
             ui.$source.on( 'change.' + instance.id, function( event, thingChanged ) {
@@ -132,7 +135,22 @@ shadow.UI.prototype = {
         }
 
         // If there isn’t an input, make the host “tab-able”.
-        else ui.$host[0].tabIndex = 0
+        else {
+
+            ui.$host.
+
+                // Add the tabindex attribute.
+                attr( 'tabindex', 0 ).
+
+                // When the source is focused, capture the ui.
+                on( 'focus', ui.capture.bind( ui ) ).
+
+                // When the source is blurred, close and release the ui.
+                // * A blur within the root doesn’t bubble up.
+                on( 'blur', function() {
+                    ui.close().release()
+                })
+        }
 
 
         // Add the “host” class to the element.
@@ -163,15 +181,6 @@ shadow.UI.prototype = {
 
         // Prepare the source element.
         ui.$source.
-
-            // When the source is focused, capture the ui.
-            on( 'focus', ui.capture.bind( ui ) ).
-
-            // When the source is blurred, close and release the ui.
-            // * A blur within the root doesn’t bubble up.
-            on( 'blur', function() {
-                ui.close().release( ui )
-            }).
 
             // Open the ui with focus on a click or focus within.
             on( 'click.' + instance.id + ' focusin.' + instance.id, ui.open.bind( ui, true ) ).
@@ -501,18 +510,41 @@ shadow.UI.prototype = {
         // Bind the keyboard events.
         $document.on( 'keydown.' + instance.id, function( event ) {
 
-            var keyAction = instance.keys[ event.keyCode ]
+            var keyCode = event.keyCode,
+                keyAction = instance.keys[ keyCode ]
 
             // Check if the ui is focused and there is a key action.
-            if ( instance.is.focused && keyAction ) {
+            if ( instance.is.focused ) {
 
                 // If it’s not opened, prevent the default action.
                 if ( !instance.is.opened ) {
                     event.preventDefault()
                 }
 
-                // Trigger the key action within scope of the instance.
-                shadow._.trigger( keyAction, instance, [ event ] )
+                // Trigger the key action if there is one.
+                if ( keyAction ) {
+                    shadow._.trigger( keyAction, instance, [ event ] )
+                }
+
+                // Any of the arrow keys should open the ui.
+                if ( [37,38,39,40].indexOf( keyCode ) > -1 ) {
+                    ui.open()
+                }
+
+                // Close the ui on “escape”.
+                else if ( keyCode == 27 ) {
+                    ui.close( true )
+                }
+
+                // If the target is within the root and “enter” is pressed,
+                // prevent the default action and trigger a click instead.
+                else if ( keyCode == 13 ) {
+                    var target = event.target
+                    if ( $.contains( ui.$root[0], target ) ) {
+                        event.preventDefault()
+                        target.click()
+                    }
+                }
             }
         })
 
@@ -540,7 +572,7 @@ shadow.UI.prototype = {
         ui.$root.removeClass( ui.klasses.rootCaptured )
 
         // Unbind the keyboard events.
-        $document.off( '.' + instance.id )
+        $document.off( 'keydown.' + instance.id )
 
         // Trigger any queued “release” events.
         return ui.trigger( 'release' )
@@ -604,14 +636,42 @@ shadow.UI.prototype = {
     /**
      * Check a state of the component.
      */
-    is: function( thing ) {
+    is: function( thing, value ) {
 
         var ui = this,
             instance = ui.i
 
         // Return the instance’s state of the thing.
-        return instance.is[ thing ]
+        return shadow._.trigger( instance.is[ thing ], instance, [ value ] )
     },
+
+
+
+    /**
+     * Check if a value is within a thing’s collection.
+     */
+    within: function( thing, value ) {
+
+        var ui = this,
+            instance = ui.i,
+            thingCollection = instance.dict[ thing ],
+            found = -1
+
+        // Go through and try to find the first matching value.
+        if ( $.isArray( thingCollection ) ) for ( var i = 0; i < thingCollection.length; i += 1 ) {
+            if (
+                instance.find[thing] ?
+                    shadow._.trigger( instance.find[thing], value, [ thingCollection[i] ] ) :
+                    thingCollection[i] === value
+            ) {
+                found = i
+                break
+            }
+        }
+
+        // Return whatever index is found.
+        return found
+    }, //within
 
 
 
@@ -668,20 +728,14 @@ shadow.UI.prototype = {
                 // Grab the value of the thing.
                 thingValue = thingObject[ thingItem ]
 
-                // Check if the thing has a queue.
-                if ( instance.queue[ thingItem ] ) {
-
-                    // Update the value by triggering the queued methods.
-                    /*jshint loopfunc: true */
-                    instance.queue[ thingItem ].split(' ').map( function( method ) {
-                        thingValue = shadow._.trigger( instance[ method ], instance, [ thingValue, options ] )
-                    })
-                    /*jshint loopfunc: false */
+                // Update the value by triggering any create methods.
+                if ( instance.create[ thingItem ] ) {
+                    thingValue = shadow._.trigger( instance.create[ thingItem ], instance, [ thingValue, options ] )
                 }
 
                 // Update the diction with the final value.
                 if ( $.isArray( instance.dict[ thingItem ] ) ) {
-                    instance.dict[ thingItem ] = $.isArray( thingValue ) ? thingValue : [ thingValue ]
+                    instance.dict[ thingItem ] = $.isArray( thingValue ) ? thingValue : thingValue != null ? [ thingValue ] : []
                 }
                 else instance.dict[ thingItem ] = thingValue
 
@@ -704,10 +758,11 @@ shadow.UI.prototype = {
     }, //set
 
 
+
     /**
      * Add something within the component extension.
      */
-    add: function( thing, value/*, options*/ ) {
+    add: function( thing/*, ...*/ ) {
 
         var ui = this,
             instance = ui.i,
@@ -716,9 +771,18 @@ shadow.UI.prototype = {
         // Only add something if it’s an array.
         if ( $.isArray( thingCollection ) ) {
 
-            // Add each value item not within the collection.
-            ( $.isArray( value ) ? value : [value] ).forEach( function( item ) {
-                if ( thingCollection.indexOf( item ) < 0 ) thingCollection.push( item )
+            // Add each value not within the collection.
+            [].slice.apply( arguments, [1] ).forEach( function( value ) {
+
+                // Update the value by triggering any create methods.
+                if ( instance.create[ thing ] ) {
+                    value = shadow._.trigger( instance.create[ thing ], instance, [ value ] )
+                }
+
+                // If the value isn’t found within the collection, add it.
+                if ( value != null && ui.within( thing, value ) === -1 ) {
+                    thingCollection.push( value )
+                }
             })
 
             // Check if it’s a “changing” update and broadcast a change.
@@ -734,10 +798,11 @@ shadow.UI.prototype = {
     }, //add
 
 
+
     /**
      * Remove something within the component extension.
      */
-    remove: function( thing, value/*, options*/ ) {
+    remove: function( thing/*, ...*/ ) {
 
         var ui = this,
             instance = ui.i,
@@ -747,8 +812,17 @@ shadow.UI.prototype = {
         if ( $.isArray( thingCollection ) ) {
 
             // Find the index of the value and remove it from the collection.
-            var thingIndex = thingCollection.indexOf( value )
-            if ( thingIndex > -1 ) thingCollection.splice( thingIndex, 1 )
+            [].slice.apply( arguments, [1] ).forEach( function( value ) {
+
+                // Update the value by triggering any create methods.
+                if ( instance.create[ thing ] ) {
+                    value = shadow._.trigger( instance.create[ thing ], instance, [ value ] )
+                }
+
+                // If the value is found within the collection, remove it.
+                var index = ui.within( thing, value )
+                if ( index > -1 ) thingCollection.splice( index, 1 )
+            })
 
             // Check if it’s a “changing” update and broadcast a change.
             if ( thing == 'select' ) {
@@ -929,41 +1003,36 @@ function createInstance( ui, extension ) {
             '.)', 'g' ),
 
         instance = $.extend( true, {
-            id: 'S' + Math.floor( Math.random() * 1e9 ),
-            ui: ui,
+
             name: null,
             template: null,
             alias: null,
             prefix: 'ui-drop',
-            shadow: null,
+
             init: null,
+            bindings: {},
+
             is: {
                 started: false,
                 opened: false,
                 focused: false,
                 captured: false
             },
-            keys: {
 
-                // If the target is within the root and “enter” is pressed,
-                // prevent the default action and trigger a click instead.
-                13: function( event ) {
-                    var target = event.target
-                    if ( $.contains( ui.$root[0], target ) ) {
-                        event.preventDefault()
-                        target.click()
-                    }
-                },
+            keys: {},
 
-                // Any of the arrow keys should open the ui.
-                37: ui.open.bind( ui ),
-                38: ui.open.bind( ui ),
-                39: ui.open.bind( ui ),
-                40: ui.open.bind( ui ),
+            formats: null,
 
-                // Close the ui on “escape”.
-                27: ui.close.bind( ui, true )
+            dict: {
+                select: 0,
+                highlight: 0
             },
+            cascades: {
+                select: 'highlight'
+            },
+            find: {},
+            create: {},
+
             klasses: {
 
                 host: '-host',
@@ -991,16 +1060,7 @@ function createInstance( ui, extension ) {
                 suffixHidden: '_formatted',
                 klasses: null
             },
-            bindings: {},
-            dict: {
-                select: 0,
-                highlight: 0
-            },
-            queue: {},
-            cascades: {
-                select: 'highlight'
-            },
-            formats: null,
+
             toFormatArray: function( string ) {
                 if ( !instance.formats ) throw 'The shadow extension needs a `formats` option.'
                 return ( string || '' ).split( regexFormats ).reduce( function( array, value ) {
@@ -1013,6 +1073,7 @@ function createInstance( ui, extension ) {
                 }, [] )
             },
             toFormatString: function( format, value ) {
+                value = $.isArray( value ) ? value[0] : value
                 return instance.toFormatArray( format ).map( function( formatting ) {
                     return shadow._.trigger( formatting.f ? instance.formats[ formatting.f ] : formatting, instance, [ value ] )
                 }).join( '' )
@@ -1029,7 +1090,11 @@ function createInstance( ui, extension ) {
                 })
                 return object
             }
-        }, extension ) //instance
+        }, extension, {
+            id: 'S' + Math.floor( Math.random() * 1e9 ),
+            ui: ui,
+            shadow: null
+        }) //instance
 
 
     // Return the instance.

@@ -1,3 +1,7 @@
+---
+layout: extension
+extension_name: Input value formatted
+---
 
 <section>
     <div class="div">Input shadow<input class="input" type="text" value="06" name="value_input"></div>
@@ -24,7 +28,7 @@
         template: function() {
             var is, i = 0,
                 string = '',
-                selected = this.fetch( 'select' )
+                selected = this.ui.get( 'select' )
             for ( ; i < 10; i += 1 ) {
                 is = selected === i ? '<b><u>' + i + '</u></b>' : i
                 string += '<button data-action="select:' + i + '">' + is + '</button>'
@@ -33,8 +37,8 @@
         },
         init: function( formatValueHash ) {
 
-            if ( 'dd' in formatValueHash ) this.update( 'select', ~~formatValueHash.dd )
-            if ( 'ddd' in formatValueHash ) this.update( 'select', ~~formatValueHash.ddd )
+            if ( 'dd' in formatValueHash ) this.ui.set( 'select', ~~formatValueHash.dd )
+            if ( 'ddd' in formatValueHash ) this.ui.set( 'select', ~~formatValueHash.ddd )
 
             var ui = this.ui
 

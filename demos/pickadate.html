@@ -8,22 +8,32 @@ extension_name: pickadate.js
 <link rel="stylesheet" href="/css/pickadate.css">
 
 <div>
-    <input type="text" id="shadowPickadate" placeholder="Date input">
+    <input type="text" id="shadowPickadate" placeholder="Date input" valuee="date: 3 August, 2013">
 </div>
+
+<br>
+<hr>
+<br>
 
 <div id="shadowPickadateDiv">Calendar as a div</div>
 
 <script src="/js/ui-pickadate.js"></script>
 <script>
     var $shadowPickadate = $('#shadowPickadate').pickadate({
-        format: '[date:] d mmmm, yyyy'
+        format: '[date:] d mmmm, yyyy',
+        type: 'dropdown',
+        selectMonths: true,
+        selectYears: true,
+        min: -5,
+        // max: 10
     })
     var shadowPickadateUI = $shadowPickadate.pickadate('ui')
     // shadowPickadateUI.open(true)
     var $shadowPickadateDiv = $('#shadowPickadateDiv').pickadate({
-        format: '[date:] d mmmm, yyyy',
-        type: 'dropdown'
+        // format: '[date:] d mmmm, yyyy',
+        disable: [/*true,*/1,7,new Date(2013,8,20)],
+        firstDay: 1
     })
-    var shadowPickadateDivUI = $shadowPickadateDiv.pickadate('ui')
-    shadowPickadateDivUI.open(true)
+    // var shadowPickadateDivUI = $shadowPickadateDiv.pickadate('ui')
+    // // shadowPickadateDivUI.open(true)
 </script>

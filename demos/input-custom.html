@@ -1,3 +1,7 @@
+---
+layout: extension
+extension_name: Input custom
+---
 
 <section>
     <div class="div" data-value="006">Custom input shadow</div>
@@ -28,7 +32,7 @@
 
             var ui = this.ui
 
-            if ( 'ddd' in formatValueHash ) this.update( 'select', ~~formatValueHash.ddd )
+            if ( 'ddd' in formatValueHash ) ui.set( 'select', ~~formatValueHash.ddd )
 
             ui.on( 'render', function() {
                 ui.$input = ui.$root.find( 'input' ).first().on( 'blur', function() {
@@ -39,6 +43,11 @@
 
             ui.$host.on( 'change', function() {
                 ui.$input[0].value = ui.get( 'select', { format: ui.settings.format } )
+            })
+
+            ui.on('set', function( event ) {
+                if ( event.item == 'select' )
+                    ui.$host.after( 'hidden value: ' + ui.get('valueHidden') + '<br>' )
             })
         }
     })

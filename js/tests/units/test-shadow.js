@@ -30,7 +30,7 @@ test( 'Globals', function() {
 /**
  * The component api.
  */
-module( 'Component', {
+module( 'Setup', {
     setup: function() {
         this.extension = {
             name: 'component'
@@ -51,7 +51,7 @@ test( 'Generic', function() {
     deepEqual( ui.$host, ui.$source, 'Host `div` is the source element' )
 })
 
-module( 'Component', {
+module( 'Setup', {
     setup: function() {
         this.extension = {
             name: 'component'
@@ -71,7 +71,7 @@ test( 'Input', function() {
     ok( ui.$host && ui.$host[0], 'Generated host element' )
 })
 
-module( 'Component', {
+module( 'Setup', {
     setup: function() {
         this.extension = {
             name: 'component',
@@ -89,9 +89,10 @@ test( 'Aliased', function() {
     var ui = this.ui
 
     strictEqual( shadow.EXTENSIONS[ ui.i.alias ], ui.i.name, 'Referenced alias' )
+    ok( $.fn[ ui.i.alias ], 'jQuery aliased extension' )
 })
 
-module( 'Component', {
+module( 'Setup', {
     setup: function() {
         this.extension = {
             name: 'component',
@@ -126,10 +127,25 @@ module( 'Methods', {
             name: 'component',
             template: '<button></button>',
             dict: {
+                options: [{id:1},{id:2},{id:3},{id:4}],
+                options_alt: [{id:1},{id:2},{id:3},{id:4}],
                 collection: [],
                 selection: 0,
                 from_value: 10,
                 to_value: 30
+            },
+            find: {
+                options: function( item ) {
+                    return this.id === item.id
+                },
+                options_alt: function( item ) {
+                    return this.id === item.id
+                }
+            },
+            create: {
+                options_alt: function( value ) {
+                    return { id: value }
+                }
             },
             formats: {
                 lol: 'Laugh Out Loud!',
@@ -315,14 +331,16 @@ test( 'Get and set', function() {
     var ui = this.ui
 
     deepEqual( ui.get('collection'), [], 'Get: collection' )
-    deepEqual( ui.get('selection'), 0, 'Get: selection' )
 
     ui.set( 'collection', 3 )
-
     deepEqual( ui.get('collection'), [3], 'Set: collection' )
 
-    ui.set( 'selection', 3 )
+    ui.set( 'collection', 5 )
+    deepEqual( ui.get('collection'), [5], 'Set: collection' )
 
+    deepEqual( ui.get('selection'), 0, 'Get: selection' )
+
+    ui.set( 'selection', 3 )
     deepEqual( ui.get('selection'), 3, 'Set: selection' )
 
     var button = ui.$root.find('button')[0]
@@ -362,13 +380,39 @@ test( 'Add and remove', function() {
 
     var ui = this.ui
 
-    ui.add( 'collection', 3 ).add( 'collection', [3,4,5] )
+    ui.add( 'collection', 3 ).add( 'collection', 3, 4, 5, 6, 7 )
 
-    deepEqual( ui.get( 'collection' ), [3,4,5], 'Added to collection' )
+    deepEqual( ui.get( 'collection' ), [3,4,5,6,7], 'Added to collection' )
 
-    ui.remove( 'collection', 3 )
+    ui.remove( 'collection', 3 ).remove( 'collection', 2, 5, 6 )
 
-    deepEqual( ui.get( 'collection' ), [4,5], 'Removed from collection' )
+    deepEqual( ui.get( 'collection' ), [4,7], 'Removed from collection' )
+})
+
+test( 'Add and remove with finders', function() {
+
+    var ui = this.ui
+
+    ui.add( 'options', {id:3}, {id:5} )
+
+    deepEqual( ui.get( 'options' ), [{id:1},{id:2},{id:3},{id:4},{id:5}], 'Added to options' )
+
+    ui.remove( 'options', {id:2}, {id:1} )
+
+    deepEqual( ui.get( 'options' ), [{id:3},{id:4},{id:5}], 'Removed from options' )
+})
+
+test( 'Add and remove with creators', function() {
+
+    var ui = this.ui
+
+    ui.add( 'options_alt', 3, 5 )
+
+    deepEqual( ui.get( 'options_alt' ), [{id:1},{id:2},{id:3},{id:4},{id:5}], 'Added to options' )
+
+    ui.remove( 'options_alt', 2, 1 )
+
+    deepEqual( ui.get( 'options_alt' ), [{id:3},{id:4},{id:5}], 'Removed from options' )
 })
 
 test( 'On and trigger with one', 1, function() {

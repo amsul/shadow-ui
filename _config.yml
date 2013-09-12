@@ -42,10 +42,9 @@ keywords:
     - responsive
     - ui
 
-# Permalinks
+# Jekyll settings
+baseurl:            /shadow-ui
 permalink:          pretty
-
-# Jekyll dependencies
 markdown:           redcarpet
 pygments:           true
 

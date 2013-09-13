@@ -228,12 +228,19 @@ shadow( 'pickadate', {
         // Check if a date is disabled.
         disabled: function( dateObject ) {
 
-            dateObject = createShadowDate( dateObject )
+            var asInteger = shadow._.isInteger( dateObject )
+
+            dateObject = asInteger ? dateObject : createShadowDate( dateObject )
 
             var ui = this.ui,
 
                 // Filter through the disabled dates to check if this is one.
                 isDisabledDate = !!ui.get('disable').filter( function( dateDisabled ) {
+
+                    // If it’s an integer, match it directly.
+                    if ( asInteger ) {
+                        return dateObject === dateDisabled
+                    }
 
                     // Match the weekday with 0index and `firstDay` check.
                     if ( shadow._.isInteger( dateDisabled ) ) {

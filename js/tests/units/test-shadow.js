@@ -6,7 +6,7 @@ var $NODE_INPUT = $( '<input>' )
 var tearDownTheUI = function() {
     this.ui.stop()
     $DOM.empty()
-    ;delete shadow.EXTENSIONS[ this.ui.i.name ]
+    ;delete shadow.ELEMENTS[ this.ui.i.name ]
 }
 
 
@@ -16,10 +16,9 @@ var tearDownTheUI = function() {
 module( 'Core' )
 
 test( 'Globals', function() {
-    ok( shadow, 'Object: shadow' )
-    ok( $.isFunction( shadow.extend ), 'Method: Extend shadow' )
-    deepEqual( $.fn.shadow.extend, shadow.extend, 'Method: Extend shadow with jQuery' )
-    ok( $.isFunction( $.fn.shadow ), 'Method: Create shadow extension' )
+    ok( $.isFunction( shadow ), 'Function: shadow extend' )
+    ok( $.isFunction( shadow.create ), 'Function: shadow create' )
+    ok( $.isFunction( $.fn.shadow ), 'Method: manipulate shadow with jQuery' )
 })
 
 
@@ -32,12 +31,9 @@ test( 'Globals', function() {
  */
 module( 'Setup', {
     setup: function() {
-        this.extension = {
-            name: 'component'
-        }
-        shadow.extend( this.extension )
-        var $node = $NODE_DIV.clone().appendTo( $DOM )
-        this.ui = $node.shadow( 'component' ).shadow( 'ui' )
+        var $node = $NODE_DIV.clone().attr('data-ui', 'component').appendTo( $DOM )
+        this.extension = shadow( 'component' )
+        this.ui = $node.shadow()
     },
     teardown: tearDownTheUI
 })
@@ -46,19 +42,15 @@ test( 'Generic', function() {
 
     var ui = this.ui
 
-    deepEqual( shadow.EXTENSIONS[ this.extension.name ], this.extension, 'Stored extension' )
-    deepEqual( ui.r.extension, this.extension, 'Referenced extension' )
+    deepEqual( shadow.ELEMENTS[ ui.i.name ], this.extension, 'Stored extension' )
     deepEqual( ui.$host, ui.$source, 'Host `div` is the source element' )
 })
 
 module( 'Setup', {
     setup: function() {
-        this.extension = {
-            name: 'component'
-        }
-        shadow.extend( this.extension )
-        var $node = $NODE_INPUT.clone().appendTo( $DOM )
-        this.ui = $node.shadow( 'component' ).shadow( 'ui' )
+        var $node = $NODE_INPUT.clone().attr('data-ui', 'component').appendTo( $DOM )
+        this.extension = shadow( 'component' )
+        this.ui = $node.shadow()
     },
     teardown: tearDownTheUI
 })
@@ -73,13 +65,11 @@ test( 'Input', function() {
 
 module( 'Setup', {
     setup: function() {
-        this.extension = {
-            name: 'component',
+        var $node = $NODE_INPUT.clone().attr('data-ui', 'component').appendTo( $DOM )
+        this.extension = shadow( 'component', {
             alias: 'aliasComponent'
-        }
-        shadow.extend( this.extension )
-        var $node = $NODE_INPUT.clone().appendTo( $DOM )
-        this.ui = $node.aliasComponent().aliasComponent( 'ui' )
+        })
+        this.ui = $node.aliasComponent()
     },
     teardown: tearDownTheUI
 })
@@ -88,19 +78,17 @@ test( 'Aliased', function() {
 
     var ui = this.ui
 
-    strictEqual( shadow.EXTENSIONS[ ui.i.alias ], ui.i.name, 'Referenced alias' )
+    strictEqual( shadow.ELEMENTS[ ui.i.alias ], ui.i.name, 'Referenced alias' )
     ok( $.fn[ ui.i.alias ], 'jQuery aliased extension' )
 })
 
 module( 'Setup', {
     setup: function() {
-        this.extension = {
-            name: 'component',
+        var $node = $NODE_INPUT.clone().attr('data-ui', 'component').appendTo( $DOM )
+        this.extension = shadow( 'component', {
             prefix: 'prefix-ftw'
-        }
-        shadow.extend( this.extension )
-        var $node = $NODE_INPUT.clone().appendTo( $DOM )
-        this.ui = $node.shadow( 'component' ).shadow( 'ui' )
+        })
+        this.ui = $node.shadow()
     },
     teardown: tearDownTheUI
 })
@@ -123,8 +111,8 @@ test( 'Prefixed', function() {
  */
 module( 'Methods', {
     setup: function() {
-        this.extension = {
-            name: 'component',
+        var $node = $NODE_DIV.clone().attr('data-ui', 'component').appendTo( $DOM )
+        this.extension = shadow( 'component', {
             template: '<button></button>',
             dict: {
                 options: [{id:1},{id:2},{id:3},{id:4}],
@@ -160,10 +148,8 @@ module( 'Methods', {
             cascades: {
                 from_value: 'to_value'
             }
-        }
-        shadow.extend( this.extension )
-        var $node = $NODE_DIV.clone().appendTo( $DOM )
-        this.ui = $node.shadow( 'component' ).shadow( 'ui' )
+        })
+        this.ui = $node.shadow()
     },
     teardown: tearDownTheUI
 })
@@ -485,19 +471,15 @@ module( 'Events', {
         }
     },
     create: function( options ) {
-        var $node = $NODE_DIV.clone().appendTo( $DOM )
-        this.ui = $node.shadow( 'component', options ).shadow( 'ui' )
-    },
-    setup: function() {
+        var $node = $NODE_DIV.clone().attr('data-ui', 'component').appendTo( $DOM )
         var mod = this
-        this.extension = {
-            name: 'component',
+        mod.extension = shadow( 'component', {
             init: function() {
                 mod.initialized = true
             },
-            defaults: this.events( 'as_defaults' )
-        }
-        shadow.extend( this.extension )
+            defaults: options || this.events( 'as_defaults' )
+        })
+        this.ui = $node.shadow()
     },
     teardown: tearDownTheUI
 })
@@ -608,18 +590,16 @@ test( 'As options', 10, function() {
  */
 module( 'Keyboard events', {
     setup: function() {
+        var $node = $NODE_DIV.clone().attr('data-ui', 'component').appendTo( $DOM )
         var mod = this
-        this.extension = {
-            name: 'component',
+        mod.extension = shadow( 'component', {
             keys: {
                 65: function( /*event*/ ) {
                     mod.keyedEvent = true
                 }
             }
-        }
-        shadow.extend( this.extension )
-        var $node = $NODE_DIV.clone().appendTo( $DOM )
-        this.ui = $node.shadow( 'component' ).shadow( 'ui' )
+        })
+        this.ui = $node.shadow()
         this.ui.close( true )
     },
     teardown: tearDownTheUI
@@ -651,8 +631,8 @@ test( 'Captured bindings', function() {
  */
 module( 'Formats', {
     setup: function() {
-        this.extension = {
-            name: 'component',
+        var $node = $NODE_INPUT.clone().attr({ 'data-ui': 'component', value: '06', name: 'value_input' }).appendTo( $DOM )
+        this.extension = shadow( 'component', {
             formats: {
                 dd: function( value/*, isParsing*/ ) {
                     return '0' + value
@@ -669,10 +649,8 @@ module( 'Formats', {
                 if ( 'dd' in formatValueHash ) this.ui.set( 'select', ~~formatValueHash.dd )
                 if ( 'ddd' in formatValueHash ) this.ui.set( 'select', ~~formatValueHash.ddd )
             }
-        }
-        shadow.extend( this.extension )
-        var $node = $NODE_INPUT.clone().attr({ value: '06', name: 'value_input' }).appendTo( $DOM )
-        this.ui = $node.shadow( 'component' ).shadow( 'ui' )
+        })
+        this.ui = $node.shadow()
     },
     teardown: tearDownTheUI
 })
@@ -694,11 +672,11 @@ test( 'Source as `input`', function() {
 
 module( 'Formats', {
     setup: function() {
-        this.extension = {
-            name: 'component',
+        var $node = $NODE_DIV.clone().attr({ 'data-ui': 'component', 'data-value': '006' }).appendTo( $DOM )
+        this.extension = shadow( 'component', {
             formats: {
-                ddd: function( value/*, isParsing*/ ) {
-                    return '00' + value
+                ddd: function( value, isParsing ) {
+                    return isParsing ? value.length : '00' + value
                 }
             },
             defaults: {
@@ -709,10 +687,8 @@ module( 'Formats', {
             init: function( formatValueHash ) {
                 if ( 'ddd' in formatValueHash ) this.ui.set( 'select', ~~formatValueHash.ddd )
             }
-        }
-        shadow.extend( this.extension )
-        var $node = $NODE_DIV.clone().attr({ 'data-value': '006' }).appendTo( $DOM )
-        this.ui = $node.shadow( 'component' ).shadow( 'ui' )
+        })
+        this.ui = $node.shadow()
     },
     teardown: tearDownTheUI
 })

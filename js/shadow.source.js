@@ -16,29 +16,208 @@
     else if ( typeof define == 'function' && define.amd )
         define( ['jquery'] )
 
-    // ...and basic <script> includes.
+    // ...and basic `script` includes.
     else root.shadow = factory( jQuery )
 
-}( this, function( $ ) {
-
-'use strict';
+}( this, function( $ ) { 'use strict';
 
 
-
-var
 
 /**
  * Create some shorthands.
  */
-$document = $( document ),
-hasShadowRoot = 'webkitCreateShadowRoot' in document.documentElement,
+var $document = $( document ),
+    hasShadowRoot = 'webkitCreateShadowRoot' in document.documentElement
+
 
 
 /**
- * Create the shadow object.
+ * Create a shadow element.
  */
-shadow = {
-    VERSION: '{%= pkg.version %}'
+function shadow( elementName, elementOptions ) {
+
+
+    // Make sure we have an element name.
+    if ( !elementName ) throw 'To create a shadow, the element needs a name.'
+
+    // Make sure this element doesn’t already exist.
+    if ( shadow.ELEMENTS[ elementName ] ) throw 'The name “' + elementName + '” is already reserved by a shadow element.'
+
+
+    // Make sure we have usable options.
+    elementOptions = $.isPlainObject( elementOptions ) ? elementOptions : {}
+
+
+    // If there’s an alias, create the shorthand link.
+    if ( elementOptions.alias ) {
+
+        // Make sure we aren’t overriding anything.
+        if ( shadow.ELEMENTS[ elementOptions.alias ] || $.fn[ elementOptions.alias ] ) {
+            throw 'The alias “' + elementOptions.alias + '” is already reserved by a shadow element or jQuery method.'
+        }
+
+        // Reserve the alias name.
+        if ( elementOptions.alias != elementName ) {
+            shadow.ELEMENTS[ elementOptions.alias ] = elementName
+        }
+
+        // Extend jQuery with the alias.
+        $.fn[ elementOptions.alias ] = function( options ) {
+            return this.shadow( options, elementName )
+        }
+    }
+
+
+    // Store the element by name.
+    shadow.ELEMENTS[ elementName ] = $.extend( true, {}, shadow.DEFAULTS, elementOptions, {
+        name: elementName,
+        formatsExpression: elementOptions.formats ?
+
+            new RegExp(
+
+                // Match any [escaped] characters.
+                '(\\[[^\\[]*\\])|(' +
+
+                // Match any formatting characters.
+                Object.keys( elementOptions.formats ).
+                    sort(function(a,b) { return b > a ? 1 : -1 }).
+                    join('|') + '|' +
+
+                // Match all other characters.
+                '.)', 'g' ) :
+
+            null
+    })
+
+
+    // Find any of these nodes and create the shadow element.
+    $( '[data-ui=' + elementName + ']' ).toArray().forEach( shadow.create.bind( null, elementName ) )
+
+
+    // Return the shadow element.
+    return shadow.ELEMENTS[ elementName ]
+} //shadow
+
+
+
+/**
+ * Attach the version number.
+ */
+shadow.VERSION = '{%= pkg.version %}'
+
+
+
+/**
+ * Keep a tracks of the elements.
+ */
+shadow.ELEMENTS = {
+    ui: true // reserved.
+}
+
+
+
+/**
+ * Set the element defaults.
+ */
+shadow.DEFAULTS = {
+
+    name: null,
+    template: null,
+    alias: null,
+    prefix: 'ui-drop',
+
+    init: null,
+    bindings: {},
+
+    is: {
+        started: false,
+        opened: false,
+        focused: false,
+        captured: false
+    },
+
+    keys: {},
+
+    formats: null,
+
+    dict: {
+        select: 0,
+        highlight: 0
+    },
+    cascades: {
+        select: 'highlight'
+    },
+    find: {},
+    create: {},
+
+    klasses: {
+
+        host: '-host',
+
+        input: '-input',
+
+        root: '',
+        rootOpened: '--opened',
+        rootFocused: '--focused',
+        rootCaptured: '--captured',
+
+        holder: 'holder',
+
+        pointer: 'pointer',
+
+        frame: 'frame',
+        wrap: 'wrap',
+
+        box: 'box'
+    },
+    defaults: {
+        format: null,
+        formatHidden: null,
+        nameHidden: null,
+        suffixHidden: '_formatted',
+        klasses: null
+    },
+
+    toFormatArray: function( string ) {
+        var instance = this
+        if ( !instance.formats ) throw 'The shadow extension needs a `formats` option.'
+        return ( string || '' ).split( instance.formatsExpression ).reduce( function( array, value ) {
+            if ( value ) array.push(
+                value in instance.formats ? { f: value } :
+                value.match( /^\[.*]$/ ) ? value.replace( /^\[(.*)]$/, '$1' ) :
+                value
+            )
+            return array
+        }, [] )
+    },
+    toFormatString: function( format, value ) {
+        var instance = this
+        return instance.toFormatArray( format ).map( function( formatting ) {
+            return shadow._.trigger( formatting.f ? instance.formats[ formatting.f ] : formatting, instance, [ value ] )
+        }).join( '' )
+    },
+    toFormatHash: function( format, value ) {
+        var instance = this,
+            object = {}
+        value = value || ''
+        instance.toFormatArray( format ).map( function( formatting ) {
+            var formattingLength = formatting.f ? shadow._.trigger( instance.formats[ formatting.f ], instance, [ value, true ] ) : formatting.length
+            if ( formatting.f ) {
+                object[ formatting.f ] = value.substr( 0, formattingLength )
+            }
+            value = value.substr( formattingLength )
+        })
+        return object
+    }
+} //shadow.DEFAULTS
+
+
+
+/**
+ * The wrapper that creates a new shadow element.
+ */
+shadow.create = function( elementName, sourceNode, options ) {
+    return new ShadowElement( sourceNode, shadow.ELEMENTS[ elementName ], $.isPlainObject( options ) ? options : {} )
 }
 
 
@@ -46,47 +225,59 @@ shadow = {
 /**
  * The constructor that composes a shadow ui component.
  */
-shadow.UI = function( $element, extension, options ) {
+function ShadowElement( sourceNode, shadowElement, options ) {
 
     var ui = this,
-        nodeName = $element[0].nodeName,
-        valueHidden = $element.attr( 'data-value' )
+        $element = $( sourceNode ),
+        elementData = $element.data()
+
+    // If it’s already a shadow element, do nothing.
+    if ( elementData.shadow instanceof ShadowElement ) return
+
+    // Go through the data and update the options.
+    for ( var prop in elementData ) {
+        if ( prop.match(/^ui./) ) {
+            options[ prop[2].toLowerCase() + prop.replace(/^ui./, '' ) ] = elementData[ prop ]
+        }
+    }
+
+    // Check if there’s a value that shouldn’t be parsed by jQuery.
+    options.valueHidden = $element.attr('data-value') || options.valueHidden
 
     // Link up the source element.
     ui.$source = $element
 
     // Link up the host or input.
-    if ( nodeName.match( /INPUT|TEXTAREA/ ) ) ui.$input = $element
+    if ( sourceNode.nodeName.match( /INPUT|TEXTAREA/ ) ) ui.$input = $element
     else ui.$host = $element
 
-    // Link up (as reference) the extension and options passed.
-    ui.r = {
-        extension: extension,
-        options: options
-    }
-
-    // Create an instance using the ui and extension.
-    ui.i = createInstance( ui, extension )
+    // Link up the instance using the ui and shadow element.
+    ui.i = $.extend( true, {}, shadowElement, {
+        id: sourceNode.id || 'ui-' + shadowElement.name + '-' + Math.floor( Math.random() * 1e11 ),
+        ui: ui,
+        shadow: null
+    })
 
     // Create settings by merging the defaults and options passed.
     ui.settings = $.extend( true, {}, ui.i.defaults, options )
 
     // Right after creating one, trigger the `init` method.
     // If there’s the need, parse the input value into a format-value hash.
-    shadow._.trigger( ui.i.init, ui.i,
-        ui.i.formats ?
-            [
-                ui.i.toFormatHash( valueHidden ? ui.settings.formatHidden : ui.settings.format, valueHidden || $element[0].value ),
-                !!valueHidden
-            ] :
-            null
-    )
+    shadow._.trigger( ui.i.init, ui.i, ui.i.formats ? [
+        ui.i.toFormatHash(
+            options.valueHidden ?
+                ui.settings.formatHidden :
+                ui.settings.format,
+            options.valueHidden || sourceNode.value
+        ),
+        !!options.valueHidden
+    ] : null )
 
     // Create the class names by merging the settings into the prefixed defaults.
     ui.klasses = $.extend( shadow._.prefix( ui.i.prefix, $.extend( {}, ui.i.klasses ) ), ui.settings.klasses )
 
     // Start up the ui with the starting value.
-    ui.start( valueHidden )
+    ui.start( options.valueHidden )
 }
 
 
@@ -94,9 +285,9 @@ shadow.UI = function( $element, extension, options ) {
 /**
  * The extension composer prototype.
  */
-shadow.UI.prototype = {
+ShadowElement.prototype = {
 
-    constructor: shadow.UI,
+    constructor: ShadowElement,
 
 
     /**
@@ -163,7 +354,12 @@ shadow.UI.prototype = {
             // If there’s a format for the hidden input, create it
             // with the name of the original input and a suffix.
             ui._hidden = $( '<input ' +
-                'value="' + ( valueHidden || ui.get( 'select', { format: settings.formatHidden } ) ) + '" ' +
+                'value="' +
+                    ( valueHidden || ( ui.$input && ui.$input.val() ?
+                        ui.get('select', { format: settings.formatHidden }) :
+                        '' )
+                    ) +
+                '" ' +
                 'name="' +
                     ( settings.nameHidden || ( ui.$input ? ui.$input[0].name : '' ) ) +
                     ( settings.suffixHidden || '' ) +
@@ -196,7 +392,10 @@ shadow.UI.prototype = {
 
 
         // Create and insert the root template into the host.
-        template = shadow._.node({ klass: ui.klasses.root, content: createTemplate( ui, true ) })
+        template = shadow._.node({
+            klass: ui.klasses.root,
+            content: createFullTemplate( shadow._.trigger( ui.i.template, ui.i ), ui.klasses )
+        })
         if ( hasShadowRoot ) {
             instance.shadow = ui.$host[0].webkitCreateShadowRoot()
             instance.shadow.applyAuthorStyles = true
@@ -286,15 +485,16 @@ shadow.UI.prototype = {
     /**
      * Render a new template into the `root` or `box`.
      */
-    render: function( intoRoot ) {
+    render: function( isFullRender ) {
 
         var ui = this,
-            $node = intoRoot ? ui.$root : ui.$root.find( '.' + ui.klasses.box ),
+            $node = isFullRender ? ui.$root : ui.$root.find( '.' + ui.klasses.box ),
             activeElement = ui.get( 'activeElement' ),
-            activeElementClassName = activeElement && activeElement.className
+            activeElementClassName = activeElement && activeElement.className,
+            templateContent = shadow._.trigger( ui.i.template, ui.i )
 
         // Create and insert the template.
-        $node[0].innerHTML = createTemplate( ui, intoRoot )
+        $node[0].innerHTML = isFullRender ? createFullTemplate( templateContent, ui.klasses ) : templateContent
 
         // If there was an active element within the shadow,
         // try to focus back on it. Otherwise re-focus the ui.
@@ -836,7 +1036,41 @@ shadow.UI.prototype = {
         return ui
     } //remove
 
-} //shadow.UI.prototype
+} //ShadowElement.prototype
+
+
+
+/**
+ * Create the template for a shadow instance.
+ */
+function createFullTemplate( templateContent, klasses ) {
+
+    // Create the pointer node.
+    return shadow._.node({ klass: klasses.pointer }) +
+
+        // Create the wrapped holder.
+        shadow._.node({
+            klass: klasses.holder,
+
+            // Create the ui frame.
+            content: shadow._.node({
+                klass: klasses.frame,
+
+                // Create the content wrapper.
+                content: shadow._.node({
+                    klass: klasses.wrap,
+
+                    // Create a box node.
+                    content: shadow._.node({
+                        klass: klasses.box,
+
+                        // Attach the component template.
+                        content: templateContent
+                    })
+                })
+            })
+        })
+} //createFullTemplate
 
 
 
@@ -931,260 +1165,26 @@ shadow._ = {
 
 
 /**
- * Keep a tracks of the extensions.
- */
-shadow.EXTENSIONS = {
-    ui: true // reserved.
-}
-
-
-/**
- * Create a ui extension.
- */
-shadow.extend = function( extension ) {
-
-    // Make sure we have a usable extension.
-    if ( !extension || !extension.name ) {
-        throw 'To create a shadow, the extension needs a name.'
-    }
-
-    // Make sure this extension doesn’t already exist.
-    if ( shadow.EXTENSIONS[ extension.name ] ) {
-        throw 'The name “' + extension.name + '” is already reserved by a shadow extension.'
-    }
-    if ( shadow.EXTENSIONS[ extension.alias ] || $.fn[ extension.alias ] ) {
-        throw 'The alias “' + extension.alias + '” is already reserved by a shadow extension or jQuery method.'
-    }
-
-    // Store the extension extension by name.
-    shadow.EXTENSIONS[ extension.name ] = extension
-
-    // If there’s an alias, create the shorthand link.
-    if ( extension.alias ) {
-
-        // Reserve the alias name.
-        if ( extension.alias != extension.name ) shadow.EXTENSIONS[ extension.alias ] = extension.name
-
-        // Extend jQuery with the alias.
-        $.fn[ extension.alias ] = function() {
-
-            // If the first argument is a string, carry out the action with
-            // all the arguments. Otherwise construct a shadow extension
-            // using the name and the first argument as options.
-            return this.shadow.apply( this, typeof arguments[0] == 'string' ? arguments : [ extension.name, arguments[0] ] )
-        }
-    }
-
-    return extension
-} //shadow.extend
-
-
-/**
- * Build and record a shadow instance.
- */
-function createInstance( ui, extension ) {
-
-    if ( !( ui instanceof shadow.UI ) ) throw 'Need a Shadow UI composition to create an instance.'
-
-    var regexFormats = new RegExp(
-
-            // Match any [escaped] characters.
-            '(\\[[^\\[]*\\])|(' +
-
-            // Match any formatting characters.
-            ( extension.formats ?
-                Object.keys( extension.formats ).
-                    sort(function(a,b) { return b.length > a.length ? 1 : -1 }).
-                    join('|') + '|' :
-                ''
-            ) +
-
-            // Match all other characters.
-            '.)', 'g' ),
-
-        instance = $.extend( true, {
-
-            name: null,
-            template: null,
-            alias: null,
-            prefix: 'ui-drop',
-
-            init: null,
-            bindings: {},
-
-            is: {
-                started: false,
-                opened: false,
-                focused: false,
-                captured: false
-            },
-
-            keys: {},
-
-            formats: null,
-
-            dict: {
-                select: 0,
-                highlight: 0
-            },
-            cascades: {
-                select: 'highlight'
-            },
-            find: {},
-            create: {},
-
-            klasses: {
-
-                host: '-host',
-
-                input: '-input',
-
-                root: '',
-                rootOpened: '--opened',
-                rootFocused: '--focused',
-                rootCaptured: '--captured',
-
-                holder: 'holder',
-
-                pointer: 'pointer',
-
-                frame: 'frame',
-                wrap: 'wrap',
-
-                box: 'box'
-            },
-            defaults: {
-                format: null,
-                formatHidden: null,
-                nameHidden: null,
-                suffixHidden: '_formatted',
-                klasses: null
-            },
-
-            toFormatArray: function( string ) {
-                if ( !instance.formats ) throw 'The shadow extension needs a `formats` option.'
-                return ( string || '' ).split( regexFormats ).reduce( function( array, value ) {
-                    if ( value ) array.push(
-                        value in instance.formats ? { f: value } :
-                        value.match( /^\[.*]$/ ) ? value.replace( /^\[(.*)]$/, '$1' ) :
-                        value
-                    )
-                    return array
-                }, [] )
-            },
-            toFormatString: function( format, value ) {
-                value = $.isArray( value ) ? value[0] : value
-                return instance.toFormatArray( format ).map( function( formatting ) {
-                    return shadow._.trigger( formatting.f ? instance.formats[ formatting.f ] : formatting, instance, [ value ] )
-                }).join( '' )
-            },
-            toFormatHash: function( format, value ) {
-                var object = {}
-                value = value || ''
-                instance.toFormatArray( format ).map( function( formatting ) {
-                    var formattingLength = formatting.f ? shadow._.trigger( instance.formats[ formatting.f ], instance, [ value, true ] ) : formatting.length
-                    if ( formatting.f ) {
-                        object[ formatting.f ] = value.substr( 0, formattingLength )
-                    }
-                    value = value.substr( formattingLength )
-                })
-                return object
-            }
-        }, extension, {
-            id: 'S' + Math.floor( Math.random() * 1e9 ),
-            ui: ui,
-            shadow: null
-        }) //instance
-
-
-    // Return the instance.
-    return instance
-} //createInstance
-
-
-
-/**
- * Create the template for a shadow instance.
- */
-function createTemplate( ui, asFullTemplate ) {
-
-    var componentTemplate = shadow._.trigger( ui.i.template, ui.i )
-
-    // If just the face of the component is needed, return that.
-    return !asFullTemplate ? componentTemplate :
-
-        // Create the pointer node.
-        shadow._.node({ klass: ui.klasses.pointer }) +
-
-        // Create the wrapped holder.
-        shadow._.node({
-            klass: ui.klasses.holder,
-
-            // Create the ui frame.
-            content: shadow._.node({
-                klass: ui.klasses.frame,
-
-                // Create the content wrapper.
-                content: shadow._.node({
-                    klass: ui.klasses.wrap,
-
-                    // Create a box node.
-                    content: shadow._.node({
-                        klass: ui.klasses.box,
-
-                        // Attach the component template.
-                        content: componentTemplate
-                    })
-                })
-            })
-        })
-} //createTemplate
-
-
-
-/**
  * Extend jQuery.
  */
-$.fn.shadow = function( name, options ) {
+$.fn.shadow = function( option, name ) {
 
     var returnValue,
+        shadowElement = this.data( 'shadow' )
 
-        // Grab the extension data.
-        extension = this.data( 'shadow' )
+    // If there’s no shadow element, create one.
+    if ( !shadowElement ) returnValue = shadow.create( name, this[0], option )
 
+    // If there’s no option, return the shadow element data.
+    else if ( !option ) returnValue = shadowElement
 
-    // If the ui is needed, return the extension data.
-    if ( name == 'ui' ) return extension
+    // Trigger the `option` and pass all arguments (except `option`).
+    else returnValue = shadow._.trigger( shadowElement[ option ], shadowElement, [].slice.apply( arguments, [1] ) )
 
-
-    // If the node already has an extension, carry out the action.
-    if ( extension ) {
-
-        // Trigger the `name` action and pass all arguments (except `name`).
-        returnValue = shadow._.trigger( extension[ name ], extension, [].slice.apply( arguments, [1] ) )
-
-        // If the ui is returned, allow for jQuery chaining.
-        // Otherwise return the value from the ui’s method.
-        return returnValue instanceof shadow.UI ? this : returnValue
-    }
-
-
-    // Otherwise grab the extension by name from the collection.
-    extension = shadow.EXTENSIONS[ name ]
-
-    // Confirm an extension was found.
-    if ( !extension ) throw 'No extension found by the name of “' + name + '”.'
-
-    // Go through each matched element and compose extensions.
-    return this.each( function() {
-        var $this = $( this )
-        if ( !$this.data( 'shadow' ) ) {
-            new shadow.UI( $this, extension, options )
-        }
-    })
+    // If the ui is returned, allow for jQuery chaining.
+    // Otherwise return the value from the ui’s method.
+    return returnValue
 }
-
-$.fn.shadow.extend = shadow.extend
 
 
 

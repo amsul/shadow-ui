@@ -3,11 +3,10 @@ layout: extension
 extension_name: Dropdown
 ---
 
-<div class="shadow shadow--dropdown">Dropdown</div>
+<div data-ui="dropdown">Dropdown</div>
+
 <script>
-    shadow.extend({
-        name: 'dropdown',
+    shadow( 'dropdown', {
         template: '<div class="ui-face ui-face--padded">This is a dropdown – the most basic form of a shadow extension.</div>'
     })
-    $('.shadow--dropdown').shadow('dropdown')
 </script>

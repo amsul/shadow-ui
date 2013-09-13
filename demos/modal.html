@@ -3,18 +3,15 @@ layout: extension
 extension_name: Modal
 ---
 
-<section>
-    <div class="shadow" id="shadowModal">Modal</div>
-</section>
+<div id="shadowModal" data-ui="modal">Modal</div>
 
 <script>
-    shadow.extend({
-        name: 'modal',
+    shadow( 'modal', {
         prefix: 'ui-modal',
         template: '<div class="ui-face ui-face--padded">This is a modal popup</div>'
     })
 </script>
+
 <script>
-    var $shadowModal = $( '#shadowModal' ).shadow( 'modal' )
-    var shadowModalUI = $shadowModal.shadow( 'ui' )
+    shadowModalUI = $('#shadowModal').shadow()
 </script>

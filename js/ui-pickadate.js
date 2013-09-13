@@ -8,9 +8,8 @@ var WEEKS_IN_CAL = 6,
 
 
 // Create the shadow extension.
-shadow.extend({
+shadow( 'pickadate', {
 
-    name: 'input-date',
     alias: 'pickadate',
     prefix: 'ui-modal',
 
@@ -145,7 +144,7 @@ shadow.extend({
 
         // Enter.
         13: function() {
-            this.ui.set( 'select', this.ui.get('highlight')[0] )
+            this.ui.set( 'select', this.ui.get('highlight')[0] ).close(true)
         },
 
         // Left.
@@ -181,7 +180,7 @@ shadow.extend({
         today: 'Today',
         clear: 'Clear',
 
-        // The format to show on the `input` element.
+        // The `value` format.
         format: 'd mmmm, yyyy',
 
         // The min/max range.
@@ -255,6 +254,7 @@ shadow.extend({
 
     formats: {
         d: function( value, isParsing ) {
+            if ( $.isArray( value ) ) value = value[0]
             if ( isParsing ) {
                 var match = value.match( /^\d+/ )
                 return match ? match[0].length : 0
@@ -262,9 +262,11 @@ shadow.extend({
             return value && value.date
         },
         dd: function( value, isParsing ) {
+            if ( $.isArray( value ) ) value = value[0]
             return isParsing ? 2 : value && leadZero( value.date )
         },
         ddd: function( value, isParsing ) {
+            if ( $.isArray( value ) ) value = value[0]
             if ( isParsing ) {
                 var match = value.match( /^\w+/ )
                 return match ? match[0].length : 0
@@ -272,6 +274,7 @@ shadow.extend({
             return value && this.ui.settings.weekdaysShort[ value.day ]
         },
         dddd: function( value, isParsing ) {
+            if ( $.isArray( value ) ) value = value[0]
             if ( isParsing ) {
                 var match = value.match( /^\w+/ )
                 return match ? match[0].length : 0
@@ -279,6 +282,7 @@ shadow.extend({
             return value && this.ui.settings.weekdaysFull[ value.day ]
         },
         m: function( value, isParsing ) {
+            if ( $.isArray( value ) ) value = value[0]
             if ( isParsing ) {
                 var match = value.match( /^\d+/ )
                 return match ? match[0].length : 0
@@ -286,9 +290,11 @@ shadow.extend({
             return value && value.month + 1
         },
         mm: function( value, isParsing ) {
+            if ( $.isArray( value ) ) value = value[0]
             return isParsing ? 2 : value && leadZero( value.month + 1 )
         },
         mmm: function( value, isParsing ) {
+            if ( $.isArray( value ) ) value = value[0]
             if ( isParsing ) {
                 var match = value.match( /^\w+/ )
                 return match ? match[0].length : 0
@@ -296,6 +302,7 @@ shadow.extend({
             return value && this.ui.settings.monthsShort[ value.month ]
         },
         mmmm: function( value, isParsing ) {
+            if ( $.isArray( value ) ) value = value[0]
             if ( isParsing ) {
                 var match = value.match( /^\w+/ )
                 return match ? match[0].length : 0
@@ -303,9 +310,11 @@ shadow.extend({
             return value && this.ui.settings.monthsFull[ value.month ]
         },
         yy: function( value, isParsing ) {
+            if ( $.isArray( value ) ) value = value[0]
             return isParsing ? 2 : value && ( '' + value.year ).slice( 2 )
         },
         yyyy: function( value, isParsing ) {
+            if ( $.isArray( value ) ) value = value[0]
             return isParsing ? 4 : value && value.year
         }
     }, //formats

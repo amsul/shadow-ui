@@ -3,12 +3,11 @@
 
 
 // Create the shadow extension.
-shadow.extend({
+shadow( 'picker', {
 
     /**
-     * Give it a name and alias.
+     * Give it a jQuery alias.
      */
-    name: 'picker',
     alias: 'picker',
 
 
@@ -111,8 +110,14 @@ shadow.extend({
         }
 
 
+        // Grab the context.
+        var contextSelector = 'script[type="json/ui-context"]',
+            $context = ui.$input ? ui.$input.next(contextSelector) : ui.$source.children(contextSelector),
+            context = JSON.parse( $context.html() )
+
+
         // Set the options for this instance.
-        ui.set( 'options', ui.settings.options )
+        ui.set( 'options', context )
 
 
         // Once the UI is ready, bind stuff.
@@ -146,9 +151,9 @@ shadow.extend({
 
 
         // If there’s no options, show the empty dialogue.
-        if ( !options ) return shadow._.node({
+        if ( !options.length ) return shadow._.node({
             klass: [ klasses.face, klasses.facePadded ],
-            content: '<span class="ui-disabled">No options to select.</span>'
+            content: '<span class="ui-disabled">Nothing to pick.</span>'
         })
 
 

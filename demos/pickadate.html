@@ -7,33 +7,33 @@ extension_name: pickadate.js
 <link rel="stylesheet" href="{{ site.baseurl }}/css/pickadate-modal.css">
 <link rel="stylesheet" href="{{ site.baseurl }}/css/pickadate.css">
 
-<div>
-    <input type="text" id="shadowPickadate" placeholder="Date input" valuee="date: 3 August, 2013">
-</div>
+<input id="shadowPickadate" type="text" placeholder="Date input"
+    data-ui="pickadate"
+    data-ui-format="[date] d mmmm, yyyy"
+    data-ui-type="dropdown"
+    data-ui-select-months="true"
+    data-ui-select-years="true"
+    data-ui-min="-5"
+    data-ui-max="10"
+    valuee="date: 3 August, 2013">
 
 <br>
 <hr>
 <br>
 
-<div id="shadowPickadateDiv">Calendar as a div</div>
+<div id="shadowPickadateDiv"
+    data-ui="pickadate"
+    data-ui-value-hidden="2013-08-03"
+    data-ui-format-hidden="yyyy-mm-dd"
+    data-ui-first-day="1"
+    data-ui-disable="[1,7,[2013,8,20]]"
+    >Calendar as a div</div>
 
 <script src="{{ site.baseurl }}/js/ui-pickadate.js"></script>
+
 <script>
-    var $shadowPickadate = $('#shadowPickadate').pickadate({
-        format: '[date:] d mmmm, yyyy',
-        type: 'dropdown',
-        selectMonths: true,
-        selectYears: true,
-        min: -5,
-        // max: 10
-    })
-    var shadowPickadateUI = $shadowPickadate.pickadate('ui')
+    shadowPickadateUI = $('#shadowPickadate').pickadate()
     // shadowPickadateUI.open(true)
-    var $shadowPickadateDiv = $('#shadowPickadateDiv').pickadate({
-        // format: '[date:] d mmmm, yyyy',
-        disable: [/*true,*/1,7,new Date(2013,8,20)],
-        firstDay: 1
-    })
-    // var shadowPickadateDivUI = $shadowPickadateDiv.pickadate('ui')
-    // // shadowPickadateDivUI.open(true)
+    shadowPickadateDivUI = $('#shadowPickadateDiv').pickadate()
+    // shadowPickadateDivUI.open(true)
 </script>

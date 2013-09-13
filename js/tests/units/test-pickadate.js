@@ -16,7 +16,8 @@ var tearDownTheUI = function() {
 module( 'Pickadate setup', {
     setup: function() {
         var $node = $NODE_DIV.clone().appendTo( $DOM )
-        this.ui = $node.pickadate().pickadate( 'ui' )
+        shadow.create( 'pickadate', $node[0] )
+        this.ui = $node.pickadate()
     },
     teardown: tearDownTheUI
 })
@@ -27,7 +28,8 @@ test( 'First weekday', function() {
 
     strictEqual( ui.$root.find( '.' + ui.klasses.weekdays ).first().text(), ui.settings.weekdaysShort[0], 'Sunday' )
 
-    ui = ui.stop().$source.pickadate({ firstDay: 1 }).pickadate( 'ui' )
+    ui.stop()
+    ui = ui.$source.pickadate({ firstDay: 1 })
 
     strictEqual( ui.$root.find( '.' + ui.klasses.weekdays ).first().text(), ui.settings.weekdaysShort[1], 'Monday' )
 
@@ -113,7 +115,8 @@ test( 'Starting `dict`', function() {
 module( 'Pickadate setup', {
     setup: function() {
         var $node = $NODE_INPUT.clone().val('14 August, 2013').appendTo( $DOM )
-        this.ui = $node.pickadate().pickadate( 'ui' )
+        shadow.create( 'pickadate', $node[0] )
+        this.ui = $node.pickadate()
     },
     teardown: tearDownTheUI
 })
@@ -140,9 +143,10 @@ test( 'Starting value', function() {
 module( 'Pickadate setup', {
     setup: function() {
         var $node = $NODE_INPUT.clone().attr('data-value', '2013-08-14').appendTo( $DOM )
-        this.ui = $node.pickadate({
+        shadow.create( 'pickadate', $node[0], {
             formatHidden: 'yyyy-mm-dd'
-        }).pickadate( 'ui' )
+        })
+        this.ui = $node.pickadate()
     },
     teardown: tearDownTheUI
 })
@@ -174,7 +178,8 @@ test( 'Starting hidden value', function() {
 module( 'Pickadate methods', {
     setup: function() {
         var $node = $NODE_DIV.clone().appendTo( $DOM )
-        this.ui = $node.pickadate().pickadate( 'ui' )
+        shadow.create( 'pickadate', $node[0] )
+        this.ui = $node.pickadate()
     },
     teardown: tearDownTheUI
 })
@@ -408,7 +413,8 @@ test( 'Is `disabled`', function() {
 module( 'Pickadate keyboard events', {
     setup: function() {
         var $node = $NODE_INPUT.clone().appendTo( $DOM )
-        this.ui = $node.pickadate().pickadate( 'ui' )
+        shadow.create( 'pickadate', $node[0] )
+        this.ui = $node.pickadate()
     },
     teardown: tearDownTheUI
 })
@@ -481,7 +487,8 @@ test( 'Select and value', function() {
 module( 'Pickadate template', {
     setup: function() {
         var $node = $NODE_INPUT.clone().appendTo( $DOM )
-        this.ui = $node.pickadate().pickadate( 'ui' )
+        shadow.create( 'pickadate', $node[0] )
+        this.ui = $node.pickadate()
     },
     teardown: tearDownTheUI
 })

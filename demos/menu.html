@@ -1,16 +1,16 @@
 ---
 layout: extension
-extension_name: Picker
+extension_name: Menu
 ---
 
-<div id="shadowPicker"
-    data-ui="picker"
+<div id="shadowMenu"
+    data-ui="menu"
     data-ui-single="true"
     data-ui-format-hidden="id full"
     data-ui-value-hidden="1,3,5 1:One,3:Three,5:Five"
-    data-ui-name-hidden="picker"
+    data-ui-name-hidden="menu"
     data-ui-suffix-hidden=""
-    >Picker (multi and single)
+    >Menu (multi and single)
     <script type="json/ui-context">
         [
             { "id":  1, "value": "One" },
@@ -29,8 +29,8 @@ extension_name: Picker
 
 <br><hr><br>
 
-<input id="shadowPickerInput" type="text"
-    data-ui="picker"
+<input id="shadowMenuInput" type="text"
+    data-ui="menu"
     data-ui-format="full">
 <script type="json/ui-context">
     [
@@ -48,9 +48,9 @@ extension_name: Picker
 </script>
 
 
-<script src="{{ site.baseurl }}/js/ui-picker.js"></script>
+<script src="{{ site.baseurl }}/js/ui-menu.js"></script>
 
 <script>
-    shadowPickerUI = $('#shadowPicker').picker()
-    // shadowPickerUI.open(true)
+    shadowMenuUI = $('#shadowMenu').menu()
+    // shadowMenuUI.open(true)
 </script>

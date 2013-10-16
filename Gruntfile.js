@@ -2,8 +2,8 @@
 module.exports = function( grunt ) {
 
 
-    // Read the configuration file.
-    var config = grunt.file.readYAML( '_config.yml' )
+    // Read the package file.
+    var packageJSON = grunt.file.readJSON( 'package.json' )
 
 
     // Add the “curly” template delimiters.
@@ -15,22 +15,11 @@ module.exports = function( grunt ) {
 
 
         // Add the package data.
-        pkg: config,
+        pkg: packageJSON,
 
 
         // Copy over files to destination directions.
         copy: {
-            pkg: {
-                options: {
-                    processContent: function() {
-                        return grunt.template.process( JSON.stringify( config ) )
-                    }
-                },
-                files: [
-                    { 'shadow.jquery.json': '_config.yml' },
-                    { 'package.json': '_config.yml' }
-                ]
-            },
             main: {
                 options: {
                     processContent: function( content ) {
@@ -106,8 +95,8 @@ module.exports = function( grunt ) {
         // Watch the project files.
         watch: {
             main: {
-                files: [ 'js/*.source.js', '*.source.md' ],
-                tasks: [ 'copy:main' ]
+                files: [ 'js/*.source.js', '*.source.md', 'less/*.less' ],
+                tasks: [ 'copy:main', 'less:themes' ]
             },
             themes: {
                 files: [ 'less/*.less' ],
@@ -150,6 +139,46 @@ module.exports = function( grunt ) {
     grunt.registerTask( 'default', [ 'copy', 'less' ] )
     grunt.registerTask( 'strict', [ 'copy', 'less', 'jshint', 'qunit' ] )
     grunt.registerTask( 'travis', [ 'jshint', 'qunit' ] )
+
+    // Register the task to create our config files since there’s currently
+    // nothing better: https://github.com/bower/bower/pull/62#issuecomment-8625287
+    grunt.registerTask( 'confile', 'Build configuration files', function() {
+
+        var files = {},
+            config = grunt.file.readYAML( 'Confile.yml' ),
+            configKeys = Object.keys( config ),
+            YAML = require( 'yamljs' )
+
+        // Grab all the unique file names.
+        configKeys.forEach( function( filesKey ) {
+            if ( filesKey != 'all' ) {
+                filesKey.split(/ /g).forEach( function( name ) {
+                    files[name] = files[name] || {}
+                })
+            }
+        })
+
+        // Add all the data to the files.
+        for ( var fileName in files ) {
+
+            grunt.util._.extend( files[fileName], config.all )
+
+            /*jshint loopfunc: true*/
+            configKeys.forEach( function( configKey ) {
+                if ( configKey == 'all' || configKey.split(/ /g).indexOf( fileName ) > -1 ) {
+                    grunt.util._.extend( files[fileName], config[configKey] )
+                }
+            })
+            /*jshint loopfunc: false*/
+
+            grunt.log.writeln( 'Writing ' + fileName.cyan )
+            grunt.file.write( fileName,
+                fileName.split('.').pop() == 'yml' ?
+                    YAML.stringify( files[fileName], 2, 4 ) :
+                    JSON.stringify( files[fileName], null, '\t' )
+            )
+        }
+    })
 
 } //module.exports
 

@@ -9,20 +9,25 @@ extension_name: pickadate.js
 
 <input id="shadowPickadate" type="text" placeholder="Date input"
     data-ui="pickadate"
-    data-ui-format="[date] d mmmm, yyyy"
     data-ui-type="dropdown"
     data-ui-select-months="true"
     data-ui-select-years="true"
-    data-ui-min="-5"
-    data-ui-max="10"
-    valuee="date: 3 August, 2013">
+    dataaaa-ui-min="-5"
+    dataaaa-ui-max="10"
+    dataaaa-ui-format="[date (]dd-mm-yyyy[)]"
+    dataaaa-ui-format-range="From: { To: } Stop."
+    dataaaa-ui-format-multiple="(first) {, (middles) |, (last) and } (done)"
+    data-value="2013-07-10"
+    valueeee="14 August, 2013"
+    valueeee="(first) From: 1 August, 2013 To: 3 August, 2013 Stop., (middles) 5 August, 2013, (middles) 7 August, 2013, (last) and 8 August, 2013 (done)"
+    valueeee="3 August, 2013, 5 August, 2013, 7 August, 2013, and 8 August 2013">
 
 <br>
 <hr>
 <br>
 
 <div id="shadowPickadateDiv"
-    data-ui="pickadate"
+    dataaaa-ui="pickadate"
     data-ui-value-hidden="2013-08-03"
     data-ui-format-hidden="yyyy-mm-dd"
     data-ui-first-day="1"
@@ -33,7 +38,7 @@ extension_name: pickadate.js
 
 <script>
     shadowPickadateUI = $('#shadowPickadate').pickadate()
-    // shadowPickadateUI.open(true)
-    shadowPickadateDivUI = $('#shadowPickadateDiv').pickadate()
+    shadowPickadateUI.open(true)
+    // shadowPickadateDivUI = $('#shadowPickadateDiv').pickadate()
     // shadowPickadateDivUI.open(true)
 </script>

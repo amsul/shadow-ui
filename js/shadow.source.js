@@ -27,7 +27,9 @@
  * Create some shorthands.
  */
 var $document = $( document ),
-    hasShadowRoot = 'webkitCreateShadowRoot' in document.documentElement
+    docEl = document.documentElement,
+    hasShadowRoot = docEl.webkitCreateShadowRoot || docEl.createShadowRoot,
+    SELECTOR_ACTION_BUTTONS = '[data-action],[data-action-meta],[data-action-shift],[data-action-shift-meta]'
 
 
 
@@ -121,14 +123,34 @@ shadow.ELEMENTS = {
  */
 shadow.DEFAULTS = {
 
+    /**
+     * The name of the shadow element.
+     */
     name: null,
-    template: null,
-    alias: null,
-    prefix: 'ui-drop',
 
+    /**
+     * The template used to compile the box of the element root.
+     */
+    template: null,
+
+    /**
+     * An alias to use as a shorthand to call element methods.
+     */
+    alias: null,
+
+    /**
+     * Method called right before the element starts it’s life cycle.
+     */
     init: null,
+
+    /**
+     * Default event bindings on the element.
+     */
     bindings: {},
 
+    /**
+     * States of the element.
+     */
     is: {
         started: false,
         opened: false,
@@ -136,20 +158,40 @@ shadow.DEFAULTS = {
         captured: false
     },
 
+    /**
+     * The key bindings when the element host is captured.
+     */
     keys: {},
 
-    formats: null,
-
+    /**
+     * The dictionary of “things”.
+     */
     dict: {
-        select: 0,
-        highlight: 0
+        clear: true, //reserved.
+        select: null
     },
-    cascades: {
-        select: 'highlight'
-    },
-    find: {},
-    create: {},
 
+    /**
+     * Create a `dict` item right before `set`, `add`,
+     * or `remove` are performed on the item.
+     */
+    create: {
+        clear: '' //reserved.
+    },
+
+    /**
+     * Match an item within a `dict` collection.
+     */
+    match: {},
+
+    /**
+     * The base template’s class name prefix.
+     */
+    prefix: 'ui-drop',
+
+    /**
+     * The base template class names to be prefixed.
+     */
     klasses: {
 
         host: '-host',
@@ -170,14 +212,30 @@ shadow.DEFAULTS = {
 
         box: 'box'
     },
+
+    /**
+     * The default settings.
+     */
     defaults: {
+        klasses: null, // The box template class names (unprefixed).
         format: null,
+        formatRange: '{ - }', // <before from>{<before to>}<after to>
+        formatMultiple: '{, |, and }', // <before first>{<before middle>|<before last>}<after last>
+        hasHidden: false,
         formatHidden: null,
         nameHidden: null,
-        suffixHidden: '_formatted',
-        klasses: null
+        suffixHidden: '_formatted'
     },
 
+    /**
+     * The formats hash to use for formatting.
+     */
+    formats: null,
+
+    /**
+     * Convert a string into a formatted array using
+     * the generated formats hash expression.
+     */
     toFormatArray: function( string ) {
         var instance = this
         if ( !instance.formats ) throw 'The shadow extension needs a `formats` option.'
@@ -190,26 +248,291 @@ shadow.DEFAULTS = {
             return array
         }, [] )
     },
+
+    /**
+     * Convert a value into a formatted string.
+     */
     toFormatString: function( format, value ) {
-        var instance = this
-        return instance.toFormatArray( format ).map( function( formatting ) {
-            return shadow._.trigger( formatting.f ? instance.formats[ formatting.f ] : formatting, instance, [ value ] )
-        }).join( '' )
-    },
-    toFormatHash: function( format, value ) {
+
         var instance = this,
-            object = {}
-        value = value || ''
-        instance.toFormatArray( format ).map( function( formatting ) {
-            var formattingLength = formatting.f ? shadow._.trigger( instance.formats[ formatting.f ], instance, [ value, true ] ) : formatting.length
-            if ( formatting.f ) {
-                object[ formatting.f ] = value.substr( 0, formattingLength )
+            valueIsArray = $.isArray( value ),
+            settings = instance.ui.settings,
+            formattedCollection = [],
+            createFormatStringArray = function( itemValue ) {
+
+                // If it’s a range, match the range format.
+                if ( itemValue instanceof shadow.Range ) {
+                    var matchRange = settings.formatRange.match( /(.*)\{(.*?)\}(.*)/ )
+                    return [
+                        matchRange[1],
+                        createFormatStringArray( itemValue.lower ).join(''),
+                        matchRange[2],
+                        createFormatStringArray( itemValue.upper ).join(''),
+                        matchRange[3]
+                    ]
+                }
+
+                // Otherwise do a simple formatting conversion.
+                return instance.toFormatArray( format ).map( function( formatting ) {
+                    return shadow._.trigger( formatting.f ? instance.formats[ formatting.f ] : formatting, instance, [ itemValue ] )
+                })
             }
-            value = value.substr( formattingLength )
-        })
-        return object
+
+        // If the value is a collection of more than one, use the “multiple” format.
+        if ( valueIsArray && value.length > 1 ) {
+
+            var matchMultiple = settings.formatMultiple.match( /(.*)\{(.*?)\|(.*?)\}(.*)/ ),
+                countValues = value.length
+
+            for ( var i = 0; i < countValues; i += 1 )  {
+                var isFirst = i === 0,
+                    isLast = i + 1 === countValues,
+                    before = isFirst ? matchMultiple[1] : isLast ? matchMultiple[3] : '',
+                    after = i + 2 < countValues ? matchMultiple[2] : isLast ? matchMultiple[4] : ''
+                formattedCollection.push( before + createFormatStringArray( value[i] ).join( '' ) + after )
+            }
+        }
+
+        // Otherwise just do a simple conversion.
+        else formattedCollection = createFormatStringArray( valueIsArray ? value[0] : value )
+
+        // Join and return the collection.
+        return formattedCollection.join( '' )
+    }, //toFormatString
+
+    /**
+     * Convert a value into a formatting hash object.
+     */
+    toFormatHash: function( format, value, hasMultiple, hasRange ) {
+
+        var instance = this,
+            safetyBreak = 100,
+            settings = instance.ui.settings,
+            escapeRegString = function( string ) {
+                return string.replace( /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&' )
+            },
+            matchValue = function( chunkValue ) {
+
+                var object = {},
+                    matchRange = hasRange && settings.formatRange.match( /(.*)\{(.*?)\}(.*)/ ),
+                    beforeStartRange = matchRange && new RegExp( '^' + escapeRegString( matchRange[1] ) ),
+                    beforeEndRange = matchRange && new RegExp( '^' + escapeRegString( matchRange[2] ) ),
+                    afterEndRange = matchRange && new RegExp( '^' + escapeRegString( matchRange[3] ) )
+
+                // Strip away anything that goes before a range start.
+                if ( chunkValue.match( beforeStartRange ) ) {
+                    chunkValue = chunkValue.replace( beforeStartRange, '' )
+                }
+
+                // Map through the formats array and convert into a hash.
+                instance.toFormatArray( format ).map( function( chunk ) {
+
+                    // If the chunk has an `f` property, expect it to return
+                    // the length of the string’s format chunk being parsed.
+                    // Otherwise just use the length of the
+                    var chunkLength = chunk.f ?
+                            shadow._.trigger( instance.formats[ chunk.f ], instance, [ chunkValue, true ] ) :
+                            chunk.length
+
+                    // If the chunk has an `f` property, add it to the hash
+                    // by stripping out a substring based on the chunk length.
+                    if ( chunk.f ) object[ chunk.f ] = chunkValue.substr( 0, chunkLength )
+
+                    // Update the chunk value with the chunk removed.
+                    chunkValue = chunkValue.substr( chunkLength )
+                })
+
+                // Check if we’re dealing with the range end.
+                if ( chunkValue.match( beforeEndRange ) ) {
+
+                    // Strip away anything that goes before a range end.
+                    chunkValue = chunkValue.replace( beforeEndRange, '' )
+
+                    // Get the stripped chunk value and hash.
+                    var chunkAndObject = matchValue( chunkValue )
+
+                    // Update the chunk value without the range end.
+                    chunkValue = chunkAndObject[0]
+
+                    // Strip away anything that goes after a range end.
+                    if ( chunkValue.match( afterEndRange ) ) {
+                        chunkValue = chunkValue.replace( afterEndRange, '' )
+                    }
+
+                    // Create the range using the two hashes.
+                    object = new shadow.Range( object, chunkAndObject[1] )
+                }
+
+                // Return the remaining chunk and the parsed hash.
+                return [ chunkValue, object ]
+            },
+            matchMultipleValues = function( multipleValues ) {
+
+                var objects = [],
+                    dummyValue,
+                    matchMultiple = settings.formatMultiple.match( /(.*)\{(.*?)\|(.*?)\}(.*)/ ),
+                    beforeFirstMultiple = matchMultiple && new RegExp( '^' + escapeRegString( matchMultiple[1] ) ),
+                    beforeMiddleMultiple = matchMultiple && new RegExp( '^' + escapeRegString( matchMultiple[2] ) ),
+                    beforeLastMultiple = matchMultiple && new RegExp( '^' + escapeRegString( matchMultiple[3] ) )//,
+                    // afterLastMultiple = matchMultiple && new RegExp( '^' + matchMultiple[4] ),
+
+
+                // Strip away anything that goes before the first item.
+                if ( beforeFirstMultiple ) {
+                    multipleValues = multipleValues.replace( beforeFirstMultiple, '' )
+                }
+
+                // Match the first item format chunk.
+                dummyValue = matchValue( multipleValues )
+                multipleValues = dummyValue[0]
+                objects.push( dummyValue[1] )
+
+                // Keep looping as long as we have a value and don’t reach the last item.
+                while ( multipleValues && beforeLastMultiple && !multipleValues.match( beforeLastMultiple ) && safetyBreak ) {
+
+                    // Strip away anything that goes before the middle item
+                    if ( beforeMiddleMultiple ) {
+                        multipleValues = multipleValues.replace( beforeMiddleMultiple, '' )
+                    }
+
+                    // Match the middle item format chunk.
+                    dummyValue = matchValue( multipleValues )
+                    multipleValues = dummyValue[0]
+                    objects.push( dummyValue[1] )
+
+                    // Reduce the safety breaker.
+                    safetyBreak -= 1
+                }
+
+                // Check if we have a value to end with.
+                if ( multipleValues ) {
+
+                    // Strip away anything that goes before the last item.
+                    if ( beforeLastMultiple ) {
+                        multipleValues = multipleValues.replace( beforeLastMultiple, '' )
+                    }
+
+                    // Match the last item format chunk.
+                    dummyValue = matchValue( multipleValues )
+                    multipleValues = dummyValue[0]
+                    objects.push( dummyValue[1] )
+                }
+
+                // Return the collection of parsed hashes.
+                return objects
+            }
+
+        // Make sure we have a string value to work with.
+        value = typeof value == 'string' ? value : ''
+
+        // Parse single or multiple values.
+        if ( hasMultiple ) return value ? matchMultipleValues( value ) : []
+        return value ? matchValue( value )[1] : {}
     }
 } //shadow.DEFAULTS
+
+
+
+
+/**
+ * A shadow range object constructor.
+ */
+shadow.Range = function( fromValue, toValue, isUpperFirst ) {
+    this.from = fromValue
+    this.to = toValue
+    this.lower = isUpperFirst ? toValue : fromValue
+    this.upper = isUpperFirst ? fromValue : toValue
+}
+
+
+
+/**
+ * Shadow helper methods.
+ */
+shadow._ = {
+
+    /**
+     * Prefix a single class or an object of classes.
+     */
+    prefix: function( prefix, klasses ) {
+        var bemPrefixify = function( klass ) {
+                return klass ?
+                        klass.match( /^ / ) ? klass.replace( /^ /, '' ) :
+                        prefix + ( klass.match( /^-/ ) ? '' : '__' ) + klass :
+                    prefix
+            }
+        prefix = prefix || ''
+        if ( $.isPlainObject( klasses ) ) {
+            for ( var index in klasses ) {
+                var klass = klasses[ index ]
+                klass = $.isArray( klass ) ? klass : [ klass ]
+                klasses[ index ] = klass.map( bemPrefixify ).join(' ')
+            }
+            return klasses
+        }
+        return bemPrefixify( klasses )
+    }, //prefix
+
+
+    /**
+     * Create a dom node.
+     */
+    node: function( options ) {
+
+        // Make sure we have usable options.
+        if ( !$.isPlainObject( options ) ) options = {}
+
+        var content = shadow._.trigger( options.content, options ),
+            element = options.el || 'div',
+            klasses = options.klass,
+            attrsObj = $.isPlainObject( options.attrs ) ? options.attrs : {},
+            attributes = '', attr
+
+        // Create a string out of the content.
+        content = $.isArray( content ) ? content.join('') : content || ''
+
+        // Attach the classes to the attributes object.
+        if ( klasses ) attrsObj['class'] = typeof klasses == 'string' ? klasses : klasses.join(' ')
+
+        // Concatenate the attributes together.
+        for ( attr in attrsObj ) attributes += ' ' + attr + '="' + attrsObj[attr] + '"'
+
+        // Return the composed element.
+        return '<' + element + attributes + '>' + content + '</' + element + '>'
+    },
+
+
+    /**
+     * Trigger a function otherwise return the value.
+     */
+    trigger: function( callback, scope, args ) {
+        return $.isFunction( callback ) ? callback.apply( scope, args || [] ) : callback
+    },
+
+
+    /**
+     * Tell if something is a certain type.
+     */
+    isType: function( value, type ) {
+        return {}.toString.call( value ).indexOf( type ) > -1
+    },
+
+
+    /**
+     * Tell if something is a date object.
+     */
+    isDate: function( value ) {
+        return this.isType( value, 'Date' )
+    },
+
+
+    /**
+     * Tell if something is an integer.
+     */
+    isInteger: function( value ) {
+        return this.isType( value, 'Number' ) && value % 1 === 0
+    }
+} //shadow._
 
 
 
@@ -229,7 +552,8 @@ function ShadowElement( sourceNode, shadowElement, options ) {
 
     var ui = this,
         $element = $( sourceNode ),
-        elementData = $element.data()
+        elementData = $element.data(),
+        elementDataValue = $element.attr('data-value')
 
     // If it’s already a shadow element, do nothing.
     if ( elementData.shadow instanceof ShadowElement ) return
@@ -242,7 +566,7 @@ function ShadowElement( sourceNode, shadowElement, options ) {
     }
 
     // Check if there’s a value that shouldn’t be parsed by jQuery.
-    options.valueHidden = $element.attr('data-value') || options.valueHidden
+    options.valueHidden = elementDataValue || options.valueHidden
 
     // Link up the source element.
     ui.$source = $element
@@ -253,10 +577,13 @@ function ShadowElement( sourceNode, shadowElement, options ) {
 
     // Link up the instance using the ui and shadow element.
     ui.i = $.extend( true, {}, shadowElement, {
-        id: sourceNode.id || 'ui-' + shadowElement.name + '-' + Math.floor( Math.random() * 1e11 ),
+        id: 'ui-' + shadowElement.name + '-' + Math.floor( Math.random() * 1e11 ),
         ui: ui,
         shadow: null
     })
+
+    // Link up (as reference) the default shadow element.
+    ui.r = $.extend( true, {}, shadowElement )
 
     // Create settings by merging the defaults and options passed.
     ui.settings = $.extend( true, {}, ui.i.defaults, options )
@@ -268,7 +595,9 @@ function ShadowElement( sourceNode, shadowElement, options ) {
             options.valueHidden ?
                 ui.settings.formatHidden :
                 ui.settings.format,
-            options.valueHidden || sourceNode.value
+            options.valueHidden || sourceNode.value,
+            $.isArray( ui.get('select') ),
+            true
         ),
         !!options.valueHidden
     ] : null )
@@ -277,7 +606,7 @@ function ShadowElement( sourceNode, shadowElement, options ) {
     ui.klasses = $.extend( shadow._.prefix( ui.i.prefix, $.extend( {}, ui.i.klasses ) ), ui.settings.klasses )
 
     // Start up the ui with the starting value.
-    ui.start( options.valueHidden )
+    ui.start( options.valueHidden, !!elementDataValue )
 }
 
 
@@ -293,7 +622,7 @@ ShadowElement.prototype = {
     /**
      * Start up the component.
      */
-    start: function( valueHidden ) {
+    start: function( valueHidden, asDataValue ) {
 
         var template,
             ui = this,
@@ -320,9 +649,15 @@ ShadowElement.prototype = {
             ui.$input.addClass( ui.klasses.input ).after( ui.$host ).on( 'focus', ui.capture.bind( ui ) )
 
             // Listen for changes to update the input value.
-            ui.$source.on( 'change.' + instance.id, function( event, thingChanged ) {
-                ui.$input[0].value = thingChanged == 'clear' ? '' : ui.get( 'select', { format: settings.format } )
+            ui.$source.on( 'change.' + instance.id, function( event, thingChanged, thingValue ) {
+                ui.$input[0].value = thingChanged == 'clear' || !thingValue ?
+                    '' : ui.get( 'select', { format: settings.format } )
             })
+
+            // Update the value if needed.
+            if ( asDataValue ) {
+                ui.$source.triggerHandler( 'change.' + instance.id, [null, true] )
+            }
         }
 
         // If there isn’t an input, make the host “tab-able”.
@@ -349,7 +684,7 @@ ShadowElement.prototype = {
 
 
         // If there’s a hidden formatting, prepare the hidden input.
-        if ( settings.formatHidden ) {
+        if ( settings.hasHidden ) {
 
             // If there’s a format for the hidden input, create it
             // with the name of the original input and a suffix.
@@ -369,8 +704,9 @@ ShadowElement.prototype = {
 
             // Add the hidden input after the source and
             // listen for changes to update the hidden value.
-            ui.$source.after( ui._hidden ).on( 'change.' + instance.id, function( event, thingChanged ) {
-                ui._hidden.value = thingChanged == 'clear' ? '' :  ui.get( 'select', { format: settings.formatHidden } )
+            ui.$source.after( ui._hidden ).on( 'change.' + instance.id, function( event, thingChanged, thingValue ) {
+                ui._hidden.value = thingChanged == 'clear' || !thingValue ?
+                    '' : ui.get( 'select', { format: settings.formatHidden } )
             })
         }
 
@@ -425,31 +761,43 @@ ShadowElement.prototype = {
             }).
 
             // When “enter” is pressed on an action-able thing, trigger a click instead.
-            on( 'keydown', '[data-action]', function( event ) {
+            on( 'keydown', SELECTOR_ACTION_BUTTONS, function( event ) {
                 if ( event.keyCode == 13 ) {
                     event.preventDefault()
-                    this.click()
+                    $( this ).trigger( $.Event('click', {
+                        metaKey: event.metaKey,
+                        shiftKey: event.shiftKey
+                    }) )
                 }
             }).
 
             // When actions are getting triggered, any click events within the
             // root shouldn’t bubble up, forms shouldn’t be submitted,
             // and focus should be maintained on the `document.activeElement`.
-            on( 'click mousedown', '[data-action]', function( event ) {
+            on( 'click mousedown', SELECTOR_ACTION_BUTTONS, function( event ) {
                 event.stopPropagation()
                 event.preventDefault()
             }).
 
             // When something within the root is clicked, set the thing.
-            on( 'click', '[data-action]', function() {
+            on( 'click', SELECTOR_ACTION_BUTTONS, function( event ) {
 
-                // Match an “action” selection formatted as `<thing>:<value>:<option>`
-                var match = $( this ).data( 'action' ).split( ':' ).map( function( item ) {
-                    return item.match( /^-?\d+$/ ) ? +item : item
-                })
+                var data = $( this ).data(),
 
-                // If there’s a match, set it.
-                if ( match.length ) ui.set( match[0], match[1], match[2] )
+                    // Match an “action” selection formatted as `<method>:<thing>:<value>:<option>`
+                    match = (
+                        data.actionShiftMeta && event.shiftKey && event.metaKey ? data.actionShiftMeta :
+                        data.actionShift && event.shiftKey ? data.actionShift :
+                        data.actionMeta && event.metaKey ? data.actionMeta :
+                        data.action
+                    ).split( ':' ).map( function( item ) {
+                        return item.match( /^-?\d+$/ ) ? +item : item
+                    })
+
+                // If there’s a match, try to apply the method with the context.
+                if ( match.length ) {
+                    ui[ match[0] ].apply( ui, match.splice(1) )
+                }
             }).
 
             // If a click reaches the root itself, stop bubbling and close it.
@@ -460,6 +808,17 @@ ShadowElement.prototype = {
                 }
             })
 
+
+        // Bind the change broadcast event when underlying values change.
+        var broadcastChange = function( event ) {
+            ui.$source.trigger( 'change', [ event.item, event.value ] )
+        }
+        ui.on({
+            'set.select': broadcastChange,
+            'set.clear': broadcastChange,
+            'add.select': broadcastChange,
+            'remove.select': broadcastChange
+        })
 
         // Register the default settings events.
         ui.on({
@@ -716,24 +1075,26 @@ ShadowElement.prototype = {
             // Check if the ui is focused and there is a key action.
             if ( instance.is.focused ) {
 
-                // If it’s not opened, prevent the default action.
+                // Check if it’s not opened.
                 if ( !instance.is.opened ) {
+
+                    // Prevent the default action.
                     event.preventDefault()
-                }
 
-                // Trigger the key action if there is one.
-                if ( keyAction ) {
-                    shadow._.trigger( keyAction, instance, [ event ] )
-                }
-
-                // Any of the arrow keys should open the ui.
-                if ( [37,38,39,40].indexOf( keyCode ) > -1 ) {
-                    ui.open()
+                    // Any of the arrow keys should open the ui.
+                    if ( [37,38,39,40].indexOf( keyCode ) > -1 ) {
+                        ui.open()
+                    }
                 }
 
                 // Close the ui on “escape”.
                 else if ( keyCode == 27 ) {
                     ui.close( true )
+                }
+
+                // Trigger the key action if there is one.
+                if ( keyAction ) {
+                    shadow._.trigger( keyAction, instance, [ event ] )
                 }
 
                 // If the target is within the root and “enter” is pressed,
@@ -848,7 +1209,7 @@ ShadowElement.prototype = {
 
 
     /**
-     * Check if a value is within a thing’s collection.
+     * Find the index of a value within a thing’s collection.
      */
     within: function( thing, value ) {
 
@@ -857,11 +1218,11 @@ ShadowElement.prototype = {
             thingCollection = instance.dict[ thing ],
             found = -1
 
-        // Go through and try to find the first matching value.
+        // Go through the collection and find the first matching value.
         if ( $.isArray( thingCollection ) ) for ( var i = 0; i < thingCollection.length; i += 1 ) {
             if (
-                instance.find[thing] ?
-                    shadow._.trigger( instance.find[thing], value, [ thingCollection[i] ] ) :
+                instance.match[thing] ?
+                    shadow._.trigger( instance.match[thing], instance, [ thingCollection[i], value ] ) :
                     thingCollection[i] === value
             ) {
                 found = i
@@ -915,22 +1276,29 @@ ShadowElement.prototype = {
 
             thingItem, thingValue,
             thingIsObject = $.isPlainObject( thing ),
-            thingObject = thingIsObject ? thing : {}
+            thingObject = thingIsObject ? thing : {},
+            thingOptions = $.isPlainObject( options ) ? options : {}
 
         if ( thing ) {
 
             // If the thing isn’t an object, make it one.
             if ( !thingIsObject ) thingObject[ thing ] = value
 
+            // Convert the options into an object.
+            if ( typeof options == 'string' ) thingOptions[options] = true
+
+            // Add the method name to the options.
+            thingOptions.type = 'set'
+
             // Go through the things of items to set with the corresponding diction.
-            for ( thingItem in thingObject ) if ( thingItem in instance.dict || thingItem == 'clear' ) {
+            for ( thingItem in thingObject ) if ( thingItem in instance.dict ) {
 
                 // Grab the value of the thing.
                 thingValue = thingObject[ thingItem ]
 
                 // Update the value by triggering any create methods.
                 if ( instance.create[ thingItem ] ) {
-                    thingValue = shadow._.trigger( instance.create[ thingItem ], instance, [ thingValue, options ] )
+                    thingValue = shadow._.trigger( instance.create[ thingItem ], instance, [ thingValue, thingOptions ] )
                 }
 
                 // Update the diction with the final value.
@@ -939,18 +1307,9 @@ ShadowElement.prototype = {
                 }
                 else instance.dict[ thingItem ] = thingValue
 
-                // Check if it’s a “changing” update and broadcast a change.
-                if ( thingItem == 'select' || thingItem == 'clear' ) {
-                    ui.$source.trigger( 'change', [ thingItem, thingValue ] )
-                }
-
                 // Trigger any queued “set” events and pass the data.
-                ui.trigger( 'set', { item: thingItem, value: thingValue, options: options } )
-
-                // If there’s any cascades, set those things as well.
-                if ( instance.cascades[ thingItem ] ) {
-                    ui.set( instance.cascades[ thingItem ], thingValue, options )
-                }
+                ui.trigger( 'set', { item: thingItem, value: thingValue, options: thingOptions } )
+                ui.trigger( 'set.' + thingItem, { item: thingItem, value: thingValue, options: thingOptions } )
             } //endfor
         }
 
@@ -962,36 +1321,39 @@ ShadowElement.prototype = {
     /**
      * Add something within the component extension.
      */
-    add: function( thing/*, ...*/ ) {
+    add: function( thing, value, options ) {
 
         var ui = this,
             instance = ui.i,
-            thingCollection = instance.dict[ thing ]
+            thingCollection = instance.dict[ thing ],
+            thingOptions = $.isPlainObject( options ) ? options : {}
 
         // Only add something if it’s an array.
         if ( $.isArray( thingCollection ) ) {
 
-            // Add each value not within the collection.
-            [].slice.apply( arguments, [1] ).forEach( function( value ) {
+            // Convert the options into an object.
+            if ( typeof options == 'string' ) thingOptions[options] = true
 
-                // Update the value by triggering any create methods.
+            // Add the method name to the options.
+            thingOptions.type = 'add'
+
+            // Add each value item not within the collection.
+            ;( $.isArray( value ) ? value : [value] ).forEach( function( itemValue ) {
+
+                // Update the value item by triggering any create methods.
                 if ( instance.create[ thing ] ) {
-                    value = shadow._.trigger( instance.create[ thing ], instance, [ value ] )
+                    itemValue = shadow._.trigger( instance.create[ thing ], instance, [ itemValue, thingOptions ] )
                 }
 
-                // If the value isn’t found within the collection, add it.
-                if ( value != null && ui.within( thing, value ) === -1 ) {
-                    thingCollection.push( value )
+                // If the item isn’t found within the collection, add it.
+                if ( itemValue != null && ui.within( thing, itemValue ) === -1 ) {
+                    thingCollection.push( itemValue )
                 }
             })
 
-            // Check if it’s a “changing” update and broadcast a change.
-            if ( thing == 'select' ) {
-                ui.$source.trigger( 'change', [ thing, thingCollection ] )
-            }
-
             // Trigger any queued “add” events and pass the data.
-            ui.trigger( 'add', { item: thingCollection } )
+            ui.trigger( 'add', { item: thing, value: thingCollection, options: thingOptions } )
+            ui.trigger( 'add.' + thing, { item: thing, value: thingCollection, options: thingOptions } )
         }
 
         return ui
@@ -1002,35 +1364,38 @@ ShadowElement.prototype = {
     /**
      * Remove something within the component extension.
      */
-    remove: function( thing/*, ...*/ ) {
+    remove: function( thing, value, options ) {
 
         var ui = this,
             instance = ui.i,
-            thingCollection = instance.dict[ thing ]
+            thingCollection = instance.dict[ thing ],
+            thingOptions = $.isPlainObject( options ) ? options : {}
 
         // Only remove something if it’s an array.
         if ( $.isArray( thingCollection ) ) {
 
-            // Find the index of the value and remove it from the collection.
-            [].slice.apply( arguments, [1] ).forEach( function( value ) {
+            // Convert the options into an object.
+            if ( typeof options == 'string' ) thingOptions[options] = true
 
-                // Update the value by triggering any create methods.
+            // Add the method name to the options.
+            thingOptions.type = 'remove'
+
+            // Find the index of the value and remove it from the collection.
+            ;( $.isArray( value ) ? value : [value] ).forEach( function( itemValue ) {
+
+                // Update the value item by triggering any create methods.
                 if ( instance.create[ thing ] ) {
-                    value = shadow._.trigger( instance.create[ thing ], instance, [ value ] )
+                    itemValue = shadow._.trigger( instance.create[ thing ], instance, [ itemValue, thingOptions ] )
                 }
 
-                // If the value is found within the collection, remove it.
-                var index = ui.within( thing, value )
+                // If the item is found within the collection, remove it.
+                var index = ui.within( thing, itemValue )
                 if ( index > -1 ) thingCollection.splice( index, 1 )
             })
 
-            // Check if it’s a “changing” update and broadcast a change.
-            if ( thing == 'select' ) {
-                ui.$source.trigger( 'change', [ thing, thingCollection ] )
-            }
-
             // Trigger any queued “remove” events and pass the data.
-            ui.trigger( 'remove', { item: thingCollection } )
+            ui.trigger( 'remove', { item: thing, value: thingCollection, options: thingOptions } )
+            ui.trigger( 'remove.' + thing, { item: thing, value: thingCollection, options: thingOptions } )
         }
 
         return ui
@@ -1075,115 +1440,20 @@ function createFullTemplate( templateContent, klasses ) {
 
 
 /**
- * Shadow helper methods.
- */
-shadow._ = {
-
-    /**
-     * Prefix a single class or an object of classes.
-     */
-    prefix: function( prefix, klasses ) {
-        var bemPrefixify = function( klass ) {
-                return klass ?
-                        klass.match( /^ / ) ? klass.replace( /^ /, '' ) :
-                        prefix + ( klass.match( /^-/ ) ? '' : '__' ) + klass :
-                    prefix
-            }
-        prefix = prefix || ''
-        if ( $.isPlainObject( klasses ) ) {
-            for ( var index in klasses ) {
-                var klass = klasses[ index ]
-                klass = $.isArray( klass ) ? klass : [ klass ]
-                klasses[ index ] = klass.map( bemPrefixify ).join(' ')
-            }
-            return klasses
-        }
-        return bemPrefixify( klasses )
-    }, //prefix
-
-
-    /**
-     * Create a dom node.
-     */
-    node: function( options ) {
-
-        // Make sure we have usable options.
-        if ( !$.isPlainObject( options ) ) options = {}
-
-        var content = shadow._.trigger( options.content, options ),
-            element = options.el || 'div',
-            klasses = options.klass,
-            attrsObj = $.isPlainObject( options.attrs ) ? options.attrs : {},
-            attributes = '', attr
-
-        // Create a string out of the content.
-        content = $.isArray( content ) ? content.join('') : content || ''
-
-        // Attach the classes to the attributes object.
-        if ( klasses ) attrsObj['class'] = typeof klasses == 'string' ? klasses : klasses.join(' ')
-
-        // Concatenate the attributes together.
-        for ( attr in attrsObj ) attributes += ' ' + attr + '="' + attrsObj[attr] + '"'
-
-        // Return the composed element.
-        return '<' + element + attributes + '>' + content + '</' + element + '>'
-    },
-
-
-    /**
-     * Trigger a function otherwise return the value.
-     */
-    trigger: function( callback, scope, args ) {
-        return $.isFunction( callback ) ? callback.apply( scope, args || [] ) : callback
-    },
-
-
-    /**
-     * Tell if something is a certain type.
-     */
-    isType: function( value, type ) {
-        return {}.toString.call( value ).indexOf( type ) > -1
-    },
-
-
-    /**
-     * Tell if something is a date object.
-     */
-    isDate: function( value ) {
-        return this.isType( value, 'Date' )
-    },
-
-
-    /**
-     * Tell if something is an integer.
-     */
-    isInteger: function( value ) {
-        return this.isType( value, 'Number' ) && value % 1 === 0
-    }
-} //shadow._
-
-
-
-/**
  * Extend jQuery.
  */
 $.fn.shadow = function( option, name ) {
 
-    var returnValue,
-        shadowElement = this.data( 'shadow' )
+    var shadowElement = this.data( 'shadow' )
 
     // If there’s no shadow element, create one.
-    if ( !shadowElement ) returnValue = shadow.create( name, this[0], option )
-
-    // If there’s no option, return the shadow element data.
-    else if ( !option ) returnValue = shadowElement
+    if ( !shadowElement ) return shadow.create( name, this[0], option )
 
     // Trigger the `option` and pass all arguments (except `option`).
-    else returnValue = shadow._.trigger( shadowElement[ option ], shadowElement, [].slice.apply( arguments, [1] ) )
+    if ( option ) return shadow._.trigger( shadowElement[ option ], shadowElement, [].slice.apply( arguments, [1] ) )
 
-    // If the ui is returned, allow for jQuery chaining.
-    // Otherwise return the value from the ui’s method.
-    return returnValue
+    // If there’s no option, return the shadow element data.
+    return shadowElement
 }
 
 

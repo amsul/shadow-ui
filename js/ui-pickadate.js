@@ -15,7 +15,7 @@ shadow( 'pickadate', {
 
     dict: {
         select: [],
-        highlight: [],
+        highlight: null,
         disable: [],
         flipDisabled: 0,
         today: null,
@@ -24,15 +24,36 @@ shadow( 'pickadate', {
         max: null
     },
 
-    find: {
-        disable: function( loopedItem ) {
-            var value = this
-            if ( shadow._.isInteger( value ) ) {
-                return value === loopedItem
+    match: {
+        disable: function( dictItem, value ) {
+            if ( shadow._.isInteger( dictItem ) ) {
+                return dictItem === value
             }
-            else {
-                return createShadowDate( value ).time === createShadowDate( loopedItem ).time
+            return createShadowDate( dictItem ).time === createShadowDate( value ).time
+        },
+        select: function( dictItem, value ) {
+
+            // If the value to match is a range, make sure it doesn’t overlap
+            // with other ranges or contain a selected dict item.
+            if ( value instanceof shadow.Range ) {
+                if ( dictItem instanceof shadow.Range ) {
+                    return dictItem.lower.time === value.lower.time && dictItem.upper.time === value.upper.time
+                }
+                return
             }
+
+            // If the stored item is a range, find the value within.
+            if ( dictItem instanceof shadow.Range ) {
+                return value.time >= dictItem.lower.time && value.time <= dictItem.upper.time
+            }
+
+            // If the stored item is an integer, do a direct match.
+            if ( shadow._.isInteger( dictItem ) ) {
+                return dictItem === value
+            }
+
+            // For everything else try to match the time.
+            return createShadowDate( dictItem ).time === createShadowDate( value ).time
         }
     },
 
@@ -70,21 +91,59 @@ shadow( 'pickadate', {
                 this.ui.get('flipDisabled') ? 0 : 1
         },
         select: function( value, options ) {
-            // value = parseShadowDate( value )
-            value = createShadowDate( value )
-            value = validateShadowDate( value, options, this.ui )
+
+            var ui = this.ui
+
+            // If it’s a literal false, remove all selections with a `null`.
+            if ( value === false ) return null
+
+            // Create a shadow date from the value being set (except for ranges).
+            if ( !( value instanceof shadow.Range ) ) {
+                value = createShadowDate( value )
+                value = validateShadowDate( value, options, ui )
+            }
+
+            // If we’re settings a range, create the range object.
+            if ( options.range ) {
+
+                var highlight = ui.get('highlight')
+                value = new shadow.Range( highlight, value, highlight.time > value.time )
+
+                // If the range is being added, make sure no other
+                // dates or ranges overlap with this new range.
+                if ( options.type == 'add' ) {
+                    ui.get('select').forEach( function( selectedValue ) {
+                        if (
+                            selectedValue instanceof shadow.Range &&
+                            selectedValue.lower.time >= value.lower.time &&
+                            selectedValue.upper.time <= value.upper.time
+                        ) {
+                            ui.remove('select', selectedValue)
+                        }
+                        else if (
+                            selectedValue instanceof ShadowDate &&
+                            selectedValue.time >= value.lower.time &&
+                            selectedValue.time <= value.upper.time
+                        ) {
+                            ui.remove('select', selectedValue)
+                        }
+                    })
+                }
+            }
+
+            // Return the final composed value.
             return value
         },
         highlight: function( value, options ) {
 
             // Navigate the highlight change if needed.
-            if ( options == 'nav' ) {
-                value = navigateShadowDate( value, this.ui.get('view'), this.ui.get('highlight')[0] )
+            if ( options.nav ) {
+                value = navigateShadowDate( value, this.ui.get('view'), this.ui.get('highlight') )
             }
 
             // If it’s a relative move, shift the date.
-            else if ( options == 'relative' ) {
-                var highlight = this.ui.get('highlight')[0]
+            else if ( options.relative ) {
+                var highlight = this.ui.get('highlight')
                 value = [ highlight.year, highlight.month, highlight.date + value ]
             }
 
@@ -131,11 +190,6 @@ shadow( 'pickadate', {
         }
     },
 
-    cascades: {
-        // select: 'highlight', //(optional)
-        highlight: 'view'
-    },
-
     klasses: {
         root: [ '', '--pickadate' ]
     },
@@ -143,8 +197,14 @@ shadow( 'pickadate', {
     keys: {
 
         // Enter.
-        13: function() {
-            this.ui.set( 'select', this.ui.get('highlight')[0] ).close(true)
+        13: function( event ) {
+            var ui = this.ui
+            if ( ui.is( 'opened' ) ) {
+                ui.$root.find('.' + ui.klasses.highlighted ).trigger( $.Event('click', {
+                    metaKey: event.metaKey,
+                    shiftKey: event.shiftKey
+                }) )
+            }
         },
 
         // Left.
@@ -180,8 +240,9 @@ shadow( 'pickadate', {
         today: 'Today',
         clear: 'Clear',
 
-        // The `value` format.
+        // The formats.
         format: 'd mmmm, yyyy',
+        formatHidden: 'yyyy-mm-dd',
 
         // The min/max range.
         min: -Infinity,
@@ -261,7 +322,6 @@ shadow( 'pickadate', {
 
     formats: {
         d: function( value, isParsing ) {
-            if ( $.isArray( value ) ) value = value[0]
             if ( isParsing ) {
                 var match = value.match( /^\d+/ )
                 return match ? match[0].length : 0
@@ -269,11 +329,9 @@ shadow( 'pickadate', {
             return value && value.date
         },
         dd: function( value, isParsing ) {
-            if ( $.isArray( value ) ) value = value[0]
             return isParsing ? 2 : value && leadZero( value.date )
         },
         ddd: function( value, isParsing ) {
-            if ( $.isArray( value ) ) value = value[0]
             if ( isParsing ) {
                 var match = value.match( /^\w+/ )
                 return match ? match[0].length : 0
@@ -281,7 +339,6 @@ shadow( 'pickadate', {
             return value && this.ui.settings.weekdaysShort[ value.day ]
         },
         dddd: function( value, isParsing ) {
-            if ( $.isArray( value ) ) value = value[0]
             if ( isParsing ) {
                 var match = value.match( /^\w+/ )
                 return match ? match[0].length : 0
@@ -289,7 +346,6 @@ shadow( 'pickadate', {
             return value && this.ui.settings.weekdaysFull[ value.day ]
         },
         m: function( value, isParsing ) {
-            if ( $.isArray( value ) ) value = value[0]
             if ( isParsing ) {
                 var match = value.match( /^\d+/ )
                 return match ? match[0].length : 0
@@ -297,11 +353,9 @@ shadow( 'pickadate', {
             return value && value.month + 1
         },
         mm: function( value, isParsing ) {
-            if ( $.isArray( value ) ) value = value[0]
             return isParsing ? 2 : value && leadZero( value.month + 1 )
         },
         mmm: function( value, isParsing ) {
-            if ( $.isArray( value ) ) value = value[0]
             if ( isParsing ) {
                 var match = value.match( /^\w+/ )
                 return match ? match[0].length : 0
@@ -309,7 +363,6 @@ shadow( 'pickadate', {
             return value && this.ui.settings.monthsShort[ value.month ]
         },
         mmmm: function( value, isParsing ) {
-            if ( $.isArray( value ) ) value = value[0]
             if ( isParsing ) {
                 var match = value.match( /^\w+/ )
                 return match ? match[0].length : 0
@@ -317,84 +370,114 @@ shadow( 'pickadate', {
             return value && this.ui.settings.monthsFull[ value.month ]
         },
         yy: function( value, isParsing ) {
-            if ( $.isArray( value ) ) value = value[0]
             return isParsing ? 2 : value && ( '' + value.year ).slice( 2 )
         },
         yyyy: function( value, isParsing ) {
-            if ( $.isArray( value ) ) value = value[0]
             return isParsing ? 4 : value && value.year
         }
     }, //formats
 
-    init: function( formatValueHash, isHiddenValue ) {
+    bindings: {
+
+        // When the values are cleared, update the `select`.
+        'set.clear': [function() {
+            this.set( 'select', false )
+        }],
+
+        // When the `select` is set, update the `highlight`.
+        'set.select': [function( event ) {
+            var ui = this,
+                value = event.value
+            if ( value ) ui.set( 'highlight', value instanceof shadow.Range ? value.from : value )
+            else ui.render()
+        }],
+
+        // When the `highlight` is set, update the `view` and render a new ui.
+        'set.highlight': [function( event ) {
+            var ui = this
+            ui.set( 'view', event.value )
+            if ( ui.is('started') ) ui.render()
+        }],
+
+        // When a selection is added, update the `highlight` to the last selection.
+        'add.select': [function( event ) {
+            var value = event.value.slice(0).pop()
+            this.set( 'highlight', value instanceof shadow.Range ? value.from : value )
+        }],
+
+        // Whenever the ui is rendered, bind stuff to the new elements.
+        render: [function() {
+            var ui = this
+            ui.$root.find( '.' + ui.settings.klasses.selectMonth ).on( 'change', function() {
+                ui.set( 'highlight', [ ui.get('view').year, this.value, ui.get('highlight').date ] )
+            })
+            ui.$root.find( '.' + ui.settings.klasses.selectYear ).on( 'change', function() {
+                ui.set( 'highlight', [ this.value, ui.get('view').month, ui.get('highlight').date ] )
+            })
+        }]
+    }, //bindings
+
+    init: function( formatValueHashes, isHiddenValue ) {
 
         var component = this,
             ui = component.ui,
-            disabledCollection = ( ui.settings.disable || [] ).slice(0),
-            startValue = [
-                formatValueHash.yyyy || formatValueHash.yy,
-                formatValueHash.mm || formatValueHash.m,
-                formatValueHash.dd || formatValueHash.d
-            ]
+            settings = ui.settings,
+            disabledCollection = ( settings.disable || [] ).slice(0),
+            createDateArray = function( dateHash ) {
 
-        // Make sure we have a starting month.
-        if ( startValue[1] == null ) {
-            startValue[1] = ( formatValueHash.mmmm ? ui.settings.monthsFull : ui.settings.monthsShort ).
-                indexOf( formatValueHash.mmmm || formatValueHash.mmm )
-        }
+                var startValue = [
+                    dateHash.yyyy || dateHash.yy,
+                    dateHash.mm || dateHash.m,
+                    dateHash.dd || dateHash.d
+                ]
 
-        // If we have a hidden value parsing, compensate for month 0index.
-        if ( isHiddenValue ) {
-            startValue[1] -= 1
-        }
+                // Make sure we have a starting month.
+                if ( startValue[1] == null ) {
+                    startValue[1] = ( dateHash.mmmm ? settings.monthsFull : settings.monthsShort ).
+                        indexOf( dateHash.mmmm || dateHash.mmm )
+                }
 
-        // Make sure we have a usable date.
-        startValue = startValue.filter( function( item ) {
-            return item >= 0 && item !== ''
-        })
+                // If we have a hidden value parsing, compensate for month 0index.
+                if ( isHiddenValue ) {
+                    startValue[1] -= 1
+                }
+
+                // Make sure we have usable date units.
+                startValue = startValue.filter( function( item ) {
+                    return item >= 0 && item !== ''
+                })
+
+                return startValue
+            },
+            selectedDates = formatValueHashes.map( function( hash ) {
+                if ( hash instanceof shadow.Range ) {
+                    return new shadow.Range(
+                        createShadowDate( createDateArray( hash.from ) ),
+                        createShadowDate( createDateArray( hash.to ) )
+                    )
+                }
+                return createShadowDate( createDateArray( hash ) )
+            })
+
 
         // Set the theme based on the type.
-        if ( component.ui.settings.type == 'dropdown' ) {
+        if ( settings.type == 'dropdown' ) {
             component.prefix = 'ui-drop'
         }
+
 
         // Make sure we are dealing with a text type element.
         ui.$source[0].type = 'text'
 
-        // Set the starting values. * Set the min & max first.
-        ui.set({
-            min: ui.settings.min,
-            max: ui.settings.max
-        }).set({
+
+        // Finally, set the starting values. Starting with the min & max *first*.
+        ui.set({ min: settings.min, max: settings.max }).set({
             today: relativeShadowDate(),
             flipDisabled: disabledCollection[0] === true ? +disabledCollection.shift() : 0,
-            disable: disabledCollection,
-            select: startValue.length ? startValue : relativeShadowDate()
+            disable: disabledCollection
         })
-
-        // Bind the ui events.
-        ui.on({
-
-            // When something is set, render the UI if needed.
-            set: function( event ) {
-                if ( event.item == 'select' || event.item == 'view' || ( event.item == 'highlight' && event.options == 'nav' ) ) {
-                    ui.render()
-                }
-                if ( event.options == 'close' ) {
-                    ui.close( true )
-                }
-            },
-
-            // Bind stuff to new elements whenever the ui is rendered.
-            render: function() {
-                ui.$root.find( '.' + ui.settings.klasses.selectMonth ).on( 'change', function() {
-                    ui.set( 'highlight', [ ui.get('view').year, this.value, ui.get('highlight')[0].date ] )
-                })
-                ui.$root.find( '.' + ui.settings.klasses.selectYear ).on( 'change', function() {
-                    ui.set( 'highlight', [ this.value, ui.get('view').month, ui.get('highlight')[0].date ] )
-                })
-            }
-        })
+        if ( selectedDates.length ) ui.add( 'select', selectedDates )
+        else ui.set( 'highlight', relativeShadowDate() )
 
     }, //init
 
@@ -409,25 +492,30 @@ shadow( 'pickadate', {
             dateMax = ui.get('max'),
             dateView = ui.get('view'),
             dateToday = ui.get('today'),
-            dateSelected = ui.get('select')[0],
-            dateHighlighted = ui.get('highlight')[0],
+            dateHighlighted = ui.get('highlight'),
 
             // Create the next/prev month buttons.
-            labelNav = function( next ) {
+            createLabelNav = function( next ) {
                 return shadow._.node({
                     el: 'button',
-                    content: ' ',
                     attrs: {
-                        'data-action': 'highlight:' + (next ? 1 : -1) + ':nav'
+                        'data-action': 'set:highlight:' + (next ? 1 : -1) + ':nav'
                     },
-                    klass: [
-                        ui.klasses[ next ? 'navNext' : 'navPrev' ],
+                    klass: [ ui.klasses[ next ? 'navNext' : 'navPrev' ] ],
+                    content: function() {
 
-                        // If the focused month is outside the range, disabled the button.
-                        ( next && dateView.year >= dateMax.year && dateView.month >= dateMax.month ) ||
-                        ( !next && dateView.year <= dateMin.year && dateView.month <= dateMin.month ) ?
-                            settings.klasses.navDisabled : ''
-                    ]
+                        // If the focused month is outside the range, disable the button.
+                        if (
+                            ( next && dateView.year >= dateMax.year && dateView.month >= dateMax.month ) ||
+                            ( !next && dateView.year <= dateMin.year && dateView.month <= dateMin.month )
+                        ) {
+                            this.klass.push( settings.klasses.navDisabled )
+                            this.attrs.disabled = ''
+                        }
+
+                        // Just return empty content.
+                        return ' '
+                    }
                 })
             },
 
@@ -557,6 +645,48 @@ shadow( 'pickadate', {
                 })
             }), //tableHead
 
+            createNodeDate = function( dayOfCalendar ) {
+                var loopedDate = createShadowDate([ dateView.year, dateView.month, dayOfCalendar ])
+                return '<td>' + shadow._.node({
+                    el: 'button',
+                    content: function() {
+
+                        // Add the `disabled` state if the looped date is disabled or outside the range.
+                        if ( ui.is( 'disabled', loopedDate ) ) {
+                            this.klass.push( ui.klasses.disabled )
+                            this.attrs.disabled = ''
+                        }
+
+                        // Return the looped date as the content.
+                        return loopedDate.date
+                    },
+                    attrs: {
+                        'data-action': 'set:select:' + loopedDate.time,
+                        'data-action-meta': 'add:select:' + loopedDate.time,
+                        'data-action-shift': 'set:select:' + loopedDate.time + ':range',
+                        'data-action-shift-meta': 'add:select:' + loopedDate.time + ':range',
+                        'tabindex': -1
+                    },
+                    klass: [
+
+                        // The default “day” class.
+                        ui.klasses.day,
+
+                        // Add the `infocus` or `outfocus` classes based on month in view.
+                        dateView.month === loopedDate.month ? ui.klasses.infocus : ui.klasses.outfocus,
+
+                        // Add the `today` class if needed.
+                        dateToday.time === loopedDate.time ? ui.klasses.now : '',
+
+                        // Add the `selected` class if something's selected and the time matches.
+                        ui.within( 'select', loopedDate ) > -1 ? ui.klasses.selected : '',
+
+                        // Add the `highlighted` class if something's highlighted and the time matches.
+                        dateHighlighted.time === loopedDate.time ? ui.klasses.highlighted : ''
+                    ]
+                }) + '</td>'
+            },
+
             // Create the table body as a matrix of dates (7x6).
             tableBody = shadow._.node({
                 el: 'tbody',
@@ -566,40 +696,7 @@ shadow( 'pickadate', {
 
                         // If the first day is Monday, shift by 1. If the first day
                         // of the month is Sunday, shift the date back a week.
-                        shiftWeekday = settings.firstDay ? dateView.day === 0 ? -6 : 1 : 0,
-
-                        createNodeDate = function ( dayOfCalendar ) {
-                            var loopedDate = createShadowDate([ dateView.year, dateView.month, dayOfCalendar ])
-                            return '<td>' + shadow._.node({
-                                el: 'button',
-                                content: loopedDate.date,
-                                attrs: {
-                                    'data-action': 'select:' + loopedDate.time + ':close',
-                                    'tabindex': -1
-                                },
-                                klass: [
-
-                                    // The default “day” class.
-                                    ui.klasses.day,
-
-                                    // Add the `infocus` or `outfocus` classes based on month in view.
-                                    dateView.month === loopedDate.month ? ui.klasses.infocus : ui.klasses.outfocus,
-
-                                    // Add the `today` class if needed.
-                                    dateToday.time === loopedDate.time ? ui.klasses.now : '',
-
-                                    // Add the `selected` class if something's selected and the time matches.
-                                    dateSelected.time === loopedDate.time ? ui.klasses.selected : '',
-
-                                    // Add the `highlighted` class if something's highlighted and the time matches.
-                                    dateHighlighted.time === loopedDate.time ? ui.klasses.highlighted : '',
-
-                                    // Add the `disabled` class if something's disabled or outside the range.
-                                    ui.is( 'disabled', loopedDate ) ? ui.klasses.disabled : ''
-                                ]
-                            }) + '</td>'
-                        }
-
+                        shiftWeekday = settings.firstDay ? dateView.day === 0 ? -6 : 1 : 0
 
                     // Go through the weeks and days to fill up the collection.
                     for ( var countWeek = 0; countWeek < WEEKS_IN_CAL; countWeek += 1 ) {
@@ -633,7 +730,7 @@ shadow( 'pickadate', {
                 el: 'button',
                 content: 'Today',
                 attrs: {
-                    'data-action': 'select:' + dateToday.time
+                    'data-action': 'set:select:' + dateToday.time
                 },
                 klass: ui.klasses.buttonToday
             }),
@@ -643,7 +740,7 @@ shadow( 'pickadate', {
                 el: 'button',
                 content: 'Clear',
                 attrs: {
-                    'data-action': 'clear'
+                    'data-action': 'set:clear'
                 },
                 klass: ui.klasses.buttonClear
             })
@@ -654,7 +751,7 @@ shadow( 'pickadate', {
             klass: ui.klasses.face,
             content: [
                 shadow._.node({
-                    content: [ labelMonth, labelYear, labelNav(), labelNav(1) ],
+                    content: [ labelMonth, labelYear, createLabelNav(), createLabelNav(1) ],
                     klass: ui.klasses.header
                 }),
                 shadow._.node({

@@ -92,12 +92,10 @@ test( 'Starting `dict`', function() {
 
     var today = ui.get('today')
     deepEqual( today.time, new Date().setHours(0,0,0,0), 'Today' )
+    deepEqual( ui.get('highlight'), today, 'Highlight selected' )
 
     var selections = ui.get('select')
-    deepEqual( selections[0], today, 'Select “today”' )
-
-    var highlights = ui.get('highlight')
-    deepEqual( highlights, selections, 'Highlight selected' )
+    deepEqual( selections, [], 'Select “today”' )
 
     var view = ui.get('view')
     deepEqual( [view.year, view.month, view.date], [today.year, today.month, 1], 'View' )
@@ -114,57 +112,208 @@ test( 'Starting `dict`', function() {
 
 module( 'Pickadate setup', {
     setup: function() {
-        var $node = $NODE_INPUT.clone().val('14 August, 2013').appendTo( $DOM )
-        shadow.create( 'pickadate', $node[0] )
-        this.ui = $node.pickadate()
+        this.$node = $NODE_INPUT.clone()
     },
     teardown: tearDownTheUI
 })
 
-test( 'Starting value', function() {
+test( 'Value', function() {
 
+    var $node = this.$node.val('14 August, 2013').appendTo( $DOM )
+    shadow.create( 'pickadate', $node[0] )
+    this.ui = $node.pickadate()
     var ui = this.ui
-
-    strictEqual( ui.get('value'), '14 August, 2013', 'Value' )
 
     var today = ui.get('today')
     deepEqual( today.time, new Date().setHours(0,0,0,0), 'Today' )
 
+    var highlight = ui.get('highlight')
+    deepEqual( [highlight.year,highlight.month,highlight.date], [2013,7,14], 'Highlight' )
+
     var selected = ui.get('select')[0]
     deepEqual( [selected.year,selected.month,selected.date], [2013,7,14], 'Select' )
 
-    var highlighted = ui.get('highlight')[0]
-    deepEqual( [highlighted.year,highlighted.month,highlighted.date], [2013,7,14], 'Highlight' )
-
     var view = ui.get('view')
     deepEqual( [view.year,view.month,view.date], [2013,7,1], 'View' )
+})
+
+test( 'Range value', function() {
+
+    var $node = this.$node.val('10 August, 2013 - 14 August, 2013').appendTo( $DOM )
+    shadow.create( 'pickadate', $node[0] )
+    this.ui = $node.pickadate()
+    var ui = this.ui
+
+    var selected = ui.get('select')[0]
+    deepEqual( [selected.from.year, selected.from.month, selected.from.date], [2013,7,10], 'Select range “from”' )
+    deepEqual( [selected.to.year, selected.to.month, selected.to.date], [2013,7,14], 'Select range “to”' )
+})
+
+test( 'Multiple values (first & last)', function() {
+
+    var $node = this.$node.val('10 August, 2013, and 23 August, 2013').appendTo( $DOM )
+    shadow.create( 'pickadate', $node[0] )
+    this.ui = $node.pickadate()
+    var ui = this.ui
+
+    var selected = ui.get('select').map( function( dateObject ) {
+        return [dateObject.year, dateObject.month, dateObject.date]
+    })
+    deepEqual( selected, [[2013,7,10], [2013,7,23]], 'Select two values' )
+})
+
+test( 'Multiple values (first, middle, & last)', function() {
+
+    var $node = this.$node.val('10 August, 2013, 12 August, 2013, and 23 August, 2013').appendTo( $DOM )
+    shadow.create( 'pickadate', $node[0] )
+    this.ui = $node.pickadate()
+    var ui = this.ui
+
+    var selected = ui.get('select').map( function( dateObject ) {
+        return [dateObject.year, dateObject.month, dateObject.date]
+    })
+    deepEqual( selected, [[2013,7,10], [2013,7,12], [2013,7,23]], 'Select three values' )
+})
+
+test( 'Multiple values (first, several middles, & last)', function() {
+
+    var $node = this.$node.val('10 August, 2013, 12 August, 2013, 14 August, 2013, 15 August, 2013, and 23 August, 2013').appendTo( $DOM )
+    shadow.create( 'pickadate', $node[0] )
+    this.ui = $node.pickadate()
+    var ui = this.ui
+
+    var selected = ui.get('select').map( function( dateObject ) {
+        return [dateObject.year, dateObject.month, dateObject.date]
+    })
+    deepEqual( selected, [[2013,7,10], [2013,7,12], [2013,7,14], [2013,7,15], [2013,7,23]], 'Select more than three values' )
+})
+
+test( 'Multiple values (with ranges)', function() {
+
+    var $node = this.$node.val('10 August, 2013, 12 August, 2013 - 14 August, 2013, 15 August, 2013, and 23 August, 2013').appendTo( $DOM )
+    shadow.create( 'pickadate', $node[0] )
+    this.ui = $node.pickadate()
+    var ui = this.ui
+
+    var selected = ui.get('select').map( function( dateObject ) {
+        if ( dateObject instanceof shadow.Range ) {
+            return [
+                [dateObject.from.year, dateObject.from.month, dateObject.from.date],
+                [dateObject.to.year, dateObject.to.month, dateObject.to.date]
+            ]
+        }
+        return [dateObject.year, dateObject.month, dateObject.date]
+    })
+    deepEqual( selected, [[2013,7,10], [[2013,7,12],[2013,7,14]], [2013,7,15], [2013,7,23]], 'Select ranges and values' )
 })
 
 module( 'Pickadate setup', {
     setup: function() {
-        var $node = $NODE_INPUT.clone().attr('data-value', '2013-08-14').appendTo( $DOM )
-        shadow.create( 'pickadate', $node[0], {
-            formatHidden: 'yyyy-mm-dd'
-        })
-        this.ui = $node.pickadate()
+        this.$node = $NODE_INPUT.clone()
     },
     teardown: tearDownTheUI
 })
 
-test( 'Starting hidden value', function() {
+test( 'Hidden value', function() {
 
+    var $node = this.$node.attr('data-value', '2013-08-14').appendTo( $DOM )
+    shadow.create( 'pickadate', $node[0], {
+        hasHidden: true,
+        formatHidden: 'yyyy-mm-dd'
+    })
+    this.ui = $node.pickadate()
     var ui = this.ui
 
     strictEqual( ui.get('valueHidden'), '2013-08-14', 'Hidden value' )
 
+    var highlight = ui.get('highlight')
+    deepEqual( [highlight.year,highlight.month,highlight.date], [2013,7,14], 'Highlight' )
+
     var selected = ui.get('select')[0]
     deepEqual( [selected.year,selected.month,selected.date], [2013,7,14], 'Select' )
 
-    var highlighted = ui.get('highlight')[0]
-    deepEqual( [highlighted.year,highlighted.month,highlighted.date], [2013,7,14], 'Highlight' )
-
     var view = ui.get('view')
     deepEqual( [view.year,view.month,view.date], [2013,7,1], 'View' )
+})
+
+test( 'Hidden range value', function() {
+
+    var $node = this.$node.attr('data-value', '2013-08-10 - 2013-08-14').appendTo( $DOM )
+    shadow.create( 'pickadate', $node[0], {
+        formatHidden: 'yyyy-mm-dd'
+    })
+    this.ui = $node.pickadate()
+    var ui = this.ui
+
+    var selected = ui.get('select')[0]
+    deepEqual( [selected.from.year, selected.from.month, selected.from.date], [2013,7,10], 'Select range “from”' )
+    deepEqual( [selected.to.year, selected.to.month, selected.to.date], [2013,7,14], 'Select range “to”' )
+})
+
+test( 'Hidden multiple values (first & last)', function() {
+
+    var $node = this.$node.attr('data-value', '2013-08-10, and 2013-08-23').appendTo( $DOM )
+    shadow.create( 'pickadate', $node[0], {
+        formatHidden: 'yyyy-mm-dd'
+    })
+    this.ui = $node.pickadate()
+    var ui = this.ui
+
+    var selected = ui.get('select').map( function( dateObject ) {
+        return [dateObject.year, dateObject.month, dateObject.date]
+    })
+    deepEqual( selected, [[2013,7,10], [2013,7,23]], 'Select two values' )
+})
+
+test( 'Hidden multiple values (first, middle, & last)', function() {
+
+    var $node = this.$node.attr('data-value', '2013-08-10, 2013-08-12, and 2013-08-23').appendTo( $DOM )
+    shadow.create( 'pickadate', $node[0], {
+        formatHidden: 'yyyy-mm-dd'
+    })
+    this.ui = $node.pickadate()
+    var ui = this.ui
+
+    var selected = ui.get('select').map( function( dateObject ) {
+        return [dateObject.year, dateObject.month, dateObject.date]
+    })
+    deepEqual( selected, [[2013,7,10], [2013,7,12], [2013,7,23]], 'Select three values' )
+})
+
+test( 'Hidden multiple values (first, several middles, & last)', function() {
+
+    var $node = this.$node.attr('data-value', '2013-08-10, 2013-08-12, 2013-08-14, 2013-08-15, and 2013-08-23').appendTo( $DOM )
+    shadow.create( 'pickadate', $node[0], {
+        formatHidden: 'yyyy-mm-dd'
+    })
+    this.ui = $node.pickadate()
+    var ui = this.ui
+
+    var selected = ui.get('select').map( function( dateObject ) {
+        return [dateObject.year, dateObject.month, dateObject.date]
+    })
+    deepEqual( selected, [[2013,7,10], [2013,7,12], [2013,7,14], [2013,7,15], [2013,7,23]], 'Select more than three values' )
+})
+
+test( 'Hidden multiple values (with ranges)', function() {
+
+    var $node = this.$node.attr('data-value', '2013-08-10, 2013-08-12 - 2013-08-14, 2013-08-15, and 2013-08-23').appendTo( $DOM )
+    shadow.create( 'pickadate', $node[0], {
+        formatHidden: 'yyyy-mm-dd'
+    })
+    this.ui = $node.pickadate()
+    var ui = this.ui
+
+    var selected = ui.get('select').map( function( dateObject ) {
+        if ( dateObject instanceof shadow.Range ) {
+            return [
+                [dateObject.from.year, dateObject.from.month, dateObject.from.date],
+                [dateObject.to.year, dateObject.to.month, dateObject.to.date]
+            ]
+        }
+        return [dateObject.year, dateObject.month, dateObject.date]
+    })
+    deepEqual( selected, [[2013,7,10], [[2013,7,12],[2013,7,14]], [2013,7,15], [2013,7,23]], 'Select ranges and values' )
 })
 
 
@@ -222,8 +371,8 @@ test( 'Set beyond limits', function() {
     var selected = ui.get('select')[0]
     deepEqual( [selected.year,selected.month,selected.date], minArray, 'Select beyond min' )
 
-    var highlighted = ui.get('highlight')[0]
-    deepEqual( [highlighted.year,highlighted.month,highlighted.date], minArray, 'Highlight beyond min' )
+    var highlight = ui.get('highlight')
+    deepEqual( [highlight.year,highlight.month,highlight.date], minArray, 'Highlight beyond min' )
 
     var view = ui.get('view')
     deepEqual( [view.year,view.month,view.date], [minArray[0],minArray[1],1], 'View beyond min' )
@@ -236,19 +385,19 @@ test( 'Set `highlight`', function() {
     var dateArray = [2012,11,21]
     ui.set( 'highlight', dateArray )
 
-    var pickObject = ui.get( 'highlight' )[0]
+    var pickObject = ui.get( 'highlight' )
     deepEqual( [pickObject.year, pickObject.month, pickObject.date], dateArray, 'Using an array' )
 
     var dateObject = new Date( dateArray[0], dateArray[1], dateArray[2] + 40 )
     ui.set( 'highlight', dateObject )
 
-    pickObject = ui.get( 'highlight' )[0]
+    pickObject = ui.get( 'highlight' )
     deepEqual( pickObject.obj, dateObject, 'Using a date object' )
 
     var dateTime = dateObject.setDate( dateObject.getDate() + 40 )
     ui.set( 'highlight', dateTime )
 
-    pickObject = ui.get( 'highlight' )[0]
+    pickObject = ui.get( 'highlight' )
     deepEqual( pickObject.time, dateTime, 'Using a number' )
 })
 
@@ -383,7 +532,7 @@ test( 'Is `disabled`', function() {
 
     var ui = this.ui
 
-    ui.add( 'disable', [2013,3,3], 4, new Date(2013,6,6) )
+    ui.add( 'disable', [[2013,3,3], 4, new Date(2013,6,6)] )
 
     ok( ui.is('disabled', [2013,3,3]), 'Date as array, match array' )
     ok( ui.is('disabled', [2013,6,6]), 'Date as date object, match array' )
@@ -423,36 +572,36 @@ test( 'Highlight', function() {
 
     var ui = this.ui
     var $node = ui.$source
-    var highlighted
+    var highlight
 
     ui.open(true)
 
     // Down
     for ( var i = 0; i < 5; i += 1 ) {
-        highlighted = ui.get('highlight')[0]
+        highlight = ui.get('highlight')
         $node.trigger({ type: 'keydown', keyCode: 40 })
-        deepEqual( new Date( highlighted.year, highlighted.month, highlighted.date + 7 ), ui.get('highlight')[0].obj )
+        deepEqual( new Date( highlight.year, highlight.month, highlight.date + 7 ), ui.get('highlight').obj )
     }
 
     // Up
     for ( var j = 0; j < 5; j += 1 ) {
-        highlighted = ui.get('highlight')[0]
+        highlight = ui.get('highlight')
         $node.trigger({ type: 'keydown', keyCode: 38 })
-        deepEqual( new Date( highlighted.year, highlighted.month, highlighted.date - 7 ), ui.get('highlight')[0].obj )
+        deepEqual( new Date( highlight.year, highlight.month, highlight.date - 7 ), ui.get('highlight').obj )
     }
 
     // Left
     for ( var k = 0; k < 5; k += 1 ) {
-        highlighted = ui.get('highlight')[0]
+        highlight = ui.get('highlight')
         $node.trigger({ type: 'keydown', keyCode: 37 })
-        deepEqual( new Date( highlighted.year, highlighted.month, highlighted.date - 1 ), ui.get('highlight')[0].obj )
+        deepEqual( new Date( highlight.year, highlight.month, highlight.date - 1 ), ui.get('highlight').obj )
     }
 
     // Right
     for ( var l = 0; l < 5; l += 1 ) {
-        highlighted = ui.get('highlight')[0]
+        highlight = ui.get('highlight')
         $node.trigger({ type: 'keydown', keyCode: 39 })
-        deepEqual( new Date( highlighted.year, highlighted.month, highlighted.date + 1 ), ui.get('highlight')[0].obj )
+        deepEqual( new Date( highlight.year, highlight.month, highlight.date + 1 ), ui.get('highlight').obj )
     }
 })
 
@@ -461,19 +610,19 @@ test( 'Select and value', function() {
     var ui = this.ui
     var $node = ui.$source
 
-    var selected = ui.get('select')[0]
+    var highlight = ui.get('highlight')
 
     $node.trigger({ type: 'keydown', keyCode: 13 })
     strictEqual( ui.get('value'), '', 'No value when closed' )
 
     ui.open(true)
     $node.trigger({ type: 'keydown', keyCode: 13 })
-    strictEqual( selected.date + ' ' + ui.settings.monthsFull[ selected.month ] + ', ' + selected.year, ui.get('value'), 'Value selected when open' )
+    strictEqual( highlight.date + ' ' + ui.settings.monthsFull[ highlight.month ] + ', ' + highlight.year, ui.get('value'), 'Value highlighted when open' )
 
     $node.trigger({ type: 'keydown', keyCode: 40 })
-    var highlighted = ui.get('highlight')[0]
+    highlight = ui.get('highlight')
     $node.trigger({ type: 'keydown', keyCode: 13 })
-    deepEqual( ui.get('select')[0], highlighted, 'Highlight selected' )
+    deepEqual( ui.get('select')[0], highlight, 'Highlight selected' )
 })
 
 
@@ -504,13 +653,13 @@ test( 'Buttons', function() {
     strictEqual( ui.get('value'), '', 'Clear' )
 
     ui.$root.find( '.' + ui.settings.klasses.navNext ).click()
-    var highlighted = ui.get('highlight')[0]
+    var highlight = ui.get('highlight')
     var today = ui.get('today')
-    deepEqual( [highlighted.year, highlighted.month, highlighted.date], [today.year, today.month + 1, today.date], 'Navigate next' )
+    deepEqual( [highlight.year, highlight.month, highlight.date], [today.year, today.month + 1, today.date], 'Navigate next' )
 
     ui.$root.find( '.' + ui.settings.klasses.navPrev ).click()
-    highlighted = ui.get('highlight')[0]
-    deepEqual( [highlighted.year, highlighted.month, highlighted.date], [today.year, today.month, today.date], 'Navigate previous' )
+    highlight = ui.get('highlight')
+    deepEqual( [highlight.year, highlight.month, highlight.date], [today.year, today.month, today.date], 'Navigate previous' )
 
     ui.$root.find( '.' + ui.settings.klasses.infocus ).eq(20).click()
     var selected = ui.get('select')[0]

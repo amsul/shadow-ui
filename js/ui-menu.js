@@ -3,12 +3,12 @@
 
 
 // Create the shadow extension.
-shadow( 'picker', {
+shadow( 'menu', {
 
     /**
      * Give it a jQuery alias.
      */
-    alias: 'picker',
+    alias: 'menu',
 
 
     /**

@@ -1,4 +1,4 @@
-# Shadow UI v0.5.0 [![Shadow UI build status](https://travis-ci.org/amsul/shadow-ui.png)](https://travis-ci.org/amsul/shadow-ui)
+# Shadow UI v0.5.1 [![Shadow UI build status](https://travis-ci.org/amsul/shadow-ui.png)](https://travis-ci.org/amsul/shadow-ui)
 
 Create Shadow DOM based UI components, such as dropdowns, modals, popups, tooltips, blobs, etc.
 
@@ -7,7 +7,7 @@ Create Shadow DOM based UI components, such as dropdowns, modals, popups, toolti
 
 ### Get started:
 
-- [Download the package](https://github.com/amsul/shadow-ui/archive/0.5.0.zip), or
+- [Download the package](https://github.com/amsul/shadow-ui/archive/0.5.1.zip), or
 - `git clone https://github.com/amsul/shadow-ui.git`, or
 - `bower install shadow`
 

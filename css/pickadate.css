@@ -214,18 +214,20 @@
   border-top: 0.5em solid #0059bc;
   border-left: .5em solid transparent;
 }
-.pickadate__day--selected,
-.pickadate__day--selected:hover {
-  border-color: #0089ec;
-}
 .pickadate__day--highlighted {
-  background: #b9e2ff;
+  border-color: #0089ec;
 }
 .pickadate__day--highlighted:hover,
 .ui-modal--captured .pickadate__day--highlighted,
 .ui-drop--captured .pickadate__day--highlighted {
-  background: #0089ec;
+  background: #b9e2ff;
+}
+.pickadate__day--selected,
+.pickadate__day--selected:hover,
+.ui-modal--captured .pickadate__day--selected,
+.ui-drop--captured .pickadate__day--selected {
   color: #ffffff;
+  background: #0089ec;
 }
 .pickadate__day--disabled,
 .pickadate__day--disabled:hover {

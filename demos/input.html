@@ -3,11 +3,14 @@ layout: extension
 extension_name: Input
 ---
 
-<input type="text" class="shadow shadow--input" value="Input extension">
+<input id="shadowInput" data-ui="input" type="text" value="Input extension">
+
 <script>
-    shadow.extend({
-        name: 'input',
+    shadow( 'input', {
         template: '<div class="ui-face ui-face--padded">This is an <code>input</code> shadow extension.</div>'
     })
-    $('.shadow--input').shadow('input')
+</script>
+
+<script>
+    shadowInputUI = $('#shadowInput').shadow()
 </script>

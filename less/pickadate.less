@@ -218,23 +218,25 @@
             border-left: .5em solid transparent;
         }
 
-    // Selected.
-    .pickadate__day--selected,
-    .pickadate__day--selected:hover {
+    // Highlighted.
+    .pickadate__day--highlighted {
         border-color: @color--primary;
     }
 
-    // Highlighted.
-    .pickadate__day--highlighted {
-        background: @color--primary-light;
-    }
-
-    // Highlighted and hovered/captured.
+    // Highlighted with hover/capture.
     .pickadate__day--highlighted:hover,
     .ui-modal--captured .pickadate__day--highlighted,
     .ui-drop--captured .pickadate__day--highlighted {
-        background: @color--primary;
+        background: @color--primary-light;
+    }
+
+    // Selected, and selected with hover/capture.
+    .pickadate__day--selected,
+    .pickadate__day--selected:hover,
+    .ui-modal--captured .pickadate__day--selected,
+    .ui-drop--captured .pickadate__day--selected {
         color: @background--ui-modal;
+        background: @color--primary;
     }
 
     // Disabled.

@@ -1,1 +1,59 @@
-{"name":"shadow","version":"0.5.0","title":"Shadow UI","description":"Create Shadow DOM based UI components, such as dropdowns, modals, popups, tooltips, blobs, etc.","author":{"name":"Amsul","email":"reach@amsul.ca","url":"http://amsul.ca"},"main":"lib/shadow.js","homepage":"http://amsul.github.io/shadow-ui","docs":"http://amsul.github.io/shadow-ui","demo":"http://amsul.github.io/shadow-ui","repo":"https://github.com/amsul/shadow-ui","bugs":"https://github.com/amsul/shadow-ui/issues","repository":{"type":"git","url":"https://github.com/amsul/shadow-ui.git"},"licenses":[{"type":"MIT","url":"http://amsul.ca/MIT"}],"keywords":["shadow","dom","components","picker","dropdown","modal","input","responsive","ui"],"permalink":"pretty","markdown":"redcarpet","pygments":true,"scripts":{"test":"grunt travis --verbose"},"dependencies":{"jquery":">=1.7"},"devDependencies":{"grunt":"~0.4.1","phantomjs":"1.9.0-2","zlib-browserify":"0.0.1","grunt-contrib-concat":"~0.3.0","grunt-contrib-watch":"~0.3.1","grunt-contrib-jshint":"~0.4.3","grunt-contrib-qunit":"~0.2.2","grunt-contrib-copy":"~0.4.1","grunt-contrib-less":"~0.5.1","grunt-contrib-clean":"~0.4.1","grunt-contrib-cssmin":"~0.6.0","grunt-contrib-uglify":"~0.2.0"}}
+{
+	"name": "shadow",
+	"version": "0.5.0",
+	"title": "Shadow UI",
+	"description": "Create Shadow DOM based UI components, such as dropdowns, modals, popups, tooltips, blobs, etc.",
+	"author": {
+		"name": "Amsul",
+		"email": "reach@amsul.ca",
+		"url": "http://amsul.ca"
+	},
+	"licenses": [
+		{
+			"type": "MIT",
+			"url": "http://amsul.ca/MIT"
+		}
+	],
+	"main": "lib/shadow.js",
+	"dependencies": {
+		"jquery": ">=1.7"
+	},
+	"homepage": "http://amsul.github.io/shadow-ui",
+	"docs": "http://amsul.github.io/shadow-ui",
+	"demo": "http://amsul.github.io/shadow-ui",
+	"repo": "https://github.com/amsul/shadow-ui",
+	"bugs": "https://github.com/amsul/shadow-ui/issues",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/amsul/shadow-ui.git"
+	},
+	"keywords": [
+		"shadow",
+		"dom",
+		"components",
+		"picker",
+		"dropdown",
+		"modal",
+		"input",
+		"responsive",
+		"ui"
+	],
+	"devDependencies": {
+		"grunt": "~0.4.1",
+		"phantomjs": "1.9.0-2",
+		"zlib-browserify": "0.0.1",
+		"yamljs": "~0.1.4",
+		"grunt-contrib-concat": "~0.3.0",
+		"grunt-contrib-watch": "~0.3.1",
+		"grunt-contrib-jshint": "~0.4.3",
+		"grunt-contrib-qunit": "~0.2.2",
+		"grunt-contrib-copy": "~0.4.1",
+		"grunt-contrib-less": "~0.5.1",
+		"grunt-contrib-clean": "~0.4.1",
+		"grunt-contrib-cssmin": "~0.6.0",
+		"grunt-contrib-uglify": "~0.2.0"
+	},
+	"scripts": {
+		"test": "grunt travis --verbose"
+	}
+}

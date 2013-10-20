@@ -1,6 +1,17 @@
 
 # Changelog
 
+## v0.5.1
+
+- Improved shadow element creation and syntax
+- Added element options through `data-ui-*` attributes
+- Added root template element actions through `data-action*` attributes
+- Added multiple selections and parsing
+- Added range selections and parsing
+- Updated `add` and `remove` method arguments to match the `set` method
+- Removed `find` in favor of `match`
+- Removed `cascades` in favor of `on` listners
+
 ## v0.5.0
 
 - Added `[data-action]` to `set` things as `<thing>:<value>:<option>`

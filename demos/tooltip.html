@@ -21,15 +21,16 @@ extension_name: Tooltip
                 padding: 5px 8px;
             }
 </style>
-<div class="shadow shadow--tooltip" data-title="This is a title dropdown">Tooltip <small class="text-dim">(hover and wait a sec)</small></div>
+
+<div data-ui="tooltip" data-title="This is a title dropdown">Tooltip <small class="text-dim">(hover and wait a sec)</small></div>
+
 <script>
-    shadow.extend({
-        name: 'tooltip',
-        template: function() {
-            return this.ui.$host.data('title')
-        },
+    shadow( 'tooltip', {
         klasses: {
             root: [ '', '--tooltip' ]
+        },
+        template: function() {
+            return this.ui.$host.data('title')
         },
         init: function() {
 
@@ -50,5 +51,4 @@ extension_name: Tooltip
             })
         }
     })
-    $('.shadow--tooltip').shadow('tooltip')
 </script>

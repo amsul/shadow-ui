@@ -1,0 +1,56 @@
+---
+layout: extension
+extension_name: Menu
+---
+
+<div id="shadowMenu"
+    data-ui="menu"
+    data-ui-single="true"
+    data-ui-format-hidden="id full"
+    data-ui-value-hidden="1,3,5 1:One,3:Three,5:Five"
+    data-ui-name-hidden="menu"
+    data-ui-suffix-hidden=""
+    >Menu (multi and single)
+    <script type="json/ui-context">
+        [
+            { "id":  1, "value": "One" },
+            { "id":  2, "value": "Two" },
+            { "id":  3, "value": "Three" },
+            { "id":  4, "value": "Four" },
+            { "id":  5, "value": "Five" },
+            { "id":  6, "value": "Six" },
+            { "id":  7, "value": "Seven" },
+            { "id":  8, "value": "Eight" },
+            { "id":  9, "value": "Nine" },
+            { "id": 10, "value": "Ten" }
+        ]
+    </script>
+</div>
+
+<br><hr><br>
+
+<input id="shadowMenuInput" type="text"
+    data-ui="menu"
+    data-ui-format="full">
+<script type="json/ui-context">
+    [
+        { "id":  1, "value": "One" },
+        { "id":  2, "value": "Two" },
+        { "id":  3, "value": "Three" },
+        { "id":  4, "value": "Four" },
+        { "id":  5, "value": "Five" },
+        { "id":  6, "value": "Six" },
+        { "id":  7, "value": "Seven" },
+        { "id":  8, "value": "Eight" },
+        { "id":  9, "value": "Nine" },
+        { "id": 10, "value": "Ten" }
+    ]
+</script>
+
+
+<script src="{{ site.baseurl }}/js/ui-menu.js"></script>
+
+<script>
+    shadowMenuUI = $('#shadowMenu').menu()
+    // shadowMenuUI.open(true)
+</script>

@@ -1,0 +1,28 @@
+{
+	"name": "shadow",
+	"version": "0.5.0",
+	"title": "Shadow UI",
+	"description": "Create Shadow DOM based UI components, such as dropdowns, modals, popups, tooltips, blobs, etc.",
+	"author": {
+		"name": "Amsul",
+		"email": "reach@amsul.ca",
+		"url": "http://amsul.ca"
+	},
+	"licenses": [
+		{
+			"type": "MIT",
+			"url": "http://amsul.ca/MIT"
+		}
+	],
+	"main": "lib/shadow.js",
+	"dependencies": {
+		"jquery": ">=1.7"
+	},
+	"ignore": [
+		"*",
+		"!css/",
+		"!js/",
+		"!less/",
+		"!.jshintrc"
+	]
+}

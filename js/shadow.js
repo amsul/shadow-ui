@@ -1,1469 +1,902 @@
 
 /*!
- * Shadow UI v0.5.1, 2013/09/25
+ * Shadow UI v0.5.0, 2014/04/24
  * By Amsul, http://amsul.ca
  * Hosted on http://amsul.github.io/shadow-ui
  * Licensed under MIT
  */
 
-(function ( root, factory ) {
+(function (root, factory) {
 
     // Setup the exports for Node module pattern...
     if ( typeof module == 'object' && typeof module.exports == 'object' )
-        module.exports = factory( require('jquery') )
+        module.exports = factory(root, root.jQuery)
 
     // ...AMD...
     else if ( typeof define == 'function' && define.amd )
-        define( ['jquery'] )
+        define('shadow', [root, 'jquery'], factory)
 
     // ...and basic `script` includes.
-    else root.shadow = factory( jQuery )
+    else root.shadow = factory(root, root.jQuery)
 
-}( this, function( $ ) { 'use strict';
+}(this, function(window, $, undefined) {
 
+'use strict';
 
-
-/**
- * Create some shorthands.
- */
-var $document = $( document ),
-    docEl = document.documentElement,
-    hasShadowRoot = docEl.webkitCreateShadowRoot || docEl.createShadowRoot,
-    SELECTOR_ACTION_BUTTONS = '[data-action],[data-action-meta],[data-action-shift],[data-action-shift-meta]'
-
-
-
-/**
- * Create a shadow element.
- */
-function shadow( elementName, elementOptions ) {
-
-
-    // Make sure we have an element name.
-    if ( !elementName ) throw 'To create a shadow, the element needs a name.'
-
-    // Make sure this element doesn’t already exist.
-    if ( shadow.ELEMENTS[ elementName ] ) throw 'The name “' + elementName + '” is already reserved by a shadow element.'
-
-
-    // Make sure we have usable options.
-    elementOptions = $.isPlainObject( elementOptions ) ? elementOptions : {}
-
-
-    // If there’s an alias, create the shorthand link.
-    if ( elementOptions.alias ) {
-
-        // Make sure we aren’t overriding anything.
-        if ( shadow.ELEMENTS[ elementOptions.alias ] || $.fn[ elementOptions.alias ] ) {
-            throw 'The alias “' + elementOptions.alias + '” is already reserved by a shadow element or jQuery method.'
-        }
-
-        // Reserve the alias name.
-        if ( elementOptions.alias != elementName ) {
-            shadow.ELEMENTS[ elementOptions.alias ] = elementName
-        }
-
-        // Extend jQuery with the alias.
-        $.fn[ elementOptions.alias ] = function( options ) {
-            return this.shadow( options, elementName )
-        }
+function shadow(shadowName, shadowOptions) {
+    if (!shadowName) {
+        throw new ReferenceError("The `shadowName` is required to register a UI interface.");
     }
-
-
-    // Store the element by name.
-    shadow.ELEMENTS[ elementName ] = $.extend( true, {}, shadow.DEFAULTS, elementOptions, {
-        name: elementName,
-        formatsExpression: elementOptions.formats ?
-
-            new RegExp(
-
-                // Match any [escaped] characters.
-                '(\\[[^\\[]*\\])|(' +
-
-                // Match any formatting characters.
-                Object.keys( elementOptions.formats ).
-                    sort(function(a,b) { return b > a ? 1 : -1 }).
-                    join('|') + '|' +
-
-                // Match all other characters.
-                '.)', 'g' ) :
-
-            null
-    })
-
-
-    // Find any of these nodes and create the shadow element.
-    $( '[data-ui=' + elementName + ']' ).toArray().forEach( shadow.create.bind( null, elementName ) )
-
-
-    // Return the shadow element.
-    return shadow.ELEMENTS[ elementName ]
-} //shadow
-
-
-
-/**
- * Attach the version number.
- */
-shadow.VERSION = '0.5.1'
-
-
-
-/**
- * Keep a tracks of the elements.
- */
-shadow.ELEMENTS = {
-    ui: true // reserved.
+    var extendingName = "Element";
+    shadowOptions = $.extend(true, {}, shadowOptions);
+    if (shadowOptions.extend) {
+        extendingName = shadowOptions.extend;
+        delete shadowOptions.extend;
+    }
+    extendingName = _.casePascal(extendingName);
+    if (!_.isTypeOf(shadow[extendingName], "object") || extendingName != "Element" && !shadow.Element.is("classOf", shadow[extendingName])) {
+        throw new ReferenceError("There is no shadow element named “" + extendingName + "”.");
+    }
+    if (shadowOptions.name) {
+        throw new ReferenceError("The `name` property of the `shadowOptions` is reserved.");
+    }
+    shadowOptions.name = _.casePascal(shadowName);
+    shadow[extendingName].extend(shadowOptions);
+    shadow.buildAll(shadowName);
 }
 
-
+Object.defineProperty(shadow, "IS_DEBUGGING", {
+    writable: true,
+    value: true
+});
 
 /**
- * Set the element defaults.
+ * Build a shadow element.
  */
-shadow.DEFAULTS = {
+shadow.build = function($element, shadowName, shadowOptions) {
+    shadowOptions = shadowOptions || {};
+    shadowOptions.$el = $element;
+    shadowName = _.casePascal(shadowName);
+    if (!(shadowName in shadow) || !shadow.Object.is("classOf", shadow[shadowName])) {
+        throw new ReferenceError("There is no shadow UI " + "registered by the name of `" + shadowName + "`.");
+    }
+    return shadow[shadowName].create(shadowOptions);
+};
 
-    /**
-     * The name of the shadow element.
-     */
-    name: null,
+/**
+ * Build all the named shadow elements.
+ */
+shadow.buildAll = function(shadowName, shadowOptions) {
+    var $elements = $('[data-ui="' + shadowName + '"]');
+    $elements.each(function() {
+        shadow.build($(this), shadowName, shadowOptions);
+    });
+};
 
+var _ = shadow._ = {
+    // /**
+    //  * Create a blueprint constructor function.
+    //  */
+    // createBlueprint: function(constructor) {
+    //     var blueprint = function() {
+    //             var property,
+    //                 prototype = this
+    //             constructor.apply(prototype, arguments)
+    //             blueprint.clones.unshift(prototype)
+    //             for (property in blueprint) {
+    //                 if (property !== 'clones' &&
+    //                     hasOwnProperty.call(blueprint, property)) {
+    //                         prototype[property] = blueprint[property]
+    //                 }
+    //             }
+    //         }
+    //     blueprint.clones = []
+    //     return blueprint
+    // },
     /**
-     * The template used to compile the box of the element root.
+     * Define an enumerable property on an object.
      */
-    template: null,
-
-    /**
-     * An alias to use as a shorthand to call element methods.
-     */
-    alias: null,
-
-    /**
-     * Method called right before the element starts it’s life cycle.
-     */
-    init: null,
-
-    /**
-     * Default event bindings on the element.
-     */
-    bindings: {},
-
-    /**
-     * States of the element.
-     */
-    is: {
-        started: false,
-        opened: false,
-        focused: false,
-        captured: false
+    define: function(object, item, value) {
+        Object.defineProperty(object, item, {
+            enumerable: true,
+            value: value
+        });
     },
-
     /**
-     * The key bindings when the element host is captured.
+     * Convert to camel-cased text.
      */
-    keys: {},
-
-    /**
-     * The dictionary of “things”.
-     */
-    dict: {
-        clear: true, //reserved.
-        select: null
+    caseCamel: function(words) {
+        var newWord = true;
+        var wordChunks = words.split(/(?=[A-Z])|-|_/).map(function(word, index) {
+            if (!word) {
+                return "";
+            }
+            if (word.length === 1) {
+                if (!newWord) {
+                    return word.toLowerCase();
+                }
+                newWord = false;
+                return word;
+            }
+            newWord = true;
+            return (index ? word[0].toUpperCase() : word[0].toLowerCase()) + word.slice(1);
+        });
+        return wordChunks.join("");
     },
-
     /**
-     * Create a `dict` item right before `set`, `add`,
-     * or `remove` are performed on the item.
+     * Convert to pascal-cased text.
      */
+    casePascal: function(words) {
+        var newWord = true;
+        var wordChunks = words.split(/(?=[A-Z])|-|_/).map(function(word) {
+            if (!word) {
+                return "";
+            }
+            if (word.length === 1) {
+                if (!newWord) {
+                    return word.toLowerCase();
+                }
+                newWord = false;
+                return word;
+            }
+            newWord = true;
+            return word[0].toUpperCase() + word.slice(1);
+        });
+        return wordChunks.join("");
+    },
+    /**
+     * Convert to dash-cased text.
+     */
+    caseDash: function(words) {
+        var newWord = true;
+        var wordChunks = words.split(/(?=[A-Z])|-|_/).map(function(word, index) {
+            if (!word) {
+                return "";
+            }
+            if (word.length === 1) {
+                if (!newWord) {
+                    return word.toLowerCase();
+                }
+                newWord = false;
+                return "-" + word.toLowerCase();
+            }
+            newWord = true;
+            return (index ? "-" : "") + word[0].toLowerCase() + word.slice(1);
+        });
+        return wordChunks.join("");
+    },
+    /**
+     * Check what the type of a thing is.
+     */
+    isTypeOf: function(thing, type) {
+        var thingType = {}.toString.call(thing).slice(8, -1).toLowerCase();
+        return type ? type === thingType : thingType;
+    },
+    /**
+     * Define aria attributes on an element.
+     */
+    aria: function(element, attribute, value) {
+        if ($.isPlainObject(attribute)) {
+            for (var key in attribute) {
+                ariaSet(element, key, attribute[key]);
+            }
+        } else {
+            ariaSet(element, attribute, value);
+        }
+    }
+};
+
+function ariaSet(element, attribute, value) {
+    element.setAttribute((attribute == "role" ? "" : "aria-") + attribute, value);
+}
+
+var CHECKS = {
+    // Check if a shadow object inherits from the class of another.
+    // http://aaditmshah.github.io/why-prototypal-inheritance-matters/#fixing_the_instanceof_operator
+    classOf: function(Instance) {
+        var Base = this;
+        do {
+            Instance = Object.getPrototypeOf(Instance);
+            if (Base === Instance) {
+                return true;
+            }
+        } while (Instance);
+        return false;
+    },
+    // Check if a shadow object is an instance of another.
+    // http://aaditmshah.github.io/why-prototypal-inheritance-matters/#fixing_the_instanceof_operator
+    instanceOf: function(Base) {
+        var Instance = this;
+        do {
+            Instance = Object.getPrototypeOf(Instance);
+            if (Instance === Base) {
+                return true;
+            }
+        } while (Instance);
+        return false;
+    },
+    // Check if a shadow object is the prototype of another.
+    prototypeOf: function(object) {
+        var Base = this;
+        var Prototype = Object.getPrototypeOf(object);
+        return Base === Prototype && object.name === _.caseCamel(Prototype.name) && object.create === undefined && object.extend === undefined;
+    },
+    // Check if a shadow object has been constructed.
+    constructed: function() {
+        var object = this;
+        var Base = Object.getPrototypeOf(object);
+        return object !== shadow.Object && Base.is("prototypeOf", object);
+    }
+};
+
+//CHECKS
+var checkForSuperCall = function(prototype, property) {
+    var methodString = "" + prototype[property];
+    var variableNameMatch = methodString.match(/(\w+) *= *this/);
+    var variableName = variableNameMatch && variableNameMatch[1] + "|" || "";
+    var superRegex = new RegExp("(?:" + variableName + "this)\\._super\\(");
+    if (shadow.IS_DEBUGGING && !methodString.match(superRegex)) {
+        console.warn("Overriding the base method `" + property + "` " + "without calling `this._super()` within the method might cause " + "unexpected results. Make sure this is the behavior you desire.\n", prototype);
+    }
+};
+
+// Allow inheritence of super methods. Based on:
+// http://ejohn.org/blog/simple-javascript-inheritance/
+var superFun = function(Base, property, fn) {
+    return function superWrapper() {
+        var object = this;
+        object._super = Base[property];
+        var ret = fn.apply(object, arguments);
+        delete object._super;
+        return ret;
+    };
+};
+
+/**
+ * The core shadow object prototype.
+ */
+shadow.Object = Object.create({}, {
+    // A name for the object (to help with debugging).
+    name: {
+        enumerable: true,
+        value: "Object"
+    },
+    // Create an instance of the shadow object.
     create: {
-        clear: '' //reserved.
+        enumerable: true,
+        value: function(options) {
+            var Base = this;
+            var object = Object.create(Base);
+            Object.defineProperties(object, {
+                name: {
+                    value: _.caseCamel(Base.name),
+                    enumerable: true
+                },
+                create: {
+                    value: undefined
+                },
+                extend: {
+                    value: undefined
+                }
+            });
+            for (var item in options) {
+                if (item in Base) {
+                    var isBasePropertyFn = typeof Base[item] == "function";
+                    if (isBasePropertyFn) {
+                        checkForSuperCall(options, item);
+                    }
+                    var value = options[item];
+                    if (isBasePropertyFn && typeof value == "function") {
+                        value = superFun(Base, item, value);
+                    }
+                    _.define(object, item, value);
+                } else if (shadow.IS_DEBUGGING) {
+                    throw new ReferenceError("The `" + item + "` property is not recognized by " + Base + ".");
+                }
+            }
+            return object;
+        }
     },
-
-    /**
-     * Match an item within a `dict` collection.
-     */
-    match: {},
-
-    /**
-     * The base template’s class name prefix.
-     */
-    prefix: 'ui-drop',
-
-    /**
-     * The base template class names to be prefixed.
-     */
-    klasses: {
-
-        host: '-host',
-
-        input: '-input',
-
-        root: '',
-        rootOpened: '--opened',
-        rootFocused: '--focused',
-        rootCaptured: '--captured',
-
-        holder: 'holder',
-
-        pointer: 'pointer',
-
-        frame: 'frame',
-        wrap: 'wrap',
-
-        box: 'box'
+    // Extend the object using prototypes. Based on:
+    // http://aaditmshah.github.io/why-prototypal-inheritance-matters/#inheriting_from_multiple_prototypes
+    extend: {
+        enumerable: true,
+        value: function(prototype) {
+            var Base = this;
+            if (Base.is("constructed") && Base.is("constructed")) {
+                console.debug(Base);
+                throw new TypeError("Cannot extend a constructed object.");
+            }
+            var Instance = Object.create(Base);
+            for (var property in prototype) {
+                if (prototype.hasOwnProperty(property)) {
+                    if (property == "_super") {
+                        throw new TypeError("The `_super` property is reserved " + "to allow object method inheritance.");
+                    }
+                    if (property == "extend") {
+                        throw new TypeError("The `extend` method cannot be over-written.");
+                    }
+                    var isBasePropertyFn = typeof Base[property] == "function";
+                    if (isBasePropertyFn) {
+                        checkForSuperCall(prototype, property);
+                    }
+                    var value = isBasePropertyFn && typeof prototype[property] == "function" ? superFun(Base, property, prototype[property]) : $.isPlainObject(Base[property]) && $.isPlainObject(prototype[property]) ? $.extend({}, Base[property], prototype[property]) : prototype[property];
+                    _.define(Instance, property, value);
+                }
+            }
+            if (!Instance.name.match(/^[A-Z]/)) {
+                throw new TypeError("An object’s name must be PascalCased.");
+            }
+            if (hasOwnProperty.call(shadow, Instance.name)) {
+                throw new TypeError('An object by the name of "' + Instance.name + '" already exists.');
+            }
+            shadow[Instance.name] = Instance;
+            return Instance;
+        }
     },
-
-    /**
-     * The default settings.
-     */
-    defaults: {
-        klasses: null, // The box template class names (unprefixed).
-        format: null,
-        formatRange: '{ - }', // <before from>{<before to>}<after to>
-        formatMultiple: '{, |, and }', // <before first>{<before middle>|<before last>}<after last>
-        hasHidden: false,
-        formatHidden: null,
-        nameHidden: null,
-        suffixHidden: '_formatted'
+    //extend
+    // Check if a thing is a certain value.
+    is: {
+        enumerable: true,
+        value: function(thing, value) {
+            var object = this;
+            return typeof CHECKS[thing] == "function" && CHECKS[thing].call(object, value);
+        }
     },
+    // Cast the object into a string representation.
+    toString: {
+        enumerable: true,
+        value: function() {
+            if (shadow.IS_DEBUGGING) {
+                return this.toLocaleString();
+            }
+            var object = this;
+            var isConstructed = object.is("constructed");
+            var type = isConstructed ? "object" : "class";
+            var Base = isConstructed ? Object.getPrototypeOf(object) : object;
+            return "{" + type + " " + Base.name + "}";
+        }
+    },
+    toLocaleString: {
+        enumerable: true,
+        value: function() {
+            var object = this;
+            var isConstructed = object.is("constructed");
+            var type = isConstructed ? "object" : "class";
+            var names = [];
+            if (isConstructed) {
+                object = Object.getPrototypeOf(object);
+            }
+            do {
+                names.push(object.name);
+                object = Object.getPrototypeOf(object);
+            } while (object && object.name);
+            return "{" + type + " " + names.join(":") + "}";
+        }
+    }
+});
 
+// var docEl = document.documentElement,
+//     HAS_SHADOW_ROOT = docEl.webkitCreateShadowRoot || docEl.createShadowRoot
+/**
+ * Construct an element object.
+ */
+shadow.Object.extend({
+    name: "Element",
+    id: null,
+    attrs: null,
+    template: null,
+    $el: null,
+    $host: null,
+    // $root: null,
+    // root: null,
     /**
-     * The formats hash to use for formatting.
+     * Create an element object.
      */
+    create: function(options) {
+        // Make sure the $el is a jQuery DOM element.
+        var $element = options.$el = options.$el instanceof jQuery ? options.$el : $(options.$el);
+        if (!$element.length) {
+            throw new TypeError("No `$el` element found.");
+        }
+        // Make sure the element hasn’t already been bound.
+        if ($element.data("shadow.isBound")) {
+            return $element.data("shadow.ui");
+        }
+        // Now set it as having been bound.
+        $element.data("shadow.isBound", true);
+        // Get and merge the attributes from the source element.
+        options.attrs = $.extend({}, this.attrs, options.attrs, getShadowAttributes($element));
+        // Now we instantiate the shadow object.
+        var element = this._super(options);
+        // Keep a reference to the shadow.
+        $element.data("shadow.ui", element);
+        // Create an ID.
+        _.define(element, "id", element.name + Math.abs(~~(1 + Math.random() * new Date() * 1e4)));
+        // Set the ui name if needed.
+        if (element.$el.attr("data-ui") != element.name) {
+            element.$el.attr("data-ui", element.name);
+        }
+        // Attach the relevant shadow element nodes.
+        attachShadowNodes(element);
+        // Define the relationship between the element nodes.
+        defineShadowNodesRelationships(element);
+        // Copy attributes to the source element and
+        // convert them into getters & setters.
+        copyShadowAttributes(element);
+        // Now let’s prevent adding/removing attributes.
+        Object.seal(element.attrs);
+        // Return the new element object.
+        return element;
+    },
+    //create
+    /**
+     * Bind/unbind events to fire.
+     */
+    on: function() {
+        var element = this;
+        if (!element.is("constructed")) {
+            throw new TypeError("To bind an event callback, " + "the element must first be constructed.");
+        }
+        $.fn.on.apply(element.$el, arguments);
+    },
+    off: function() {
+        var element = this;
+        if (!element.is("constructed")) {
+            throw new TypeError("To unbind an event callback, " + "the element must first be constructed.");
+        }
+        $.fn.off.apply(element.$el, arguments);
+    }
+});
+
+//shadow.Object.extend
+/**
+ * Get the shadow ui attributes from an element.
+ */
+function getShadowAttributes($element) {
+    var elementNode = $element[0];
+    var attributes = {};
+    [].slice.call(elementNode.attributes).forEach(function(attr) {
+        var attrName = attr.name;
+        if (attrName.match(/^data-ui-/)) {
+            var attrValue = $element.data(attrName.replace(/^data-/, ""));
+            attributes[attrName.replace(/^data-ui-/, "")] = attrValue;
+        }
+    });
+    return attributes;
+}
+
+/**
+ * Attach nodes relevant to the shadow element.
+ */
+function attachShadowNodes(element) {
+    var nodeName = element.$el[0].nodeName;
+    // Setup the source as the host if none is given.
+    if (!element.$host && !nodeName.match(/^INPUT$/)) {
+        _.define(element, "$host", element.$el);
+    }
+    // Insert the template if there is one.
+    if (element.template) {
+        if (!element.$host || !(element.$host[0] instanceof Element)) {
+            throw new TypeError("No `$host` element found.");
+        }
+        element.$host.html(element.template);
+    }
+}
+
+/**
+ * Define the relationships between the shadow elements.
+ */
+function defineShadowNodesRelationships(element) {
+    if (element.$host && element.$host[0] !== element.$el[0]) {
+        if (!element.$host[0].id) {
+            element.$host[0].id = "host_" + element.id;
+        }
+        _.aria(element.$el[0], "owns", element.$host[0].id);
+    }
+}
+
+/**
+ * Copy shadow ui attributes to the source element.
+ */
+function copyShadowAttributes(element) {
+    var $element = element.$el;
+    var elementAttrs = $element[0].attributes;
+    var shadowAttrs = element.attrs;
+    for (var prop in shadowAttrs) {
+        var propAttr = "data-ui-" + _.caseDash(prop);
+        var propValue = shadowAttrs[prop];
+        if (!elementAttrs.getNamedItem(propAttr) && propValue != null) {
+            if (typeof propValue == "object") {
+                propValue = JSON.stringify(propValue);
+            }
+            $element.attr(propAttr, propValue);
+        }
+        decorateShadowAttribute($element, shadowAttrs, prop);
+    }
+}
+
+/**
+ * Decorate a shadow attribute with a getter and setter.
+ */
+function decorateShadowAttribute($element, shadowAttrs, prop) {
+    var currValue = shadowAttrs[prop];
+    Object.defineProperty(shadowAttrs, prop, {
+        get: function() {
+            return currValue;
+        },
+        set: function(value) {
+            var event = $.Event("set:" + prop, {
+                value: value,
+                name: prop
+            });
+            $element.trigger(event);
+            if (!event.isDefaultPrevented()) {
+                currValue = event.value;
+                $element.attr("data-ui-" + _.caseDash(prop), typeof currValue == "object" ? JSON.stringify(currValue) : currValue);
+            }
+        }
+    });
+}
+
+/**
+ * Construct an input object.
+ */
+shadow.Element.extend({
+    name: "Input",
     formats: null,
-
-    /**
-     * Convert a string into a formatted array using
-     * the generated formats hash expression.
-     */
-    toFormatArray: function( string ) {
-        var instance = this
-        if ( !instance.formats ) throw 'The shadow extension needs a `formats` option.'
-        return ( string || '' ).split( instance.formatsExpression ).reduce( function( array, value ) {
-            if ( value ) array.push(
-                value in instance.formats ? { f: value } :
-                value.match( /^\[.*]$/ ) ? value.replace( /^\[(.*)]$/, '$1' ) :
-                value
-            )
-            return array
-        }, [] )
+    attrs: {
+        value: null,
+        allowMultiple: null,
+        allowRange: null,
+        format: null,
+        formatMultiple: "{, |, }",
+        // <before first>{<before middle>|<before last>}<after last>
+        formatRange: "{ - }"
     },
-
+    $input: null,
     /**
-     * Convert a value into a formatted string.
+     * Create an input object.
      */
-    toFormatString: function( format, value ) {
-
-        var instance = this,
-            valueIsArray = $.isArray( value ),
-            settings = instance.ui.settings,
-            formattedCollection = [],
-            createFormatStringArray = function( itemValue ) {
-
-                // If it’s a range, match the range format.
-                if ( itemValue instanceof shadow.Range ) {
-                    var matchRange = settings.formatRange.match( /(.*)\{(.*?)\}(.*)/ )
-                    return [
-                        matchRange[1],
-                        createFormatStringArray( itemValue.lower ).join(''),
-                        matchRange[2],
-                        createFormatStringArray( itemValue.upper ).join(''),
-                        matchRange[3]
-                    ]
-                }
-
-                // Otherwise do a simple formatting conversion.
-                return instance.toFormatArray( format ).map( function( formatting ) {
-                    return shadow._.trigger( formatting.f ? instance.formats[ formatting.f ] : formatting, instance, [ itemValue ] )
-                })
-            }
-
-        // If the value is a collection of more than one, use the “multiple” format.
-        if ( valueIsArray && value.length > 1 ) {
-
-            var matchMultiple = settings.formatMultiple.match( /(.*)\{(.*?)\|(.*?)\}(.*)/ ),
-                countValues = value.length
-
-            for ( var i = 0; i < countValues; i += 1 )  {
-                var isFirst = i === 0,
-                    isLast = i + 1 === countValues,
-                    before = isFirst ? matchMultiple[1] : isLast ? matchMultiple[3] : '',
-                    after = i + 2 < countValues ? matchMultiple[2] : isLast ? matchMultiple[4] : ''
-                formattedCollection.push( before + createFormatStringArray( value[i] ).join( '' ) + after )
-            }
+    create: function(options) {
+        // Construct the shadow input.
+        var input = this._super(options);
+        // Make sure we have options with attributes.
+        options = $.extend(true, {
+            attrs: {}
+        }, options);
+        // Setup the formatting attributes based on the options.
+        setupFormattingAttributes(input, options);
+        // Make sure we have a valid source element.
+        if (input.$el[0].nodeName != "INPUT") {
+            throw new TypeError("To create a shadow input, " + "the `$el` must be an input element.");
         }
-
-        // Otherwise just do a simple conversion.
-        else formattedCollection = createFormatStringArray( valueIsArray ? value[0] : value )
-
-        // Join and return the collection.
-        return formattedCollection.join( '' )
-    }, //toFormatString
-
-    /**
-     * Convert a value into a formatting hash object.
-     */
-    toFormatHash: function( format, value, hasMultiple, hasRange ) {
-
-        var instance = this,
-            safetyBreak = 100,
-            settings = instance.ui.settings,
-            escapeRegString = function( string ) {
-                return string.replace( /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&' )
-            },
-            matchValue = function( chunkValue ) {
-
-                var object = {},
-                    matchRange = hasRange && settings.formatRange.match( /(.*)\{(.*?)\}(.*)/ ),
-                    beforeStartRange = matchRange && new RegExp( '^' + escapeRegString( matchRange[1] ) ),
-                    beforeEndRange = matchRange && new RegExp( '^' + escapeRegString( matchRange[2] ) ),
-                    afterEndRange = matchRange && new RegExp( '^' + escapeRegString( matchRange[3] ) )
-
-                // Strip away anything that goes before a range start.
-                if ( chunkValue.match( beforeStartRange ) ) {
-                    chunkValue = chunkValue.replace( beforeStartRange, '' )
-                }
-
-                // Map through the formats array and convert into a hash.
-                instance.toFormatArray( format ).map( function( chunk ) {
-
-                    // If the chunk has an `f` property, expect it to return
-                    // the length of the string’s format chunk being parsed.
-                    // Otherwise just use the length of the
-                    var chunkLength = chunk.f ?
-                            shadow._.trigger( instance.formats[ chunk.f ], instance, [ chunkValue, true ] ) :
-                            chunk.length
-
-                    // If the chunk has an `f` property, add it to the hash
-                    // by stripping out a substring based on the chunk length.
-                    if ( chunk.f ) object[ chunk.f ] = chunkValue.substr( 0, chunkLength )
-
-                    // Update the chunk value with the chunk removed.
-                    chunkValue = chunkValue.substr( chunkLength )
-                })
-
-                // Check if we’re dealing with the range end.
-                if ( chunkValue.match( beforeEndRange ) ) {
-
-                    // Strip away anything that goes before a range end.
-                    chunkValue = chunkValue.replace( beforeEndRange, '' )
-
-                    // Get the stripped chunk value and hash.
-                    var chunkAndObject = matchValue( chunkValue )
-
-                    // Update the chunk value without the range end.
-                    chunkValue = chunkAndObject[0]
-
-                    // Strip away anything that goes after a range end.
-                    if ( chunkValue.match( afterEndRange ) ) {
-                        chunkValue = chunkValue.replace( afterEndRange, '' )
-                    }
-
-                    // Create the range using the two hashes.
-                    object = new shadow.Range( object, chunkAndObject[1] )
-                }
-
-                // Return the remaining chunk and the parsed hash.
-                return [ chunkValue, object ]
-            },
-            matchMultipleValues = function( multipleValues ) {
-
-                var objects = [],
-                    dummyValue,
-                    matchMultiple = settings.formatMultiple.match( /(.*)\{(.*?)\|(.*?)\}(.*)/ ),
-                    beforeFirstMultiple = matchMultiple && new RegExp( '^' + escapeRegString( matchMultiple[1] ) ),
-                    beforeMiddleMultiple = matchMultiple && new RegExp( '^' + escapeRegString( matchMultiple[2] ) ),
-                    beforeLastMultiple = matchMultiple && new RegExp( '^' + escapeRegString( matchMultiple[3] ) )//,
-                    // afterLastMultiple = matchMultiple && new RegExp( '^' + matchMultiple[4] ),
-
-
-                // Strip away anything that goes before the first item.
-                if ( beforeFirstMultiple ) {
-                    multipleValues = multipleValues.replace( beforeFirstMultiple, '' )
-                }
-
-                // Match the first item format chunk.
-                dummyValue = matchValue( multipleValues )
-                multipleValues = dummyValue[0]
-                objects.push( dummyValue[1] )
-
-                // Keep looping as long as we have a value and don’t reach the last item.
-                while ( multipleValues && beforeLastMultiple && !multipleValues.match( beforeLastMultiple ) && safetyBreak ) {
-
-                    // Strip away anything that goes before the middle item
-                    if ( beforeMiddleMultiple ) {
-                        multipleValues = multipleValues.replace( beforeMiddleMultiple, '' )
-                    }
-
-                    // Match the middle item format chunk.
-                    dummyValue = matchValue( multipleValues )
-                    multipleValues = dummyValue[0]
-                    objects.push( dummyValue[1] )
-
-                    // Reduce the safety breaker.
-                    safetyBreak -= 1
-                }
-
-                // Check if we have a value to end with.
-                if ( multipleValues ) {
-
-                    // Strip away anything that goes before the last item.
-                    if ( beforeLastMultiple ) {
-                        multipleValues = multipleValues.replace( beforeLastMultiple, '' )
-                    }
-
-                    // Match the last item format chunk.
-                    dummyValue = matchValue( multipleValues )
-                    multipleValues = dummyValue[0]
-                    objects.push( dummyValue[1] )
-                }
-
-                // Return the collection of parsed hashes.
-                return objects
+        // If a format is expected, the must be formatters available.
+        if (input.attrs.format && !input.formats) {
+            throw new TypeError("The `formats` hash map is required.");
+        }
+        // When there are formats, prepare it to be format-able.
+        if (input.formats) {
+            // Make sure the element has a format for the value.
+            if (!input.attrs.format) {
+                throw new TypeError("The `format` attribute is required.");
             }
-
-        // Make sure we have a string value to work with.
-        value = typeof value == 'string' ? value : ''
-
-        // Parse single or multiple values.
-        if ( hasMultiple ) return value ? matchMultipleValues( value ) : []
-        return value ? matchValue( value )[1] : {}
+            // Prevent adding/removing more formats.
+            Object.seal(input.formats);
+        }
+        // Set the input element.
+        _.define(input, "$input", input.$el);
+        // When the attribute’s value is set, update
+        // the element’s value after formatting.
+        var setValueFn = function(value) {
+            input.$input[0].value = input.convertAttrToValue(value);
+        };
+        // When the element’s value is set, update
+        // the attribute’s value after parsing.
+        input.$input.on("input." + input.id, function() {
+            input.off("set:value." + input.id);
+            input.attrs.value = input.convertValueToAttr(this.value);
+            input.on("set:value." + input.id, function(event) {
+                setValueFn(event.value);
+            });
+        });
+        // Set the starting value.
+        if (input.attrs.value) {
+            setValueFn(input.attrs.value);
+        } else {
+            input.$input.triggerHandler("input." + input.id);
+        }
+        // Return the new input object.
+        return input;
+    },
+    //create
+    /**
+     * Convert an attribute value into a formatted string.
+     */
+    convertAttrToValue: function(value) {
+        var input = this;
+        var formatValueUnit = function(valueUnit) {
+            var formatsHash = input.formats;
+            if (!formatsHash) {
+                return typeof valueUnit == "object" ? JSON.stringify(valueUnit) : valueUnit;
+            }
+            return toFormattingArray(input.attrs.format, formatsHash).map(function(chunk) {
+                return chunk.f ? formatsHash[chunk.f](valueUnit) : chunk;
+            }).join("");
+        };
+        // If multiple values are allowed, setup the combo formatter.
+        if (input.attrs.allowMultiple === true) {
+            return formatMultipleUnits(formatValueUnit, input.attrs.formatMultiple, input.attrs.formatRange, value);
+        }
+        // If range values are allowed, setup the range formatter.
+        if (input.attrs.allowRange === true) {
+            return formatRangeUnits(formatValueUnit, input.attrs.formatRange, value);
+        }
+        // Otherwise just format it as a single unit.
+        return formatValueUnit(value);
+    },
+    /**
+     * Convert a formatted string into a parsed attribute value.
+     */
+    convertValueToAttr: function(value) {
+        if (typeof value != "string") {
+            throw new TypeError("An input expects it’s " + "element value to be a string.");
+        }
+        var input = this;
+        var parseValueUnit = function(valueUnit) {
+            // If there are formats, decorate the value unit as needed.
+            if (input.formats) {
+                // Create a parsed hash from the string value.
+                var parsedHash = input.convertValueToParsedHash(valueUnit);
+                // Convert the hash into an attribute value.
+                valueUnit = input.convertParsedHashToAttr(parsedHash);
+            }
+            // Try to evaluate it as JSON.
+            try {
+                valueUnit = JSON.parse(valueUnit);
+            } catch (e) {}
+            return valueUnit;
+        };
+        // If multiple values are allowed, setup the combo parser.
+        if (input.attrs.allowMultiple === true) {
+            return parseMultipleUnits(parseValueUnit, input.attrs.formatMultiple, input.attrs.formatRange, value);
+        }
+        // If range values are allowed, setup the range parser.
+        if (input.attrs.allowRange === true) {
+            return parseRangeUnits(parseValueUnit, input.attrs.formatRange, value);
+        }
+        // Otherwise just parse it as a single unit.
+        return parseValueUnit(value);
+    },
+    /**
+     * Convert a formatted string into a parsed hash.
+     */
+    convertValueToParsedHash: function(value) {
+        var input = this;
+        var formatsHash = input.formats;
+        var parsedHash = {};
+        // If there are formats, parse the value.
+        if (formatsHash) {
+            toFormattingArray(input.attrs.format, formatsHash).forEach(function(chunk) {
+                if (chunk.f) {
+                    var chunkValue = formatsHash[chunk.f](value, true);
+                    if (!value.match(new RegExp("^" + chunkValue))) {
+                        throw new SyntaxError("The value parsed by the " + "`" + chunk.f + "` formatting rule did not " + "match the value being parsed.\n" + "Value being parsed: “" + value + "”.\n" + "Rule parsed value: “" + chunkValue + "”.");
+                    }
+                    value = value.slice(chunkValue.length);
+                    parsedHash[chunk.f] = chunkValue;
+                } else {
+                    value = value.replace(new RegExp("^" + chunk), "");
+                }
+            });
+        }
+        return parsedHash;
+    },
+    /**
+     * Convert a formatting hash into an attribute value.
+     */
+    convertParsedHashToAttr: function(value) {
+        return value;
     }
-} //shadow.DEFAULTS
+});
 
-
-
-
+//shadow.Element.extend
 /**
- * A shadow range object constructor.
+ * Set up the input’s formatting attributes based on the options.
  */
-shadow.Range = function( fromValue, toValue, isUpperFirst ) {
-    this.from = fromValue
-    this.to = toValue
-    this.lower = isUpperFirst ? toValue : fromValue
-    this.upper = isUpperFirst ? fromValue : toValue
+function setupFormattingAttributes(input, options) {
+    if (!options.attrs.allowMultiple) {
+        input.attrs.formatMultiple = null;
+    }
+    if (!options.attrs.allowRange) {
+        input.attrs.formatRange = null;
+    }
 }
 
-
-
 /**
- * Shadow helper methods.
+ * Format multiple units of value.
  */
-shadow._ = {
-
-    /**
-     * Prefix a single class or an object of classes.
-     */
-    prefix: function( prefix, klasses ) {
-        var bemPrefixify = function( klass ) {
-                return klass ?
-                        klass.match( /^ / ) ? klass.replace( /^ /, '' ) :
-                        prefix + ( klass.match( /^-/ ) ? '' : '__' ) + klass :
-                    prefix
-            }
-        prefix = prefix || ''
-        if ( $.isPlainObject( klasses ) ) {
-            for ( var index in klasses ) {
-                var klass = klasses[ index ]
-                klass = $.isArray( klass ) ? klass : [ klass ]
-                klasses[ index ] = klass.map( bemPrefixify ).join(' ')
-            }
-            return klasses
-        }
-        return bemPrefixify( klasses )
-    }, //prefix
-
-
-    /**
-     * Create a dom node.
-     */
-    node: function( options ) {
-
-        // Make sure we have usable options.
-        if ( !$.isPlainObject( options ) ) options = {}
-
-        var content = shadow._.trigger( options.content, options ),
-            element = options.el || 'div',
-            klasses = options.klass,
-            attrsObj = $.isPlainObject( options.attrs ) ? options.attrs : {},
-            attributes = '', attr
-
-        // Create a string out of the content.
-        content = $.isArray( content ) ? content.join('') : content || ''
-
-        // Attach the classes to the attributes object.
-        if ( klasses ) attrsObj['class'] = typeof klasses == 'string' ? klasses : klasses.join(' ')
-
-        // Concatenate the attributes together.
-        for ( attr in attrsObj ) attributes += ' ' + attr + '="' + attrsObj[attr] + '"'
-
-        // Return the composed element.
-        return '<' + element + attributes + '>' + content + '</' + element + '>'
-    },
-
-
-    /**
-     * Trigger a function otherwise return the value.
-     */
-    trigger: function( callback, scope, args ) {
-        return $.isFunction( callback ) ? callback.apply( scope, args || [] ) : callback
-    },
-
-
-    /**
-     * Tell if something is a certain type.
-     */
-    isType: function( value, type ) {
-        return {}.toString.call( value ).indexOf( type ) > -1
-    },
-
-
-    /**
-     * Tell if something is a date object.
-     */
-    isDate: function( value ) {
-        return this.isType( value, 'Date' )
-    },
-
-
-    /**
-     * Tell if something is an integer.
-     */
-    isInteger: function( value ) {
-        return this.isType( value, 'Number' ) && value % 1 === 0
+function formatMultipleUnits(formatter, formatMultiple, formatRange, value) {
+    if (!Array.isArray(value)) {
+        throw new TypeError("An input with multiple values " + "expects it’s attribute value to be a collection.");
     }
-} //shadow._
-
-
-
-/**
- * The wrapper that creates a new shadow element.
- */
-shadow.create = function( elementName, sourceNode, options ) {
-    return new ShadowElement( sourceNode, shadow.ELEMENTS[ elementName ], $.isPlainObject( options ) ? options : {} )
+    var matchCombo = formatMultiple.match(/(.*)\{(.*?)\|(.*?)\}(.*)/);
+    var beforeFirst = matchCombo[1];
+    var beforeMiddle = matchCombo[2];
+    var beforeLast = matchCombo[3];
+    var afterLast = matchCombo[4];
+    value = value.map(function(unit, index) {
+        var before = index === 0 ? beforeFirst : index === value.length - 1 ? beforeLast : beforeMiddle;
+        var after = index === value.length - 1 ? afterLast : "";
+        if (formatRange && Array.isArray(unit)) {
+            unit = formatRangeUnits(formatter, formatRange, unit);
+        } else {
+            unit = formatter(unit);
+        }
+        return before + unit + after;
+    });
+    return value.join("");
 }
 
-
+/**
+ * Format a range’s units.
+ */
+function formatRangeUnits(formatter, format, rangeUnit) {
+    var matchRange = format.match(/(.*)\{(.*?)\}(.*)/);
+    var beforeLower = matchRange[1];
+    var beforeUpper = matchRange[2];
+    var afterUpper = matchRange[3];
+    rangeUnit = rangeUnit.map(function(subItem, subIndex) {
+        var subBefore = subIndex === 0 ? beforeLower : beforeUpper;
+        var subAfter = subIndex === rangeUnit.length - 1 ? afterUpper : "";
+        return subBefore + formatter(subItem) + subAfter;
+    });
+    return rangeUnit.join("");
+}
 
 /**
- * The constructor that composes a shadow ui component.
+ * Parse multiple units of value.
  */
-function ShadowElement( sourceNode, shadowElement, options ) {
-
-    var ui = this,
-        $element = $( sourceNode ),
-        elementData = $element.data(),
-        elementDataValue = $element.attr('data-value')
-
-    // If it’s already a shadow element, do nothing.
-    if ( elementData.shadow instanceof ShadowElement ) return
-
-    // Go through the data and update the options.
-    for ( var prop in elementData ) {
-        if ( prop.match(/^ui./) ) {
-            options[ prop[2].toLowerCase() + prop.replace(/^ui./, '' ) ] = elementData[ prop ]
+function parseMultipleUnits(parser, formatMultiple, formatRange, value) {
+    var values = [];
+    // If there’s no value, stop right here.
+    if (!value) {
+        return values;
+    }
+    var addToCollection = function(string, stringBefore, stringAfter) {
+        var originalString = string;
+        string = sliceUptoUnit(string, stringBefore);
+        var unit = sliceUnit(string, stringAfter);
+        if (unit) {
+            string = string.replace(unit, "");
+            if (formatRange) {
+                unit = parseRangeUnits(parser, formatRange, unit);
+            }
+            if (typeof unit == "string") {
+                unit = parser(unit);
+            }
+            values.push(unit);
+            return string;
+        }
+        return originalString;
+    };
+    var matchCombo = formatMultiple.match(/(.*)\{(.*?)\|(.*?)\}(.*)/);
+    var regStrBeforeFirst = matchCombo[1];
+    var regStrBeforeMiddle = matchCombo[2];
+    var regStrBeforeLast = matchCombo[3];
+    var regStrAfterLast = matchCombo[4];
+    var safety = 100;
+    value = addToCollection(value, regStrBeforeFirst, regStrBeforeMiddle);
+    while (safety && value) {
+        if (!--safety) {
+            throw "Fell into an infinite loop..";
+        }
+        var originalValue = value;
+        value = addToCollection(value, regStrBeforeMiddle, regStrBeforeMiddle);
+        if (value === originalValue) {
+            value = addToCollection(value, regStrBeforeMiddle, regStrBeforeLast);
+        }
+        if (value === originalValue) {
+            value = addToCollection(value, regStrBeforeLast, regStrAfterLast);
+            break;
         }
     }
-
-    // Check if there’s a value that shouldn’t be parsed by jQuery.
-    options.valueHidden = elementDataValue || options.valueHidden
-
-    // Link up the source element.
-    ui.$source = $element
-
-    // Link up the host or input.
-    if ( sourceNode.nodeName.match( /INPUT|TEXTAREA/ ) ) ui.$input = $element
-    else ui.$host = $element
-
-    // Link up the instance using the ui and shadow element.
-    ui.i = $.extend( true, {}, shadowElement, {
-        id: 'ui-' + shadowElement.name + '-' + Math.floor( Math.random() * 1e11 ),
-        ui: ui,
-        shadow: null
-    })
-
-    // Link up (as reference) the default shadow element.
-    ui.r = $.extend( true, {}, shadowElement )
-
-    // Create settings by merging the defaults and options passed.
-    ui.settings = $.extend( true, {}, ui.i.defaults, options )
-
-    // Right after creating one, trigger the `init` method.
-    // If there’s the need, parse the input value into a format-value hash.
-    shadow._.trigger( ui.i.init, ui.i, ui.i.formats ? [
-        ui.i.toFormatHash(
-            options.valueHidden ?
-                ui.settings.formatHidden :
-                ui.settings.format,
-            options.valueHidden || sourceNode.value,
-            $.isArray( ui.get('select') ),
-            true
-        ),
-        !!options.valueHidden
-    ] : null )
-
-    // Create the class names by merging the settings into the prefixed defaults.
-    ui.klasses = $.extend( shadow._.prefix( ui.i.prefix, $.extend( {}, ui.i.klasses ) ), ui.settings.klasses )
-
-    // Start up the ui with the starting value.
-    ui.start( options.valueHidden, !!elementDataValue )
+    value = addToCollection(value, regStrBeforeLast, regStrAfterLast);
+    return values;
 }
 
-
-
 /**
- * The extension composer prototype.
+ * Parse a range’s units.
  */
-ShadowElement.prototype = {
-
-    constructor: ShadowElement,
-
-
-    /**
-     * Start up the component.
-     */
-    start: function( valueHidden, asDataValue ) {
-
-        var template,
-            ui = this,
-            instance = ui.i,
-            settings = ui.settings
-
-
-        // If it’s already started, do nothing.
-        if ( instance.is.started ) return ui
-
-
-        // Update the `started` state.
-        instance.is.started = true
-
-
-        // If there’s an input element, create a host.
-        if ( ui.$input ) {
-
-            // Create a host element to hold the ui root and bind
-            // the default click and focus events to open the ui.
-            ui.$host = $( '<div/>' ).on( 'click focusin', ui.open.bind( ui, true ) )
-
-            // Add the “input” class and insert the host.
-            ui.$input.addClass( ui.klasses.input ).after( ui.$host ).on( 'focus', ui.capture.bind( ui ) )
-
-            // Listen for changes to update the input value.
-            ui.$source.on( 'change.' + instance.id, function( event, thingChanged, thingValue ) {
-                ui.$input[0].value = thingChanged == 'clear' || !thingValue ?
-                    '' : ui.get( 'select', { format: settings.format } )
-            })
-
-            // Update the value if needed.
-            if ( asDataValue ) {
-                ui.$source.triggerHandler( 'change.' + instance.id, [null, true] )
-            }
-        }
-
-        // If there isn’t an input, make the host “tab-able”.
-        else {
-
-            ui.$host.
-
-                // Add the tabindex attribute.
-                attr( 'tabindex', 0 ).
-
-                // When the source is focused, capture the ui.
-                on( 'focus', ui.capture.bind( ui ) ).
-
-                // When the source is blurred, close and release the ui.
-                // * A blur within the root doesn’t bubble up.
-                on( 'blur', function() {
-                    ui.close().release()
-                })
-        }
-
-
-        // Add the “host” class to the element.
-        ui.$host.addClass( ui.klasses.host )
-
-
-        // If there’s a hidden formatting, prepare the hidden input.
-        if ( settings.hasHidden ) {
-
-            // If there’s a format for the hidden input, create it
-            // with the name of the original input and a suffix.
-            ui._hidden = $( '<input ' +
-                'value="' +
-                    ( valueHidden || ( ui.$input && ui.$input.val() ?
-                        ui.get('select', { format: settings.formatHidden }) :
-                        '' )
-                    ) +
-                '" ' +
-                'name="' +
-                    ( settings.nameHidden || ( ui.$input ? ui.$input[0].name : '' ) ) +
-                    ( settings.suffixHidden || '' ) +
-                '" ' +
-                'type=hidden>'
-            )[0]
-
-            // Add the hidden input after the source and
-            // listen for changes to update the hidden value.
-            ui.$source.after( ui._hidden ).on( 'change.' + instance.id, function( event, thingChanged, thingValue ) {
-                ui._hidden.value = thingChanged == 'clear' || !thingValue ?
-                    '' : ui.get( 'select', { format: settings.formatHidden } )
-            })
-        }
-
-
-        // Prepare the source element.
-        ui.$source.
-
-            // Open the ui with focus on a click or focus within.
-            on( 'click.' + instance.id + ' focusin.' + instance.id, ui.open.bind( ui, true ) ).
-
-            // Prevent focus out of the host from bubbling up
-            // so that a loss of focus within doesn’t close the ui.
-            on( 'focusout.' + instance.id, function( event ) {
-                event.stopPropagation()
-            }).
-
-            // Store the extension data.
-            data( 'shadow', ui )
-
-
-        // Create and insert the root template into the host.
-        template = shadow._.node({
-            klass: ui.klasses.root,
-            content: createFullTemplate( shadow._.trigger( ui.i.template, ui.i ), ui.klasses )
-        })
-        if ( hasShadowRoot ) {
-            instance.shadow = ui.$host[0].webkitCreateShadowRoot()
-            instance.shadow.applyAuthorStyles = true
-            instance.shadow.innerHTML = shadow._.node({ el: 'content' }) + template
-            ui.$root = $( instance.shadow.childNodes[1] )
-        }
-        else {
-            ui.$root = $( template )
-            ui.$host.append( ui.$root )
-        }
-
-
-        // Prepare the root element.
-        ui.$root.
-
-            // When something within the root is focused, open and release the ui.
-            on( 'focusin DOMFocusIn', function() {
-                ui.open( true ).release()
-            }).
-
-            // When the source element is focused into again, capture the ui.
-            on( 'blur DOMFocusOut', function( event ) {
-                if ( event.relatedTarget == ui.$source[0] ) {
-                    event.stopPropagation()
-                    ui.capture()
-                }
-            }).
-
-            // When “enter” is pressed on an action-able thing, trigger a click instead.
-            on( 'keydown', SELECTOR_ACTION_BUTTONS, function( event ) {
-                if ( event.keyCode == 13 ) {
-                    event.preventDefault()
-                    $( this ).trigger( $.Event('click', {
-                        metaKey: event.metaKey,
-                        shiftKey: event.shiftKey
-                    }) )
-                }
-            }).
-
-            // When actions are getting triggered, any click events within the
-            // root shouldn’t bubble up, forms shouldn’t be submitted,
-            // and focus should be maintained on the `document.activeElement`.
-            on( 'click mousedown', SELECTOR_ACTION_BUTTONS, function( event ) {
-                event.stopPropagation()
-                event.preventDefault()
-            }).
-
-            // When something within the root is clicked, set the thing.
-            on( 'click', SELECTOR_ACTION_BUTTONS, function( event ) {
-
-                var data = $( this ).data(),
-
-                    // Match an “action” selection formatted as `<method>:<thing>:<value>:<option>`
-                    match = (
-                        data.actionShiftMeta && event.shiftKey && event.metaKey ? data.actionShiftMeta :
-                        data.actionShift && event.shiftKey ? data.actionShift :
-                        data.actionMeta && event.metaKey ? data.actionMeta :
-                        data.action
-                    ).split( ':' ).map( function( item ) {
-                        return item.match( /^-?\d+$/ ) ? +item : item
-                    })
-
-                // If there’s a match, try to apply the method with the context.
-                if ( match.length ) {
-                    ui[ match[0] ].apply( ui, match.splice(1) )
-                }
-            }).
-
-            // If a click reaches the root itself, stop bubbling and close it.
-            on( 'click', function( event ) {
-                if ( this == event.target ) {
-                    event.stopPropagation()
-                    ui.close( true )
-                }
-            })
-
-
-        // Bind the change broadcast event when underlying values change.
-        var broadcastChange = function( event ) {
-            ui.$source.trigger( 'change', [ event.item, event.value ] )
-        }
-        ui.on({
-            'set.select': broadcastChange,
-            'set.clear': broadcastChange,
-            'add.select': broadcastChange,
-            'remove.select': broadcastChange
-        })
-
-        // Register the default settings events.
-        ui.on({
-            start: settings.onStart,
-            render: settings.onRender,
-            stop: settings.onStop,
-            open: settings.onOpen,
-            close: settings.onClose,
-            focus: settings.onFocus,
-            blur: settings.onBlur,
-            capture: settings.onCapture,
-            release: settings.onRelease,
-            set: settings.onSet
-        })
-
-
-        // Trigger any queued “start” and “render” events.
-        return ui.trigger( 'start' ).trigger( 'render' )
-    }, //start
-
-
-
-    /**
-     * Render a new template into the `root` or `box`.
-     */
-    render: function( isFullRender ) {
-
-        var ui = this,
-            $node = isFullRender ? ui.$root : ui.$root.find( '.' + ui.klasses.box ),
-            activeElement = ui.get( 'activeElement' ),
-            activeElementClassName = activeElement && activeElement.className,
-            templateContent = shadow._.trigger( ui.i.template, ui.i )
-
-        // Create and insert the template.
-        $node[0].innerHTML = isFullRender ? createFullTemplate( templateContent, ui.klasses ) : templateContent
-
-        // If there was an active element within the shadow,
-        // try to focus back on it. Otherwise re-focus the ui.
-        if ( activeElementClassName ) {
-            activeElement = ui.$root.find( '.' + activeElementClassName )
-            if ( activeElement ) activeElement[0].focus()
-            else ui.focus()
-        }
-
-        // Trigger any queued “render” events.
-        return ui.trigger( 'render' )
-    }, //render
-
-
-
-    /**
-     * Stop the component.
-     */
-    stop: function() {
-
-        var ui = this,
-            instance = ui.i
-
-        // If it’s already stopped, do nothing.
-        if ( !instance.is.started ) return ui
-
-        // Update the `started` state.
-        instance.is.started = false
-
-        // Close the ui.
-        ui.close()
-
-        // Check if an input element was used.
-        if ( ui.$input ) {
-
-            // Clean up the input element.
-            ui.$input.removeClass( ui.klasses.input )
-
-            // Remove the generated host.
-            ui.$host.remove()
-        }
-
-        else {
-
-            // Remove the “host” class and the tabindex.
-            ui.$host.removeClass( ui.klasses.host ).removeAttr( 'tabindex' )
-
-            // Remove the root template content.
-            if ( hasShadowRoot ) ui.$host.after( ui.$host.clone() ).remove()
-            else ui.$root.remove()
-        }
-
-        // Remove the hidden input.
-        if ( ui._hidden ) {
-            ui._hidden.parentNode.removeChild( ui._hidden )
-        }
-
-        // Unbind the events, and remove the stored data
-        ui.$source.off( '.' + instance.id ).removeData( 'shadow' )
-
-        // Trigger any queued “stop” event callbacks.
-        ui.trigger( 'stop' )
-
-        // Then reset all instance bindings.
-        instance.bindings = {}
-
-        return ui
-    }, //stop
-
-
-
-    /**
-     * Open the component.
-     */
-    open: function( giveFocus ) {
-
-        var ui = this,
-            instance = ui.i
-
-        // Give the ui focus if needed.
-        if ( giveFocus === true ) ui.focus()
-
-        // If it’s already open, do nothing.
-        if ( instance.is.opened ) return ui
-
-        // Update the `opened` state.
-        instance.is.opened = true
-
-        // Add the “opened” class to the ui root.
-        ui.$root.addClass( ui.klasses.rootOpened )
-
-        // Bind events to the doc element.
-        $document.
-
-            // When a click or focus event is not on the host, input, or root, close and release the ui.
-            // * Note: for Firefox, a click on an `option` element bubbles up directly
-            //   to the doc. So make sure the target wasn't the doc.
-            on( 'click.' + instance.id + ' focusin.' + instance.id + ' focusout.' + instance.id, function( event ) {
-                var target = event.target
-                if (
-                    ui.$host[0] != target &&
-                    ( !ui.$input || ui.$input[0] != target ) &&
-                    !$.contains( ui.$host[0], target ) &&
-                    !$.contains( ui.$root[0], target ) &&
-                    $document[0] != target
-                ) ui.close().release()
-            })
-
-        // Trigger any queued “open” events.
-        return ui.trigger( 'open' )
-    }, //open
-
-
-
-    /**
-     * Close the component.
-     */
-    close: function( maintainFocus ) {
-
-        var ui = this,
-            instance = ui.i
-
-        // If we need to keep focus, do so before changing states.
-        if ( maintainFocus === true ) ui.focus()
-        else ui.blur()
-
-        // If it’s already closed, do nothing.
-        if ( !instance.is.opened ) return ui
-
-        // Update the `opened` state.
-        instance.is.opened = false
-
-        // If something within is focused while closing, focus back onto the source.
-        if ( ui.get( 'activeElement' ) ) ui.$source[0].focus()
-
-        // Remove the “opened” class from the ui root.
-        ui.$root.removeClass( ui.klasses.rootOpened )
-
-        // Trigger any queued “close” events.
-        return ui.trigger( 'close' )
-    }, //close
-
-
-
-    /**
-     * Focus the component.
-     */
-    focus: function() {
-
-        var ui = this,
-            instance = ui.i
-
-        // If nothing within is focused, pass focus to the source element.
-        // * Trigger the focus on the actual element because jQuery 1.9+ has
-        //   blur/focus bindings that cause an infinite loop when already focused.
-        if ( !ui.get( 'activeElement' ) ) ui.$source[0].focus()
-
-        // If it’s already focused, do nothing.
-        if ( instance.is.focused ) return ui
-
-        // Update the `focused` state.
-        instance.is.focused = true
-
-        // Add the “focused” class to the ui root.
-        ui.$root.addClass( ui.klasses.rootFocused )
-
-        // Trigger any queued “focus” events.
-        return ui.trigger( 'focus' )
-    }, //focus
-
-
-
-    /**
-     * Blur the component.
-     */
-    blur: function() {
-
-        var ui = this,
-            instance = ui.i
-
-        // If it’s already not focused, do nothing.
-        if ( !instance.is.focused ) return ui
-
-        // Update the `focused` state.
-        instance.is.focused = false
-
-        // Remove the “focused” class from the ui root.
-        ui.$root.removeClass( ui.klasses.rootFocused )
-
-        // Trigger any queued “blur” events.
-        return ui.trigger( 'blur' )
-    }, //blur
-
-
-
-    /**
-     * Capture the component events.
-     */
-    capture: function() {
-
-        var ui = this,
-            instance = ui.i
-
-        // If it’s already captured, do nothing.
-        if ( instance.is.captured ) return ui
-
-        // Update the `captured` state.
-        instance.is.captured = true
-
-        // Add the “captured” class to the root.
-        ui.$root.addClass( ui.klasses.rootCaptured )
-
-        // Bind the keyboard events.
-        $document.on( 'keydown.' + instance.id, function( event ) {
-
-            var keyCode = event.keyCode,
-                keyAction = instance.keys[ keyCode ]
-
-            // Check if the ui is focused and there is a key action.
-            if ( instance.is.focused ) {
-
-                // Check if it’s not opened.
-                if ( !instance.is.opened ) {
-
-                    // Prevent the default action.
-                    event.preventDefault()
-
-                    // Any of the arrow keys should open the ui.
-                    if ( [37,38,39,40].indexOf( keyCode ) > -1 ) {
-                        ui.open()
-                    }
-                }
-
-                // Close the ui on “escape”.
-                else if ( keyCode == 27 ) {
-                    ui.close( true )
-                }
-
-                // Trigger the key action if there is one.
-                if ( keyAction ) {
-                    shadow._.trigger( keyAction, instance, [ event ] )
-                }
-
-                // If the target is within the root and “enter” is pressed,
-                // prevent the default action and trigger a click instead.
-                else if ( keyCode == 13 ) {
-                    var target = event.target
-                    if ( $.contains( ui.$root[0], target ) ) {
-                        event.preventDefault()
-                        target.click()
-                    }
-                }
-            }
-        })
-
-        // Trigger any queued “capture” events.
-        return ui.trigger( 'capture' )
-    }, //capture
-
-
-
-    /**
-     * Release the component events.
-     */
-    release: function() {
-
-        var ui = this,
-            instance = ui.i
-
-        // If it’s already not captured, do nothing.
-        if ( !instance.is.captured ) return ui
-
-        // Update the `captured` state.
-        instance.is.captured = false
-
-        // Remove the “captured” class from the root.
-        ui.$root.removeClass( ui.klasses.rootCaptured )
-
-        // Unbind the keyboard events.
-        $document.off( 'keydown.' + instance.id )
-
-        // Trigger any queued “release” events.
-        return ui.trigger( 'release' )
-    }, //release
-
-
-
-    /**
-     * Attach callbacks to events.
-     */
-    on: function( thing, callback ) {
-
-        var thingName, thingMethod,
-            thingIsObject = $.isPlainObject( thing ),
-            thingObject = thingIsObject ? thing : {},
-            ui = this,
-            instance = ui.i
-
-        if ( thing ) {
-
-            // If the thing isn’t an object, make it one.
-            if ( !thingIsObject ) {
-                thingObject[ thing ] = callback
-            }
-
-            // Go through the things to bind to.
-            for ( thingName in thingObject ) {
-
-                // Grab the callback of the thing.
-                thingMethod = thingObject[ thingName ]
-
-                // Make sure the thing’s binding collection exists.
-                if ( !instance.bindings[ thingName ] ) instance.bindings[ thingName ] = []
-
-                // Add the callback to the relative binding collection.
-                instance.bindings[ thingName ].push( thingMethod )
-            }
-        }
-
-        return ui
-    }, //on
-
-
-
-    /**
-     * Fire off any instance bindings by name.
-     */
-    trigger: function( name, options ) {
-        var ui = this,
-            methodList = ui.i.bindings[ name ]
-        if ( methodList ) {
-            methodList.map( function( callback ) {
-                shadow._.trigger( callback, ui, [ $.Event( name, options ) ] )
-            })
-        }
-        return ui
-    },
-
-
-
-    /**
-     * Check a state of the component.
-     */
-    is: function( thing, value ) {
-
-        var ui = this,
-            instance = ui.i
-
-        // Return the instance’s state of the thing.
-        return shadow._.trigger( instance.is[ thing ], instance, [ value ] )
-    },
-
-
-
-    /**
-     * Find the index of a value within a thing’s collection.
-     */
-    within: function( thing, value ) {
-
-        var ui = this,
-            instance = ui.i,
-            thingCollection = instance.dict[ thing ],
-            found = -1
-
-        // Go through the collection and find the first matching value.
-        if ( $.isArray( thingCollection ) ) for ( var i = 0; i < thingCollection.length; i += 1 ) {
-            if (
-                instance.match[thing] ?
-                    shadow._.trigger( instance.match[thing], instance, [ thingCollection[i], value ] ) :
-                    thingCollection[i] === value
-            ) {
-                found = i
-                break
-            }
-        }
-
-        // Return whatever index is found.
-        return found
-    }, //within
-
-
-
-    /**
-     * Get something from the component extension.
-     */
-    get: function( thing, options ) {
-
-        var ui = this,
-            instance = ui.i
-
-        // Make sure we have usable options.
-        options = typeof options == 'string' ? { format: options } : options || {}
-
-        // Check if the value is requested, get the input’s value.
-        return thing == 'value' ? ui.$input && ui.$input[0].value :
-
-            // If the hidden value is requested, get the hidden input’s value.
-            thing == 'valueHidden' ? ui._hidden && ui._hidden.value :
-
-            // If the active element is requested, check the shadow or the root.
-            thing == 'activeElement' ? instance.shadow ?
-                instance.shadow[ thing ] :
-                ui.$root.find( $document[0][ thing ] )[0] :
-
-            // Otherwise fetch it from the instance dict.
-            thing in instance.dict && typeof options.format == 'string' && instance.formats ?
-                instance.toFormatString( options.format, instance.dict[ thing ] ) :
-                instance.dict[ thing ]
-    }, //get
-
-
-
-    /**
-     * Set something within the component extension.
-     */
-    set: function( thing, value, options ) {
-
-        var ui = this,
-            instance = ui.i,
-
-            thingItem, thingValue,
-            thingIsObject = $.isPlainObject( thing ),
-            thingObject = thingIsObject ? thing : {},
-            thingOptions = $.isPlainObject( options ) ? options : {}
-
-        if ( thing ) {
-
-            // If the thing isn’t an object, make it one.
-            if ( !thingIsObject ) thingObject[ thing ] = value
-
-            // Convert the options into an object.
-            if ( typeof options == 'string' ) thingOptions[options] = true
-
-            // Add the method name to the options.
-            thingOptions.type = 'set'
-
-            // Go through the things of items to set with the corresponding diction.
-            for ( thingItem in thingObject ) if ( thingItem in instance.dict ) {
-
-                // Grab the value of the thing.
-                thingValue = thingObject[ thingItem ]
-
-                // Update the value by triggering any create methods.
-                if ( instance.create[ thingItem ] ) {
-                    thingValue = shadow._.trigger( instance.create[ thingItem ], instance, [ thingValue, thingOptions ] )
-                }
-
-                // Update the diction with the final value.
-                if ( $.isArray( instance.dict[ thingItem ] ) ) {
-                    instance.dict[ thingItem ] = $.isArray( thingValue ) ? thingValue : thingValue != null ? [ thingValue ] : []
-                }
-                else instance.dict[ thingItem ] = thingValue
-
-                // Trigger any queued “set” events and pass the data.
-                ui.trigger( 'set', { item: thingItem, value: thingValue, options: thingOptions } )
-                ui.trigger( 'set.' + thingItem, { item: thingItem, value: thingValue, options: thingOptions } )
-            } //endfor
-        }
-
-        return ui
-    }, //set
-
-
-
-    /**
-     * Add something within the component extension.
-     */
-    add: function( thing, value, options ) {
-
-        var ui = this,
-            instance = ui.i,
-            thingCollection = instance.dict[ thing ],
-            thingOptions = $.isPlainObject( options ) ? options : {}
-
-        // Only add something if it’s an array.
-        if ( $.isArray( thingCollection ) ) {
-
-            // Convert the options into an object.
-            if ( typeof options == 'string' ) thingOptions[options] = true
-
-            // Add the method name to the options.
-            thingOptions.type = 'add'
-
-            // Add each value item not within the collection.
-            ;( $.isArray( value ) ? value : [value] ).forEach( function( itemValue ) {
-
-                // Update the value item by triggering any create methods.
-                if ( instance.create[ thing ] ) {
-                    itemValue = shadow._.trigger( instance.create[ thing ], instance, [ itemValue, thingOptions ] )
-                }
-
-                // If the item isn’t found within the collection, add it.
-                if ( itemValue != null && ui.within( thing, itemValue ) === -1 ) {
-                    thingCollection.push( itemValue )
-                }
-            })
-
-            // Trigger any queued “add” events and pass the data.
-            ui.trigger( 'add', { item: thing, value: thingCollection, options: thingOptions } )
-            ui.trigger( 'add.' + thing, { item: thing, value: thingCollection, options: thingOptions } )
-        }
-
-        return ui
-    }, //add
-
-
-
-    /**
-     * Remove something within the component extension.
-     */
-    remove: function( thing, value, options ) {
-
-        var ui = this,
-            instance = ui.i,
-            thingCollection = instance.dict[ thing ],
-            thingOptions = $.isPlainObject( options ) ? options : {}
-
-        // Only remove something if it’s an array.
-        if ( $.isArray( thingCollection ) ) {
-
-            // Convert the options into an object.
-            if ( typeof options == 'string' ) thingOptions[options] = true
-
-            // Add the method name to the options.
-            thingOptions.type = 'remove'
-
-            // Find the index of the value and remove it from the collection.
-            ;( $.isArray( value ) ? value : [value] ).forEach( function( itemValue ) {
-
-                // Update the value item by triggering any create methods.
-                if ( instance.create[ thing ] ) {
-                    itemValue = shadow._.trigger( instance.create[ thing ], instance, [ itemValue, thingOptions ] )
-                }
-
-                // If the item is found within the collection, remove it.
-                var index = ui.within( thing, itemValue )
-                if ( index > -1 ) thingCollection.splice( index, 1 )
-            })
-
-            // Trigger any queued “remove” events and pass the data.
-            ui.trigger( 'remove', { item: thing, value: thingCollection, options: thingOptions } )
-            ui.trigger( 'remove.' + thing, { item: thing, value: thingCollection, options: thingOptions } )
-        }
-
-        return ui
-    } //remove
-
-} //ShadowElement.prototype
-
-
-
-/**
- * Create the template for a shadow instance.
- */
-function createFullTemplate( templateContent, klasses ) {
-
-    // Create the pointer node.
-    return shadow._.node({ klass: klasses.pointer }) +
-
-        // Create the wrapped holder.
-        shadow._.node({
-            klass: klasses.holder,
-
-            // Create the ui frame.
-            content: shadow._.node({
-                klass: klasses.frame,
-
-                // Create the content wrapper.
-                content: shadow._.node({
-                    klass: klasses.wrap,
-
-                    // Create a box node.
-                    content: shadow._.node({
-                        klass: klasses.box,
-
-                        // Attach the component template.
-                        content: templateContent
-                    })
-                })
-            })
-        })
-} //createFullTemplate
-
-
-
-/**
- * Extend jQuery.
- */
-$.fn.shadow = function( option, name ) {
-
-    var shadowElement = this.data( 'shadow' )
-
-    // If there’s no shadow element, create one.
-    if ( !shadowElement ) return shadow.create( name, this[0], option )
-
-    // Trigger the `option` and pass all arguments (except `option`).
-    if ( option ) return shadow._.trigger( shadowElement[ option ], shadowElement, [].slice.apply( arguments, [1] ) )
-
-    // If there’s no option, return the shadow element data.
-    return shadowElement
+function parseRangeUnits(parser, format, value) {
+    var range = [];
+    // If there’s no value, stop right here.
+    if (!value) {
+        return range;
+    }
+    var addToCollection = function(rangeUnit) {
+        var originalvalueUnit = rangeUnit;
+        rangeUnit = parser(rangeUnit);
+        range.push(rangeUnit);
+        if (typeof rangeUnit == "string") originalvalueUnit = rangeUnit;
+        value = value.replace(originalvalueUnit, "");
+    };
+    var matchRange = format.match(/(.*)\{(.*?)\}(.*)/);
+    var regStrBeforeStart = matchRange[1];
+    var regStrBeforeEnd = matchRange[2];
+    var regStrAfterEnd = matchRange[3];
+    value = sliceUptoUnit(value, regStrBeforeStart);
+    var valueUnit = sliceUnit(value, regStrBeforeEnd);
+    // If there’s no unit value, stop right here.
+    if (!valueUnit) {
+        return value;
+    }
+    addToCollection(valueUnit);
+    value = sliceUptoUnit(value, regStrBeforeEnd);
+    valueUnit = sliceUnit(value, regStrAfterEnd);
+    if (valueUnit) {
+        addToCollection(valueUnit);
+    }
+    return range;
 }
 
-
+/**
+ * Escape any regular expression special characters.
+ */
+function escapeRegString(string) {
+    return string.replace(/[\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+}
 
 /**
- * Export the shadow object.
+ * Slice a string up to a string marked as a starting point.
  */
+function sliceUptoUnit(string, beforeString) {
+    var valueMatch = string.match(new RegExp("^" + escapeRegString(beforeString)));
+    if (valueMatch) {
+        string = string.replace(valueMatch[0], "");
+    }
+    return string;
+}
+
+/**
+ * Slice a string up to a string marked as the ending point.
+ */
+function sliceUnit(string, afterString) {
+    var valueMatch = string.match(new RegExp("(.*?)" + (escapeRegString(afterString) || "$")));
+    return valueMatch && valueMatch[1];
+}
+
+/**
+ * Convert a formatting string into a formatting array.
+ */
+function toFormattingArray(formattingString, formatsHash) {
+    // Define a format’s matching regular expression.
+    var formatsRegex = new RegExp(// Match any [escaped] characters.
+    "(\\[[^\\[]*\\])" + // Match any formatting characters.
+    "|(" + Object.keys(formatsHash).sort(function(a, b) {
+        return b > a ? 1 : -1;
+    }).join("|") + ")" + // Match all other characters.
+    "|(.)", "g");
+    return (formattingString || "").split(formatsRegex).reduce(function(array, chunk) {
+        if (chunk) {
+            if (chunk in formatsHash) {
+                array.push({
+                    f: chunk
+                });
+            } else if (chunk.match(/^\[.*]$/)) {
+                array.push(chunk.replace(/^\[(.*)]$/, "$1"));
+            } else {
+                var lastItem = array[array.length - 1];
+                if (typeof lastItem == "string") {
+                    array[array.length - 1] = lastItem + chunk;
+                } else {
+                    array.push(chunk);
+                }
+            }
+        }
+        return array;
+    }, []);
+}
+//# sourceMappingURL=shadow.map
 return shadow
-
 }));
-
-
-

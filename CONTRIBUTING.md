@@ -1,6 +1,0 @@
-# Contributing
-
-..coming soon
-
-
-

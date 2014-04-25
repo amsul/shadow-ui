@@ -1,15 +1,15 @@
-# Shadow UI v0.5.1 [![Shadow UI build status](https://travis-ci.org/amsul/shadow-ui.png)](https://travis-ci.org/amsul/shadow-ui)
+# Shadow UI v0.6.0 [![Shadow UI build status](https://travis-ci.org/amsul/shadow-ui.png)](https://travis-ci.org/amsul/shadow-ui)
 
-Create Shadow DOM based UI components, such as dropdowns, modals, popups, tooltips, blobs, etc.
+Build “encapsulated” UI components mimicking web components (custom elements), such as dropdowns, popups, tooltips, etc.
 
 > _**This project is in active development. The api is bound to be tweaked before v1 is ready.**_
 
 
 ### Get started:
 
-- [Download the package](https://github.com/amsul/shadow-ui/archive/0.5.1.zip), or
+- [Download the package](https://github.com/amsul/shadow-ui/archive/0.5.0.zip), or
 - `git clone https://github.com/amsul/shadow-ui.git`, or
-- `bower install shadow`
+- `bower install shadow-ui`
 
 
 ### Dependencies:
@@ -34,7 +34,7 @@ Aim for v1.0 is to support the following browsers:
 <br>
 ## Building
 
-[Grunt](http://gruntjs.com/) `~0.4.1` is used to build the project files. To get started, clone the project and then run:
+[Grunt](http://gruntjs.com/) `^0.4.4` is used to build the project files. To get started, clone the project and then run:
 
 - `npm install` to get the required node modules.
 - `grunt strict --verbose` to confirm you have all the dependencies.
@@ -62,7 +62,7 @@ Where:
 <br>
 ---
 
-© 2013 [Amsul](http://twitter.com/amsul_)
+© 2014 [Amsul](http://twitter.com/amsul_)
 
 Licensed under [MIT](http://amsul.ca/MIT)
 

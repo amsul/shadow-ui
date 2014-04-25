@@ -1,0 +1,40 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>Jasmine Spec Runner v2.0.0</title>
+  <link rel="shortcut icon" type="image/png" href="jasmine-2.0.0/jasmine_favicon.png">
+  <link rel="stylesheet" type="text/css" href="jasmine-2.0.0/jasmine.css">
+  <style>
+    body {
+      padding: 2.5% 5% 40%;
+    }
+  </style>
+</head>
+<body>
+
+  <input
+    type="text"
+    valuee="2 - 30"
+    valuee="5, 10, 50 - 100"
+    valuee="first: 5, middle: 10, middle: 14, middle: 20, middle: 50, last: 99 end."
+    >
+
+  <script src="jquery/jquery.1.7.0.js"></script>
+  <script src="shadow.js"></script>
+
+  <script>
+    var input = shadow.Input.create({
+      $el: $('input'),
+      attrs: {
+        allowMultiple: true
+      }
+    })
+    var value = [ 4, 20, 316, 6969 ]
+    var formattedValue = input.convertAttrToValue(value)
+    input.attrs.value = value
+    console.log(formattedValue);
+  </script>
+
+</body>
+</html>

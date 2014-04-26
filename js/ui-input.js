@@ -1,3 +1,5 @@
+(function() { 'use strict';
+
 
 /**
  * Construct an input object.
@@ -52,7 +54,7 @@ shadow('input', {
         }
 
         // Set the input element.
-        _.define(input, '$input', input.$el)
+        shadow._.define(input, '$input', input.$el)
 
         // When the attribute value is set, update
         // the element value after formatting.
@@ -225,7 +227,7 @@ shadow('input', {
         return value
     }
 
-}) //shadow.Element.extend
+}) //shadow('input')
 
 
 /**
@@ -476,3 +478,5 @@ function toFormattingArray(formattingString, formatsHash) {
         }, [])
 }
 
+
+})();

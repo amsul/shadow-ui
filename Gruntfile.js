@@ -46,8 +46,7 @@ module.exports = function( grunt ) {
                         'js/source/build.js',
                         'js/source/helpers.js',
                         'js/source/objects/Object.js',
-                        'js/source/objects/Element.js',
-                        'js/source/objects/Input.js'
+                        'js/source/objects/Element.js'
                     ]
                 }
             }
@@ -79,7 +78,7 @@ module.exports = function( grunt ) {
         // Watch the project files.
         watch: {
             main: {
-                files: [ 'js/source/**/*.js', 'less/*.less' ],
+                files: [ 'js/source/**/*.js', 'js/ui-*.js', 'less/*.less' ],
                 tasks: [ 'uglify:main', 'less:themes' ]
             },
             themes: {

@@ -20,7 +20,6 @@ function shadow(shadowName, shadowOptions) {
     }
     shadowOptions.name = _.casePascal(shadowName)
     shadow[extendingName].extend(shadowOptions)
-    shadow.buildAll(shadowName)
 }
 
 

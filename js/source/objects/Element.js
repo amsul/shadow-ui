@@ -59,7 +59,7 @@ shadow.Object.extend({
 
         // Set the ui name if needed.
         if ( element.$el.attr('data-ui') != element.name ) {
-            element.$el.attr('data-ui', element.name)
+            element.$el.attr('data-ui', _.caseDash(element.name))
         }
 
         // Attach the relevant shadow element nodes.
@@ -116,7 +116,9 @@ function getShadowAttributes($element) {
         var attrName = attr.name
         if ( attrName.match(/^data-ui-/) ) {
             var attrValue = $element.data(attrName.replace(/^data-/, ''))
-            attributes[attrName.replace(/^data-ui-/, '')] = attrValue
+            attrName = attrName.replace(/^data-ui-/, '')
+            attrName = _.caseCamel(attrName)
+            attributes[attrName] = attrValue
         }
     })
 
@@ -181,7 +183,7 @@ function copyShadowAttributes(element) {
     for (var prop in shadowAttrs) {
         var propAttr = 'data-ui-' + _.caseDash(prop)
         var propValue = shadowAttrs[prop]
-        if ( !elementAttrs.getNamedItem(propAttr) && propValue != null ) {
+        if ( propValue != null && !elementAttrs.getNamedItem(propAttr) ) {
             if ( typeof propValue == 'object' ) {
                 propValue = JSON.stringify(propValue)
             }
@@ -209,13 +211,25 @@ function decorateShadowAttribute($element, shadowAttrs, prop) {
             $element.trigger(event)
             if ( !event.isDefaultPrevented() ) {
                 currValue = event.value
-                $element.attr(
-                    'data-ui-' + _.caseDash(prop),
-                    typeof currValue == 'object' ?
-                        JSON.stringify(currValue) : currValue
-                )
+                updateShadowAttribute($element, prop, currValue)
             }
         }
     })
+}
+
+
+/**
+ * Update a shadow attribute on an element.
+ */
+function updateShadowAttribute($element, prop, value) {
+    prop = 'data-ui-' + _.caseDash(prop)
+    if ( value == null ) {
+        $element.removeAttr(prop)
+    }
+    else {
+        $element.attr(prop, typeof value == 'object' ?
+            JSON.stringify(value) : value
+        )
+    }
 }
 

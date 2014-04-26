@@ -1,6 +1,6 @@
 
 /*!
- * Shadow UI v0.5.0, 2014/04/24
+ * Shadow UI v0.6.0, 2014/04/26
  * By Amsul, http://amsul.ca
  * Hosted on http://amsul.github.io/shadow-ui
  * Licensed under MIT
@@ -42,7 +42,6 @@ function shadow(shadowName, shadowOptions) {
     }
     shadowOptions.name = _.casePascal(shadowName);
     shadow[extendingName].extend(shadowOptions);
-    shadow.buildAll(shadowName);
 }
 
 Object.defineProperty(shadow, "IS_DEBUGGING", {
@@ -74,25 +73,6 @@ shadow.buildAll = function(shadowName, shadowOptions) {
 };
 
 var _ = shadow._ = {
-    // /**
-    //  * Create a blueprint constructor function.
-    //  */
-    // createBlueprint: function(constructor) {
-    //     var blueprint = function() {
-    //             var property,
-    //                 prototype = this
-    //             constructor.apply(prototype, arguments)
-    //             blueprint.clones.unshift(prototype)
-    //             for (property in blueprint) {
-    //                 if (property !== 'clones' &&
-    //                     hasOwnProperty.call(blueprint, property)) {
-    //                         prototype[property] = blueprint[property]
-    //                 }
-    //             }
-    //         }
-    //     blueprint.clones = []
-    //     return blueprint
-    // },
     /**
      * Define an enumerable property on an object.
      */
@@ -331,6 +311,7 @@ shadow.Object = Object.create({}, {
                 throw new TypeError('An object by the name of "' + Instance.name + '" already exists.');
             }
             shadow[Instance.name] = Instance;
+            shadow.buildAll(_.caseDash(Instance.name));
             return Instance;
         }
     },
@@ -415,7 +396,7 @@ shadow.Object.extend({
         _.define(element, "id", element.name + Math.abs(~~(1 + Math.random() * new Date() * 1e4)));
         // Set the ui name if needed.
         if (element.$el.attr("data-ui") != element.name) {
-            element.$el.attr("data-ui", element.name);
+            element.$el.attr("data-ui", _.caseDash(element.name));
         }
         // Attach the relevant shadow element nodes.
         attachShadowNodes(element);
@@ -460,7 +441,9 @@ function getShadowAttributes($element) {
         var attrName = attr.name;
         if (attrName.match(/^data-ui-/)) {
             var attrValue = $element.data(attrName.replace(/^data-/, ""));
-            attributes[attrName.replace(/^data-ui-/, "")] = attrValue;
+            attrName = attrName.replace(/^data-ui-/, "");
+            attrName = _.caseCamel(attrName);
+            attributes[attrName] = attrValue;
         }
     });
     return attributes;
@@ -506,7 +489,7 @@ function copyShadowAttributes(element) {
     for (var prop in shadowAttrs) {
         var propAttr = "data-ui-" + _.caseDash(prop);
         var propValue = shadowAttrs[prop];
-        if (!elementAttrs.getNamedItem(propAttr) && propValue != null) {
+        if (propValue != null && !elementAttrs.getNamedItem(propAttr)) {
             if (typeof propValue == "object") {
                 propValue = JSON.stringify(propValue);
             }
@@ -533,17 +516,28 @@ function decorateShadowAttribute($element, shadowAttrs, prop) {
             $element.trigger(event);
             if (!event.isDefaultPrevented()) {
                 currValue = event.value;
-                $element.attr("data-ui-" + _.caseDash(prop), typeof currValue == "object" ? JSON.stringify(currValue) : currValue);
+                updateShadowAttribute($element, prop, currValue);
             }
         }
     });
 }
 
 /**
+ * Update a shadow attribute on an element.
+ */
+function updateShadowAttribute($element, prop, value) {
+    prop = "data-ui-" + _.caseDash(prop);
+    if (value == null) {
+        $element.removeAttr(prop);
+    } else {
+        $element.attr(prop, typeof value == "object" ? JSON.stringify(value) : value);
+    }
+}
+
+/**
  * Construct an input object.
  */
-shadow.Element.extend({
-    name: "Input",
+shadow("input", {
     formats: null,
     attrs: {
         value: null,
@@ -561,10 +555,6 @@ shadow.Element.extend({
     create: function(options) {
         // Construct the shadow input.
         var input = this._super(options);
-        // Make sure we have options with attributes.
-        options = $.extend(true, {
-            attrs: {}
-        }, options);
         // Setup the formatting attributes based on the options.
         setupFormattingAttributes(input, options);
         // Make sure we have a valid source element.
@@ -586,23 +576,19 @@ shadow.Element.extend({
         }
         // Set the input element.
         _.define(input, "$input", input.$el);
-        // When the attribute’s value is set, update
-        // the element’s value after formatting.
-        var setValueFn = function(value) {
-            input.$input[0].value = input.convertAttrToValue(value);
-        };
-        // When the element’s value is set, update
-        // the attribute’s value after parsing.
+        // When the attribute value is set, update
+        // the element value after formatting.
+        input.on("set:value." + input.id, function(event) {
+            input.$input[0].value = input.convertAttrToValue(event.value);
+        });
+        // When the element value is set, update
+        // the attribute value after parsing.
         input.$input.on("input." + input.id, function() {
-            input.off("set:value." + input.id);
             input.attrs.value = input.convertValueToAttr(this.value);
-            input.on("set:value." + input.id, function(event) {
-                setValueFn(event.value);
-            });
         });
         // Set the starting value.
         if (input.attrs.value) {
-            setValueFn(input.attrs.value);
+            input.attrs.value = input.attrs.value;
         } else {
             input.$input.triggerHandler("input." + input.id);
         }

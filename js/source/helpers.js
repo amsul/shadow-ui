@@ -2,30 +2,6 @@
 var _ = shadow._ = {
 
 
-    // /**
-    //  * Create a blueprint constructor function.
-    //  */
-    // createBlueprint: function(constructor) {
-
-    //     var blueprint = function() {
-    //             var property,
-    //                 prototype = this
-    //             constructor.apply(prototype, arguments)
-    //             blueprint.clones.unshift(prototype)
-    //             for (property in blueprint) {
-    //                 if (property !== 'clones' &&
-    //                     hasOwnProperty.call(blueprint, property)) {
-    //                         prototype[property] = blueprint[property]
-    //                 }
-    //             }
-    //         }
-
-    //     blueprint.clones = []
-
-    //     return blueprint
-    // },
-
-
     /**
      * Define an enumerable property on an object.
      */

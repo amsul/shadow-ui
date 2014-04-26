@@ -171,6 +171,8 @@ shadow.Object = Object.create({}, {
             }
             shadow[Instance.name] = Instance
 
+            shadow.buildAll(_.caseDash(Instance.name))
+
             return Instance
         }
     }, //extend

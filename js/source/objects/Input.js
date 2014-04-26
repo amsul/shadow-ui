@@ -2,9 +2,7 @@
 /**
  * Construct an input object.
  */
-shadow.Element.extend({
-
-    name: 'Input',
+shadow('input', {
 
     formats: null,
     attrs: {
@@ -26,9 +24,6 @@ shadow.Element.extend({
 
         // Construct the shadow input.
         var input = this._super(options)
-
-        // Make sure we have options with attributes.
-        options = $.extend(true, { attrs: {} }, options)
 
         // Setup the formatting attributes based on the options.
         setupFormattingAttributes(input, options)
@@ -59,26 +54,21 @@ shadow.Element.extend({
         // Set the input element.
         _.define(input, '$input', input.$el)
 
-        // When the attribute’s value is set, update
-        // the element’s value after formatting.
-        var setValueFn = function(value) {
-            input.$input[0].value = input.convertAttrToValue(value)
-        }
-
-        // When the element’s value is set, update
-        // the attribute’s value after parsing.
-        input.$input.on('input.' + input.id, function() {
-            input.off('set:value.' + input.id)
-            input.attrs.value = input.convertValueToAttr(this.value)
-            input.on('set:value.' + input.id, function(event) {
-                setValueFn(event.value)
-            })
+        // When the attribute value is set, update
+        // the element value after formatting.
+        input.on('set:value.' + input.id, function(event) {
+            input.$input[0].value = input.convertAttrToValue(event.value)
         })
 
+        // When the element value is set, update
+        // the attribute value after parsing.
+        input.$input.on('input.' + input.id, function() {
+            input.attrs.value = input.convertValueToAttr(this.value)
+        })
 
         // Set the starting value.
         if ( input.attrs.value ) {
-            setValueFn(input.attrs.value)
+            input.attrs.value = input.attrs.value
         }
         else {
             input.$input.triggerHandler('input.' + input.id)

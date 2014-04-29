@@ -1,103 +1,122 @@
-(function() { 'use strict';
+(function(factory) {
+
+    // Register as an anonymous module.
+    if ( typeof define == 'function' && define.amd )
+        define(['shadow','jquery'], factory)
+
+    // Or using browser globals.
+    else factory(shadow, jQuery)
+
+}(function(shadow, $) { 'use strict';
 
 
 /**
- * Construct an input object.
+ * Construct a data field object.
  */
-shadow('input', {
+shadow('data-field', {
 
-    formats: null,
+    $input: null,
+
     attrs: {
         value: null,
         allowMultiple: null,
         allowRange: null,
         format: null,
-        formatMultiple: '{, |, }', // <before first>{<before middle>|<before last>}<after last>
-        formatRange: '{ - }' // <before from>{<before to>}<after to>
+        formatMultiple: function() {
+            // <before first>{<before middle>|<before last>}<after last>
+            return this.allowMultiple ? '{, |, }' : null
+        },
+        formatRange: function() {
+            // <before from>{<before to>}<after to>
+            return this.allowRange ? '{ - }' : null
+        }
     },
-
-    $input: null,
+    formats: null,
 
 
     /**
-     * Create an input object.
+     * Create a data field object.
      */
     create: function(options) {
 
-        // Construct the shadow input.
-        var input = this._super(options)
+        // Create the shadow object.
+        var dataField = this._super(options)
 
-        // Setup the formatting attributes based on the options.
-        setupFormattingAttributes(input, options)
+        // Set the data field input.
+        if ( !dataField.$input ) {
+            if ( dataField.$el[0].nodeName == 'INPUT' ) {
+                shadow._.define(dataField, '$input', dataField.$el)
+            }
+            else {
+                shadow._.define(dataField, '$input', $('<input type=hidden>'))
+                dataField.$host.append(dataField.$input)
+            }
+        }
 
-        // Make sure we have a valid source element.
-        if ( input.$el[0].nodeName != 'INPUT' ) {
+        // Make sure we have a valid input element.
+        if ( dataField.$input[0].nodeName != 'INPUT' ) {
             throw new TypeError('To create a shadow input, ' +
                 'the `$el` must be an input element.')
         }
 
-        // If a format is expected, the must be formatters available.
-        if ( input.attrs.format && !input.formats ) {
+        // If a format is expected, there must be formatters available.
+        if ( dataField.attrs.format && !dataField.formats ) {
             throw new TypeError('The `formats` hash map is required.')
         }
 
         // When there are formats, prepare it to be format-able.
-        if ( input.formats ) {
+        if ( dataField.formats ) {
 
             // Make sure the element has a format for the value.
-            if ( !input.attrs.format ) {
+            if ( !dataField.attrs.format ) {
                 throw new TypeError('The `format` attribute is required.')
             }
 
             // Prevent adding/removing more formats.
-            Object.seal(input.formats)
+            Object.seal(dataField.formats)
         }
-
-        // Set the input element.
-        shadow._.define(input, '$input', input.$el)
 
         // When the attribute value is set, update
         // the element value after formatting.
-        input.on('set:value.' + input.id, function(event) {
-            input.$input[0].value = input.convertAttrToValue(event.value)
+        dataField.on('set:value.' + dataField.id, function(event) {
+            dataField.$input[0].value = dataField.format(event.value)
         })
 
         // When the element value is set, update
         // the attribute value after parsing.
-        input.$input.on('input.' + input.id, function() {
-            input.attrs.value = input.convertValueToAttr(this.value)
+        dataField.$input.on('input.' + dataField.id, function() {
+            dataField.attrs.value = dataField.parse(this.value)
         })
 
         // Set the starting value.
-        if ( input.attrs.value ) {
-            input.attrs.value = input.attrs.value
+        if ( dataField.attrs.value ) {
+            dataField.$input[0].value = dataField.format(dataField.attrs.value)
         }
         else {
-            input.$input.triggerHandler('input.' + input.id)
+            dataField.$input.triggerHandler('input.' + dataField.id)
         }
 
-        // Return the new input object.
-        return input
+        // Return the new data field object.
+        return dataField
     }, //create
 
 
     /**
-     * Convert an attribute value into a formatted string.
+     * Convert a value into a formatted string.
      */
-    convertAttrToValue: function(value) {
+    format: function(value) {
 
-        var input = this
+        var dataField = this
+        var formatsHash = dataField.formats
 
         var formatValueUnit = function(valueUnit) {
-
-            var formatsHash = input.formats
 
             if ( !formatsHash ) {
                 return typeof valueUnit == 'object' ?
                     JSON.stringify(valueUnit) : valueUnit
             }
 
-            return toFormattingArray(input.attrs.format, formatsHash).
+            return toFormattingArray(dataField.attrs.format, formatsHash).
                 map(function(chunk) {
                     return chunk.f ?
                         formatsHash[chunk.f](valueUnit) :
@@ -107,50 +126,57 @@ shadow('input', {
         }
 
         // If multiple values are allowed, setup the combo formatter.
-        if ( input.attrs.allowMultiple === true ) {
+        if ( dataField.attrs.allowMultiple === true ) {
             return formatMultipleUnits(
                 formatValueUnit,
-                input.attrs.formatMultiple,
-                input.attrs.formatRange,
+                dataField.attrs.formatMultiple,
+                dataField.attrs.formatRange,
                 value
             )
         }
 
         // If range values are allowed, setup the range formatter.
-        if ( input.attrs.allowRange === true ) {
+        if ( dataField.attrs.allowRange === true ) {
             return formatRangeUnits(
                 formatValueUnit,
-                input.attrs.formatRange,
+                dataField.attrs.formatRange,
                 value
             )
         }
 
         // Otherwise just format it as a single unit.
         return formatValueUnit(value)
+    }, //format
+
+
+    /**
+     * Convert a parsed unit hash into a formatted string.
+     */
+    formatUnit: function(unitHash) {
+        return unitHash
     },
 
 
     /**
-     * Convert a formatted string into a parsed attribute value.
+     * Convert a formatted string into a parsed value.
      */
-    convertValueToAttr: function(value) {
+    parse: function(string) {
 
-        if ( typeof value != 'string' ) {
-            throw new TypeError('An input expects it’s ' +
-                'element value to be a string.')
+        if ( typeof string != 'string' ) {
+            throw new TypeError('The parser expects a string.')
         }
 
-        var input = this
+        var dataField = this
         var parseValueUnit = function(valueUnit) {
 
-            // If there are formats, decorate the value unit as needed.
-            if ( input.formats ) {
+            // If there are formats, decorate the unit as needed.
+            if ( dataField.formats ) {
 
-                // Create a parsed hash from the string value.
-                var parsedHash = input.convertValueToParsedHash(valueUnit)
+                // Create a parsed unit hash from the string.
+                var parsedHash = dataField.parseUnit(valueUnit)
 
-                // Convert the hash into an attribute value.
-                valueUnit = input.convertParsedHashToAttr(parsedHash)
+                // Convert the unit hash into a value unit.
+                valueUnit = dataField.formatUnit(parsedHash)
             }
 
             // Try to evaluate it as JSON.
@@ -162,85 +188,99 @@ shadow('input', {
         }
 
         // If multiple values are allowed, setup the combo parser.
-        if ( input.attrs.allowMultiple === true ) {
+        if ( dataField.attrs.allowMultiple === true ) {
             return parseMultipleUnits(
                 parseValueUnit,
-                input.attrs.formatMultiple,
-                input.attrs.formatRange,
-                value
+                dataField.attrs.formatMultiple,
+                dataField.attrs.formatRange,
+                string
             )
         }
 
         // If range values are allowed, setup the range parser.
-        if ( input.attrs.allowRange === true ) {
+        if ( dataField.attrs.allowRange === true ) {
             return parseRangeUnits(
                 parseValueUnit,
-                input.attrs.formatRange,
-                value
+                dataField.attrs.formatRange,
+                string
             )
         }
 
         // Otherwise just parse it as a single unit.
-        return parseValueUnit(value)
-    },
+        return parseValueUnit(string)
+    }, //parse
 
 
     /**
-     * Convert a formatted string into a parsed hash.
+     * Convert a formatted unit string into a parsed unit hash.
      */
-    convertValueToParsedHash: function(value) {
+    parseUnit: function(stringUnit) {
 
-        var input = this
-        var formatsHash = input.formats
+        var dataField = this
+        var formatsHash = dataField.formats
         var parsedHash = {}
 
-        // If there are formats, parse the value.
+        // If there are formats, parse the unit.
         if ( formatsHash ) {
-            toFormattingArray(input.attrs.format, formatsHash).
+            toFormattingArray(dataField.attrs.format, formatsHash).
                 forEach(function(chunk) {
                     if ( chunk.f ) {
-                        var chunkValue = formatsHash[chunk.f](value, true)
-                        if ( !value.match(new RegExp('^' + chunkValue)) ) {
+                        var chunkValue = formatsHash[chunk.f](stringUnit, true)
+                        if ( !stringUnit.match(new RegExp('^' + chunkValue)) ) {
                             throw new SyntaxError('The value parsed by the ' +
                                 '`' + chunk.f + '` formatting rule did not ' +
                                 'match the value being parsed.\n' +
-                                'Value being parsed: “' + value + '”.\n' +
+                                'Value being parsed: “' + stringUnit + '”.\n' +
                                 'Rule parsed value: “' + chunkValue + '”.');
                         }
-                        value = value.slice(chunkValue.length)
+                        stringUnit = stringUnit.slice(chunkValue.length)
                         parsedHash[chunk.f] = chunkValue
                     }
                     else {
-                        value = value.replace(new RegExp('^' + chunk), '')
+                        stringUnit = stringUnit.replace(new RegExp('^' + chunk), '')
                     }
                 })
         }
 
         return parsedHash
-    },
+    }, //parseUnit
 
 
     /**
-     * Convert a formatting hash into an attribute value.
+     * Get a data field’s attribute with certain options.
      */
-    convertParsedHashToAttr: function(value) {
+    get: function(name, options, callback) {
+
+        if ( typeof options == 'function' ) {
+            callback = options
+            options = null
+        }
+
+        options = options || {}
+
+        var dataField = this
+        var formattedValue = function(val) {
+            if ( options.format ) {
+                val = dataField.format(val)
+            }
+            return val
+        }
+
+        var value = formattedValue(dataField.attrs[name])
+
+        if ( typeof callback == 'function' ) {
+            callback(value)
+            if ( options.bound ) {
+                dataField.on('set:' + name, function(event) {
+                    callback(formattedValue(event.value))
+                })
+            }
+        }
+
         return value
     }
 
-}) //shadow('input')
-
-
-/**
- * Set up the input’s formatting attributes based on the options.
- */
-function setupFormattingAttributes(input, options) {
-    if ( !options.attrs.allowMultiple ) {
-        input.attrs.formatMultiple = null
-    }
-    if ( !options.attrs.allowRange ) {
-        input.attrs.formatRange = null
-    }
-}
+}) //shadow('data-field')
 
 
 /**
@@ -294,6 +334,51 @@ function formatRangeUnits(formatter, format, rangeUnit) {
     })
 
     return rangeUnit.join('')
+}
+
+
+/**
+ * Convert a formatting string into a formatting array.
+ */
+function toFormattingArray(formattingString, formatsHash) {
+
+    // Define a format’s matching regular expression.
+    var formatsRegex = new RegExp(
+
+            // Match any [escaped] characters.
+            '(\\[[^\\[]*\\])' +
+
+            // Match any formatting characters.
+            '|(' + Object.keys(formatsHash).
+                sort(function(a,b) { return b > a ? 1 : -1 }).
+                join('|') + ')' +
+
+            // Match all other characters.
+            '|(.)',
+        'g')
+
+    return (formattingString || '').
+        split(formatsRegex).
+        reduce(function(array, chunk) {
+            if ( chunk ) {
+                if ( chunk in formatsHash ) {
+                    array.push({ f: chunk })
+                }
+                else if ( chunk.match(/^\[.*]$/) ) {
+                    array.push( chunk.replace(/^\[(.*)]$/, '$1') )
+                }
+                else {
+                    var lastItem = array[array.length - 1]
+                    if ( typeof lastItem == 'string' ) {
+                        array[array.length - 1] = lastItem + chunk
+                    }
+                    else {
+                        array.push(chunk)
+                    }
+                }
+            }
+            return array
+        }, [])
 }
 
 
@@ -434,49 +519,4 @@ function sliceUnit(string, afterString) {
 }
 
 
-/**
- * Convert a formatting string into a formatting array.
- */
-function toFormattingArray(formattingString, formatsHash) {
-
-    // Define a format’s matching regular expression.
-    var formatsRegex = new RegExp(
-
-            // Match any [escaped] characters.
-            '(\\[[^\\[]*\\])' +
-
-            // Match any formatting characters.
-            '|(' + Object.keys(formatsHash).
-                sort(function(a,b) { return b > a ? 1 : -1 }).
-                join('|') + ')' +
-
-            // Match all other characters.
-            '|(.)',
-        'g')
-
-    return (formattingString || '').
-        split(formatsRegex).
-        reduce(function(array, chunk) {
-            if ( chunk ) {
-                if ( chunk in formatsHash ) {
-                    array.push({ f: chunk })
-                }
-                else if ( chunk.match(/^\[.*]$/) ) {
-                    array.push( chunk.replace(/^\[(.*)]$/, '$1') )
-                }
-                else {
-                    var lastItem = array[array.length - 1]
-                    if ( typeof lastItem == 'string' ) {
-                        array[array.length - 1] = lastItem + chunk
-                    }
-                    else {
-                        array.push(chunk)
-                    }
-                }
-            }
-            return array
-        }, [])
-}
-
-
-})();
+}));

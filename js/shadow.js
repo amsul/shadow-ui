@@ -1,6 +1,6 @@
 
 /*!
- * Shadow UI v0.6.0, 2014/04/26
+ * Shadow UI v0.6.0, 2014/04/29
  * By Amsul, http://amsul.ca
  * Hosted on http://amsul.github.io/shadow-ui
  * Licensed under MIT
@@ -35,7 +35,7 @@ function shadow(shadowName, shadowOptions) {
     }
     extendingName = _.casePascal(extendingName);
     if (!_.isTypeOf(shadow[extendingName], "object") || extendingName != "Element" && !shadow.Element.is("classOf", shadow[extendingName])) {
-        throw new ReferenceError("There is no shadow element named “" + extendingName + "”.");
+        throw new ReferenceError("There is no shadow element named “" + _.caseDash(extendingName) + "”.");
     }
     if (shadowOptions.name) {
         throw new ReferenceError("The `name` property of the `shadowOptions` is reserved.");
@@ -163,6 +163,27 @@ var _ = shadow._ = {
         } else {
             ariaSet(element, attribute, value);
         }
+    },
+    /**
+     * Create an element node with optional children.
+     */
+    el: function(className, childEls) {
+        var el = document.createElement("div");
+        if (className) {
+            el.className = className;
+        }
+        if (childEls) {
+            if (!Array.isArray(childEls)) {
+                childEls = [ childEls ];
+            }
+            childEls.forEach(function(childEl) {
+                if (typeof childEl == "string") {
+                    childEl = document.createTextNode(childEl);
+                }
+                el.appendChild(childEl);
+            });
+        }
+        return el;
     }
 };
 
@@ -364,13 +385,16 @@ shadow.Object = Object.create({}, {
  */
 shadow.Object.extend({
     name: "Element",
-    id: null,
-    attrs: null,
-    template: null,
     $el: null,
     $host: null,
     // $root: null,
     // root: null,
+    id: null,
+    attrs: null,
+    classNames: null,
+    classNamesPrefix: null,
+    content: null,
+    template: null,
     /**
      * Create an element object.
      */
@@ -388,6 +412,8 @@ shadow.Object.extend({
         $element.data("shadow.isBound", true);
         // Get and merge the attributes from the source element.
         options.attrs = $.extend({}, this.attrs, options.attrs, getShadowAttributes($element));
+        // Setup the starting attributes.
+        setupShadowAttributes(options.attrs);
         // Now we instantiate the shadow object.
         var element = this._super(options);
         // Keep a reference to the shadow.
@@ -398,6 +424,11 @@ shadow.Object.extend({
         if (element.$el.attr("data-ui") != element.name) {
             element.$el.attr("data-ui", _.caseDash(element.name));
         }
+        // Set the content using the element’s initial content.
+        _.define(element, "content", element.$el.contents().toArray());
+        // Prefix and lock the class names.
+        _.define(element, "classNames", prefixifyClassNames(element.classNames, element.classNamesPrefix));
+        Object.seal(element.classNames);
         // Attach the relevant shadow element nodes.
         attachShadowNodes(element);
         // Define the relationship between the element nodes.
@@ -450,6 +481,17 @@ function getShadowAttributes($element) {
 }
 
 /**
+ * Set up the shadow element’s starting attributes.
+ */
+function setupShadowAttributes(attrs) {
+    for (var attrName in attrs) {
+        if (typeof attrs[attrName] == "function") {
+            attrs[attrName] = attrs[attrName].call(attrs);
+        }
+    }
+}
+
+/**
  * Attach nodes relevant to the shadow element.
  */
 function attachShadowNodes(element) {
@@ -463,7 +505,14 @@ function attachShadowNodes(element) {
         if (!element.$host || !(element.$host[0] instanceof Element)) {
             throw new TypeError("No `$host` element found.");
         }
-        element.$host.html(element.template);
+        var template = element.template;
+        if (typeof template == "function") {
+            template = element.template();
+        }
+        if (typeof template != "string") try {
+            template = JSON.stringify(template);
+        } catch (e) {}
+        element.$host.empty().html(template);
     }
 }
 
@@ -532,6 +581,25 @@ function updateShadowAttribute($element, prop, value) {
     } else {
         $element.attr(prop, typeof value == "object" ? JSON.stringify(value) : value);
     }
+}
+
+/**
+ * Prefix each class name in a hash of class names with a prefix.
+ */
+function prefixifyClassNames(classNames, prefix) {
+    if (!prefix && !classNames) {
+        return {};
+    }
+    prefix = prefix || "";
+    if (!classNames) {
+        throw new TypeError("No `classNames` were given to prefix.");
+    }
+    for (var name in classNames) {
+        var className = classNames[name];
+        var classNameDelimiter = !prefix || !className || className.match(/^-/) ? "" : "__";
+        classNames[name] = prefix + classNameDelimiter + className;
+    }
+    return classNames;
 }
 //# sourceMappingURL=shadow.map
 return shadow

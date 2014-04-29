@@ -10,35 +10,34 @@
       padding: 2.5% 5% 40%;
     }
   </style>
+  <style>
+    .picker__holder {
+      display: none;
+    }
+    .picker--opened .picker__holder {
+      display: block;
+    }
+  </style>
 </head>
 <body>
 
-  <input
+  <div
     type="text"
-    valuee="2 - 30"
-    valuee="5, 10, 50 - 100"
-    valuee="first: 5, middle: 10, middle: 14, middle: 20, middle: 50, last: 99 end."
-    data-ui="input"
+    data-ui="picker"
+    data-ui-value="[2, 3]"
     data-ui-allow-multiple="true"
-    data-ui-value="[4, 20, 316, 6969]"
-    >
+    >template content</div>
 
   <script src="jquery/jquery.1.7.0.js"></script>
   <script src="../shadow.js"></script>
-  <script src="../ui-input.js"></script>
+  <script src="../ui-text-field.js"></script>
   <script src="../ui-picker.js"></script>
 
   <script>
-    // var input = shadow.Input.create({
-    //   $el: $('input'),
-    //   attrs: {
-    //     allowMultiple: true
-    //   }
-    // })
-    // var value = [ 4, 20, 316, 6969 ]
-    // var formattedValue = input.convertAttrToValue(value)
-    // input.attrs.value = value
-    // console.log(formattedValue);
+    var picker = $('[data-ui=picker]').data('shadow.ui')
+    picker.get('value', { bound: true, format: true }, function(gotValue) {
+      console.log(gotValue);
+    })
   </script>
 
 </body>

@@ -11,14 +11,17 @@ shadow.Object.extend({
 
     name: 'Element',
 
-    id: null,
-    attrs: null,
-    template: null,
-
     $el: null,
     $host: null,
     // $root: null,
     // root: null,
+
+    id: null,
+    attrs: null,
+    classNames: null,
+    classNamesPrefix: null,
+    content: null,
+    template: null,
 
 
     /**
@@ -46,6 +49,9 @@ shadow.Object.extend({
         // Get and merge the attributes from the source element.
         options.attrs = $.extend({}, this.attrs, options.attrs, getShadowAttributes($element))
 
+        // Setup the starting attributes.
+        setupShadowAttributes(options.attrs)
+
         // Now we instantiate the shadow object.
         var element = this._super(options)
 
@@ -61,6 +67,15 @@ shadow.Object.extend({
         if ( element.$el.attr('data-ui') != element.name ) {
             element.$el.attr('data-ui', _.caseDash(element.name))
         }
+
+        // Set the content using the element’s initial content.
+        _.define(element, 'content', element.$el.contents().toArray())
+
+        // Prefix and lock the class names.
+        _.define(element, 'classNames',
+            prefixifyClassNames(element.classNames, element.classNamesPrefix)
+        )
+        Object.seal(element.classNames)
 
         // Attach the relevant shadow element nodes.
         attachShadowNodes(element)
@@ -127,6 +142,18 @@ function getShadowAttributes($element) {
 
 
 /**
+ * Set up the shadow element’s starting attributes.
+ */
+function setupShadowAttributes(attrs) {
+    for ( var attrName in attrs ) {
+        if ( typeof attrs[attrName] == 'function' ) {
+            attrs[attrName] = attrs[attrName].call(attrs)
+        }
+    }
+}
+
+
+/**
  * Attach nodes relevant to the shadow element.
  */
 function attachShadowNodes(element) {
@@ -143,17 +170,25 @@ function attachShadowNodes(element) {
         if ( !element.$host || !(element.$host[0] instanceof Element) ) {
             throw new TypeError('No `$host` element found.')
         }
-        element.$host.html(element.template)
+        var template = element.template
+        if ( typeof template == 'function' ) {
+            template = element.template()
+        }
+        if ( typeof template != 'string' ) try {
+            template = JSON.stringify(template)
+        }
+        catch (e) {}
+        element.$host.empty().html(template)
     }
 
     // // // Create the actual shadow root fragment.
     // // if (HAS_SHADOW_ROOT) {
     // //     element.root = element.$host[0].webkitCreateShadowRoot()
     // //     element.root.applyAuthorStyles = true
-    // //     element.root.innerHTML = '<content></content>' + '<template/>'
+    // //     element.root.innerHTML = '<content></content>' + element.template
     // //     element.$root = $(element.root.childNodes[1])
     // // } else {
-    // //     element.$root = $('<template/>')
+    // //     element.$root = $(element.template)
     // //     element.$host.append(element.$root)
     // // }
 }
@@ -231,5 +266,26 @@ function updateShadowAttribute($element, prop, value) {
             JSON.stringify(value) : value
         )
     }
+}
+
+
+/**
+ * Prefix each class name in a hash of class names with a prefix.
+ */
+function prefixifyClassNames(classNames, prefix) {
+    if ( !prefix && !classNames ) {
+        return {}
+    }
+    prefix = prefix || ''
+    if ( !classNames ) {
+        throw new TypeError('No `classNames` were given to prefix.')
+    }
+    for ( var name in classNames ) {
+        var className = classNames[name]
+        var classNameDelimiter = !prefix || !className ||
+            className.match(/^-/) ? '' : '__'
+        classNames[name] = prefix + classNameDelimiter + className
+    }
+    return classNames
 }
 

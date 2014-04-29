@@ -106,7 +106,30 @@ var _ = shadow._ = {
         else {
             ariaSet(element, attribute, value)
         }
-    }
+    },
+
+
+    /**
+     * Create an element node with optional children.
+     */
+    el: function(className, childEls) {
+        var el = document.createElement('div')
+        if ( className ) {
+            el.className = className
+        }
+        if ( childEls ) {
+            if ( !Array.isArray(childEls) ) {
+                childEls = [childEls]
+            }
+            childEls.forEach(function(childEl) {
+                if ( typeof childEl == 'string' ) {
+                    childEl = document.createTextNode(childEl)
+                }
+                el.appendChild(childEl)
+            })
+        }
+        return el
+    },
 
 }
 

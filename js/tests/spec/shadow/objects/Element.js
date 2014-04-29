@@ -189,6 +189,20 @@ describe('shadow.Element', function() {
             expect(customElement.attrs.something).not.toBe(undefined)
         })
 
+        it('can be a function that returns the initial value', function() {
+            var element = shadow.Element.create({
+                $el: $('<div />'),
+                attrs: {
+                    normal: true,
+                    uponCreation: function() {
+                        return this.normal === true ?
+                            'yup' : 'nope'
+                    }
+                }
+            })
+            expect(element.attrs.uponCreation).toBe('yup')
+        })
+
         it('mirrors changes to the source element’s `data-ui-*` attributes', function() {
 
             customElement.attrs.key = 'anotherValue'
@@ -223,6 +237,75 @@ describe('shadow.Element', function() {
     })
 
 
+    describe('.classNames', function() {
+
+        it('is a hash of HTML classes to use for templating', function() {
+            var element = shadow.Element.create({
+                $el: $('<div />'),
+                classNames: {
+                    root: '',
+                    box: 'box',
+                    sidebox: 'box--side'
+                }
+            })
+            expect(element.classNames.root).toBe('')
+            expect(element.classNames.box).toBe('box')
+            expect(element.classNames.sidebox).toBe('box--side')
+        })
+    })
+
+
+    describe('.classNamesPrefix', function() {
+
+        it('prefixes the hash of HTML classes to use for templating', function() {
+            var element = shadow.Element.create({
+                $el: $('<div />'),
+                classNames: {
+                    root: '',
+                    box: 'box',
+                    sidebox: 'box--side'
+                },
+                classNamesPrefix: 'shadow'
+            })
+            expect(element.classNames.root).toBe('shadow')
+            expect(element.classNames.box).toBe('shadow__box')
+            expect(element.classNames.sidebox).toBe('shadow__box--side')
+        })
+    })
+
+
+    describe('.content', function() {
+
+        it('is the original content of the host element', function() {
+
+            var element = shadow.Element.create({
+                $el: $('<div>original content</div>')
+            })
+            expect(Array.isArray(element.content)).toBe(true)
+            expect(element.content[0].textContent).toBe('original content')
+            expect(element.$host.html()).toBe('original content')
+
+            element = shadow.Element.create({
+                $el: $('<div>original content</div>'),
+                template: 'replaced content'
+            })
+            expect(Array.isArray(element.content)).toBe(true)
+            expect(element.content[0].textContent).toBe('original content')
+            expect(element.$host.html()).toBe('replaced content')
+        })
+
+        it('is not directly writable - before or after being constructed', function() {
+            shadow.Element.content = 'hi'
+            expect(shadow.Element.content).not.toBe('hi')
+            var element = shadow.Element.create({
+                $el: $('<div />')
+            })
+            element.content = 'hi'
+            expect(element.content).not.toBe('hi')
+        })
+    })
+
+
     describe('.template', function() {
 
         it('is used to generate the content for a shadow element', function() {
@@ -232,10 +315,10 @@ describe('shadow.Element', function() {
         it('can be a string', function() {
             var element = shadow.Element.create({
                 $el: $('<div />'),
-                template: 'some content :)'
+                template: 'some template :)'
             })
-            var content = element.$el.html()
-            expect(content).toBe('some content :)')
+            var template = element.$host.html()
+            expect(template).toBe('some template :)')
         })
 
         it('can be a DOM node', function() {
@@ -245,7 +328,7 @@ describe('shadow.Element', function() {
                 $el: $('<div />'),
                 template: textNode
             })
-            var textContent = textElement.$el.html()
+            var textContent = textElement.$host.html()
             expect(textContent).toBe('some content :)')
 
             var divNode = document.createElement('div')
@@ -254,19 +337,37 @@ describe('shadow.Element', function() {
                 $el: $('<div />'),
                 template: divNode
             })
-            var divContent = divElement.$el.html()
+            var divContent = divElement.$host.html()
             expect(divContent).toBe('<div>some content :)</div>')
+
+            var jqueryNode = $('<div>some content :)</div>')
+            var jqueryElement = shadow.Element.create({
+                $el: $('<div />'),
+                template: jqueryNode
+            })
+            var jqueryContent = jqueryElement.$host.html()
+            expect(jqueryContent).toBe('<div>some content :)</div>')
         })
 
         it('can be a function', function() {
-            var element = shadow.Element.create({
+
+            var elementFnString = shadow.Element.create({
                 $el: $('<div />'),
                 template: function() {
                     return 'some content :)'
                 }
             })
-            var content = element.$el.html()
-            expect(content).toBe('some content :)')
+            var contentString = elementFnString.$host.html()
+            expect(contentString).toBe('some content :)')
+
+            var elementFnNode = shadow.Element.create({
+                $el: $('<div />'),
+                template: function() {
+                    return $('<div>some content :)</div>')
+                }
+            })
+            var contentFnNode = elementFnNode.$host.html()
+            expect(contentFnNode).toBe('<div>some content :)</div>')
         })
     })
 
@@ -303,21 +404,21 @@ describe('shadow.Element', function() {
         it('is the container for the template content', function() {
             var element = shadow.Element.create({
                 $el: $('<div />'),
-                template: '<p>some epic content</p>'
+                template: '<p>some epic template</p>'
             })
-            expect(element.$host.html()).toBe('<p>some epic content</p>')
+            expect(element.$host.html()).toBe('<p>some epic template</p>')
         })
 
         var $host = $('<div />')
         var element = shadow.Element.create({
             $el: $('<div />'),
             $host: $host,
-            template: '<p>some epic content</p>'
+            template: '<p>some epic template</p>'
         })
 
         it('can be specified upon creation', function() {
             expect(element.$host[0]).toEqual($host[0])
-            expect(element.$host.html()).toBe('<p>some epic content</p>')
+            expect(element.$host.html()).toBe('<p>some epic template</p>')
         })
 
         it('attaches ARIA attributes to define relationship', function() {

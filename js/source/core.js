@@ -13,7 +13,7 @@ function shadow(shadowName, shadowOptions) {
     if ( !_.isTypeOf(shadow[extendingName], 'object') ||
         extendingName != 'Element' && !shadow.Element.is('classOf', shadow[extendingName])
     ) {
-        throw new ReferenceError('There is no shadow element named “' + extendingName + '”.')
+        throw new ReferenceError('There is no shadow element named “' + _.caseDash(extendingName) + '”.')
     }
     if ( shadowOptions.name ) {
         throw new ReferenceError('The `name` property of the `shadowOptions` is reserved.')

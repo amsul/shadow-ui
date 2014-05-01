@@ -48,17 +48,6 @@ describe('shadow.Object', function() {
         })
 
 
-        it('prevents the `extend` method itself from being over-written', function() {
-            function notAllowed() {
-                shadow.Object.extend({
-                    name: 'NotAllowed',
-                    extend: function() {}
-                })
-            }
-            expect(notAllowed).toThrowError()
-        })
-
-
         var MyOtherExtension = MyExtension.extend({
             name: 'OtherExtension',
             myOtherMethod: function() {

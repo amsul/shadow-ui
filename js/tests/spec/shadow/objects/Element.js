@@ -281,16 +281,16 @@ describe('shadow.Element', function() {
             var element = shadow.Element.create({
                 $el: $('<div>original content</div>')
             })
-            expect(Array.isArray(element.content)).toBe(true)
-            expect(element.content[0].textContent).toBe('original content')
-            expect(element.$host.html()).toBe('original content')
+            expect(element.content.nodeName).toBe('#document-fragment')
+            expect(element.content.textContent).toBe('original content')
+            expect(element.$host.html()).toBe('')
 
             element = shadow.Element.create({
                 $el: $('<div>original content</div>'),
                 template: 'replaced content'
             })
-            expect(Array.isArray(element.content)).toBe(true)
-            expect(element.content[0].textContent).toBe('original content')
+            expect(element.content.nodeName).toBe('#document-fragment')
+            expect(element.content.textContent).toBe('original content')
             expect(element.$host.html()).toBe('replaced content')
         })
 

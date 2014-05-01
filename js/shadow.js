@@ -1,6 +1,6 @@
 
 /*!
- * Shadow UI v0.6.0, 2014/04/29
+ * Shadow UI v0.6.0, 2014/04/30
  * By Amsul, http://amsul.ca
  * Hosted on http://amsul.github.io/shadow-ui
  * Licensed under MIT
@@ -167,17 +167,33 @@ var _ = shadow._ = {
     /**
      * Create an element node with optional children.
      */
-    el: function(className, childEls) {
-        var el = document.createElement("div");
+    el: function(options, childEls) {
+        var className;
+        var elName = "div";
+        if (options) {
+            if (typeof options == "string") {
+                className = options;
+            } else {
+                if (options.name) {
+                    elName = options.name;
+                }
+                if (options.klass) {
+                    className = options.klass;
+                }
+            }
+        } else if (!(childEls instanceof Node)) {
+            return document.createTextNode(childEls);
+        }
+        var el = document.createElement(elName);
         if (className) {
             el.className = className;
         }
-        if (childEls) {
+        if (childEls != null) {
             if (!Array.isArray(childEls)) {
                 childEls = [ childEls ];
             }
             childEls.forEach(function(childEl) {
-                if (typeof childEl == "string") {
+                if (!(childEl instanceof Node)) {
                     childEl = document.createTextNode(childEl);
                 }
                 el.appendChild(childEl);
@@ -235,7 +251,8 @@ var checkForSuperCall = function(prototype, property) {
     var methodString = "" + prototype[property];
     var variableNameMatch = methodString.match(/(\w+) *= *this/);
     var variableName = variableNameMatch && variableNameMatch[1] + "|" || "";
-    var superRegex = new RegExp("(?:" + variableName + "this)\\._super\\(");
+    var invoker = "(\\.(call|apply))?\\(";
+    var superRegex = new RegExp("(?:" + variableName + "this)\\._super(" + invoker + ")");
     if (shadow.IS_DEBUGGING && !methodString.match(superRegex)) {
         console.warn("Overriding the base method `" + property + "` " + "without calling `this._super()` within the method might cause " + "unexpected results. Make sure this is the behavior you desire.\n", prototype);
     }
@@ -314,9 +331,6 @@ shadow.Object = Object.create({}, {
                     if (property == "_super") {
                         throw new TypeError("The `_super` property is reserved " + "to allow object method inheritance.");
                     }
-                    if (property == "extend") {
-                        throw new TypeError("The `extend` method cannot be over-written.");
-                    }
                     var isBasePropertyFn = typeof Base[property] == "function";
                     if (isBasePropertyFn) {
                         checkForSuperCall(prototype, property);
@@ -332,7 +346,6 @@ shadow.Object = Object.create({}, {
                 throw new TypeError('An object by the name of "' + Instance.name + '" already exists.');
             }
             shadow[Instance.name] = Instance;
-            shadow.buildAll(_.caseDash(Instance.name));
             return Instance;
         }
     },
@@ -402,7 +415,7 @@ shadow.Object.extend({
         // Make sure the $el is a jQuery DOM element.
         var $element = options.$el = options.$el instanceof jQuery ? options.$el : $(options.$el);
         if (!$element.length) {
-            throw new TypeError("No `$el` element found.");
+            throw new TypeError("No `$el` element found for “" + this.name + "”.");
         }
         // Make sure the element hasn’t already been bound.
         if ($element.data("shadow.isBound")) {
@@ -425,7 +438,12 @@ shadow.Object.extend({
             element.$el.attr("data-ui", _.caseDash(element.name));
         }
         // Set the content using the element’s initial content.
-        _.define(element, "content", element.$el.contents().toArray());
+        var contents = element.$el.contents().toArray();
+        var frag = document.createDocumentFragment();
+        contents.forEach(function(content) {
+            frag.appendChild(content);
+        });
+        _.define(element, "content", frag);
         // Prefix and lock the class names.
         _.define(element, "classNames", prefixifyClassNames(element.classNames, element.classNamesPrefix));
         Object.seal(element.classNames);
@@ -442,6 +460,14 @@ shadow.Object.extend({
         return element;
     },
     //create
+    /**
+     * After extending the element, build all in the DOM.
+     */
+    extend: function() {
+        var ElementInstance = this._super.apply(this, arguments);
+        shadow.buildAll(_.caseDash(ElementInstance.name));
+        return ElementInstance;
+    },
     /**
      * Bind/unbind events to fire.
      */
@@ -595,9 +621,13 @@ function prefixifyClassNames(classNames, prefix) {
         throw new TypeError("No `classNames` were given to prefix.");
     }
     for (var name in classNames) {
-        var className = classNames[name];
-        var classNameDelimiter = !prefix || !className || className.match(/^-/) ? "" : "__";
-        classNames[name] = prefix + classNameDelimiter + className;
+        var classList = classNames[name];
+        if (typeof classList == "string") {
+            classNames[name] = classList.split(" ").map(function(className) {
+                var classNameDelimiter = !prefix || !className || className.match(/^-/) ? "" : "__";
+                return prefix + classNameDelimiter + className;
+            }).join(" ");
+        }
     }
     return classNames;
 }

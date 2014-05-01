@@ -35,7 +35,7 @@ shadow.Object.extend({
             $(options.$el)
 
         if ( !$element.length ) {
-            throw new TypeError('No `$el` element found.')
+            throw new TypeError('No `$el` element found for “' + this.name + '”.')
         }
 
         // Make sure the element hasn’t already been bound.
@@ -69,7 +69,12 @@ shadow.Object.extend({
         }
 
         // Set the content using the element’s initial content.
-        _.define(element, 'content', element.$el.contents().toArray())
+        var contents = element.$el.contents().toArray()
+        var frag = document.createDocumentFragment()
+        contents.forEach(function(content) {
+            frag.appendChild(content)
+        })
+        _.define(element, 'content', frag)
 
         // Prefix and lock the class names.
         _.define(element, 'classNames',
@@ -93,6 +98,16 @@ shadow.Object.extend({
         // Return the new element object.
         return element
     }, //create
+
+
+    /**
+     * After extending the element, build all in the DOM.
+     */
+    extend: function() {
+        var ElementInstance = this._super.apply(this, arguments)
+        shadow.buildAll(_.caseDash(ElementInstance.name))
+        return ElementInstance
+    },
 
 
     /**
@@ -281,10 +296,16 @@ function prefixifyClassNames(classNames, prefix) {
         throw new TypeError('No `classNames` were given to prefix.')
     }
     for ( var name in classNames ) {
-        var className = classNames[name]
-        var classNameDelimiter = !prefix || !className ||
-            className.match(/^-/) ? '' : '__'
-        classNames[name] = prefix + classNameDelimiter + className
+        var classList = classNames[name]
+        if ( typeof classList == 'string' ) {
+            classNames[name] = classList.split(' ').
+                map(function(className) {
+                    var classNameDelimiter = !prefix || !className ||
+                        className.match(/^-/) ? '' : '__'
+                    return prefix + classNameDelimiter + className
+                }).
+                join(' ')
+        }
     }
     return classNames
 }

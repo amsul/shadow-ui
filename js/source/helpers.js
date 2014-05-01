@@ -112,17 +112,35 @@ var _ = shadow._ = {
     /**
      * Create an element node with optional children.
      */
-    el: function(className, childEls) {
-        var el = document.createElement('div')
+    el: function(options, childEls) {
+        var className
+        var elName = 'div'
+        if ( options ) {
+            if ( typeof options == 'string' ) {
+                className = options
+            }
+            else {
+                if ( options.name ) {
+                    elName = options.name
+                }
+                if ( options.klass ) {
+                    className = options.klass
+                }
+            }
+        }
+        else if ( !(childEls instanceof Node) ) {
+            return document.createTextNode(childEls)
+        }
+        var el = document.createElement(elName)
         if ( className ) {
             el.className = className
         }
-        if ( childEls ) {
+        if ( childEls != null ) {
             if ( !Array.isArray(childEls) ) {
                 childEls = [childEls]
             }
             childEls.forEach(function(childEl) {
-                if ( typeof childEl == 'string' ) {
+                if ( !(childEl instanceof Node) ) {
                     childEl = document.createTextNode(childEl)
                 }
                 el.appendChild(childEl)

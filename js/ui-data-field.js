@@ -19,6 +19,7 @@ shadow('data-field', {
 
     attrs: {
         value: null,
+        submitValue: null,
         allowMultiple: null,
         allowRange: null,
         format: null,
@@ -42,23 +43,6 @@ shadow('data-field', {
         // Create the shadow object.
         var dataField = this._super(options)
 
-        // Set the data field input.
-        if ( !dataField.$input ) {
-            if ( dataField.$el[0].nodeName == 'INPUT' ) {
-                shadow._.define(dataField, '$input', dataField.$el)
-            }
-            else {
-                shadow._.define(dataField, '$input', $('<input type=hidden>'))
-                dataField.$host.append(dataField.$input)
-            }
-        }
-
-        // Make sure we have a valid input element.
-        if ( dataField.$input[0].nodeName != 'INPUT' ) {
-            throw new TypeError('To create a shadow input, ' +
-                'the `$el` must be an input element.')
-        }
-
         // If a format is expected, there must be formatters available.
         if ( dataField.attrs.format && !dataField.formats ) {
             throw new TypeError('The `formats` hash map is required.')
@@ -76,24 +60,44 @@ shadow('data-field', {
             Object.seal(dataField.formats)
         }
 
-        // When the attribute value is set, update
-        // the element value after formatting.
-        dataField.on('set:value.' + dataField.id, function(event) {
-            dataField.$input[0].value = dataField.format(event.value)
-        })
-
-        // When the element value is set, update
-        // the attribute value after parsing.
-        dataField.$input.on('input.' + dataField.id, function() {
-            dataField.attrs.value = dataField.parse(this.value)
-        })
-
-        // Set the starting value.
-        if ( dataField.attrs.value ) {
-            dataField.$input[0].value = dataField.format(dataField.attrs.value)
+        // Set the data field input.
+        if ( !dataField.$input ) {
+            if ( dataField.attrs.submitValue ) {
+                shadow._.define(dataField, '$input', $('<input type=hidden>'))
+                dataField.$host.after(dataField.$input)
+            }
+            else if ( dataField.$el[0].nodeName == 'INPUT' ) {
+                shadow._.define(dataField, '$input', dataField.$el)
+            }
         }
-        else {
-            dataField.$input.triggerHandler('input.' + dataField.id)
+
+        if ( dataField.$input ) {
+
+            // Make sure we have a valid input element.
+            if ( dataField.$input[0].nodeName != 'INPUT' ) {
+                throw new TypeError('To create a shadow input, ' +
+                    'the `$el` must be an input element.')
+            }
+
+            // When the attribute value is set, update
+            // the element value after formatting.
+            dataField.on('set:value.' + dataField.id, function(event) {
+                dataField.$input[0].value = dataField.format(event.value)
+            })
+
+            // When the element value is set, update
+            // the attribute value after parsing.
+            dataField.$input.on('input.' + dataField.id, function() {
+                dataField.attrs.value = dataField.parse(this.value)
+            })
+
+            // Set the starting value.
+            if ( dataField.attrs.value ) {
+                dataField.$input[0].value = dataField.format(dataField.attrs.value)
+            }
+            else {
+                dataField.$input.triggerHandler('input.' + dataField.id)
+            }
         }
 
         // Return the new data field object.
@@ -271,14 +275,14 @@ shadow('data-field', {
         if ( typeof callback == 'function' ) {
             callback(value)
             if ( options.bound ) {
-                dataField.on('set:' + name, function(event) {
+                dataField.on('set:' + name + '.' + dataField.id, function(event) {
                     callback(formattedValue(event.value))
                 })
             }
         }
 
         return value
-    }
+    } //get
 
 }) //shadow('data-field')
 

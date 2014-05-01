@@ -96,10 +96,11 @@ describe('shadow._', function() {
         var el = shadow._.el
 
         it('creates dom nodes', function() {
-            var div = el()
-            expect(div.nodeName).toBe('DIV')
-            div = el('my-class')
-            expect(div.className).toBe('my-class')
+            var element = el()
+            expect(element.nodeName).toBe('#text')
+            element = el('my-class')
+            expect(element.nodeName).toBe('DIV')
+            expect(element.className).toBe('my-class')
         })
 
         it('can optionally have children dom nodes', function() {
@@ -110,6 +111,12 @@ describe('shadow._', function() {
             parent = el('parent', [child, child2])
             expect(parent.childNodes[0]).toEqual(child)
             expect(parent.childNodes[1]).toEqual(child2)
+        })
+
+        it('can optionally create a text node', function() {
+            var textNode = el('', 'some text here')
+            expect(textNode.nodeName).toBe('#text')
+            expect(textNode.nodeValue).toBe('some text here')
         })
     })
 })

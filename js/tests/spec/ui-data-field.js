@@ -13,19 +13,12 @@ describe('shadow.DataField', function() {
 
     describe('.create()', function() {
 
-        it('creates shadow input elements', function() {
-            var dataField = shadow.DataField.create({
-                $el: $('<input />')
-            })
-            expect(dataField.id).toMatch(/^dataField/)
-            expect(dataField.$el.data('ui')).toBe('data-field')
-        })
-
-        it('creates a hidden input for non-inputs', function() {
+        it('creates shadow data field elements', function() {
             var dataField = shadow.DataField.create({
                 $el: $('<div />')
             })
-            expect(dataField.$input && dataField.$input[0].nodeName).toBe('INPUT')
+            expect(dataField.id).toMatch(/^dataField/)
+            expect(dataField.$el.data('ui')).toBe('data-field')
         })
 
         it('must have an input element if one is specified in the options', function() {
@@ -374,7 +367,7 @@ describe('shadow.DataField', function() {
 
         describe('.value', function() {
 
-            it('is the value behind the input element’s value', function() {
+            it('is the value behind the data field’s input value', function() {
 
                 var dataFieldNoValue = shadow.DataField.create({
                     $el: $('<input />')
@@ -413,6 +406,32 @@ describe('shadow.DataField', function() {
                 expect(dataFieldSimple.attrs.value).toEqual([4,20])
                 dataFieldSimple.$input.val('{"very":"cool"}').trigger('input')
                 expect(dataFieldSimple.attrs.value).toEqual({ very: 'cool' })
+            })
+        })
+
+
+        describe('.submitValue', function() {
+
+            it('creates a hidden input for non-inputs', function() {
+                var dataField = shadow.DataField.create({
+                    $el: $('<div />'),
+                    attrs: {
+                        submitValue: true
+                    }
+                })
+                expect(dataField.$input && dataField.$input[0].nodeName).toBe('INPUT')
+            })
+
+            it('ensures there’s an input element to submit the value', function() {
+                var dataFieldAutoHidden = shadow.DataField.create({
+                    $el: $('<div />'),
+                    attrs: {
+                        submitValue: true
+                    }
+                })
+                var inputEl = dataFieldAutoHidden.$input && dataFieldAutoHidden.$input[0]
+                expect(inputEl.nodeName).toBe('INPUT')
+                expect(inputEl.type).toBe('hidden')
             })
         })
 
@@ -744,7 +763,7 @@ describe('shadow.DataField', function() {
 
     describe('.template', function() {
 
-        it('requires a host element', function() {
+        it('requires a host element if the source is an input', function() {
             function fail() {
                 shadow.DataField.create({
                     $el: '<input />',
@@ -752,13 +771,20 @@ describe('shadow.DataField', function() {
                 })
             }
             expect(fail).toThrowError()
+            function pass() {
+                shadow.DataField.create({
+                    $el: '<div />',
+                    template: 'some content'
+                })
+            }
+            expect(pass).not.toThrowError()
         })
     })
 
 
     describe('.$host', function() {
 
-        it('is required when there is any template content', function() {
+        it('is required if the source is an input and there is a template', function() {
             function fail() {
                 shadow.DataField.create({
                     $el: $('<input />'),
@@ -766,6 +792,13 @@ describe('shadow.DataField', function() {
                 })
             }
             expect(fail).toThrowError()
+            function pass() {
+                shadow.DataField.create({
+                    $el: $('<div />'),
+                    template: '<p>some epic content</p>'
+                })
+            }
+            expect(pass).not.toThrowError()
         })
 
         it('is the container for the template content', function() {

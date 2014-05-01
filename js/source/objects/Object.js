@@ -55,7 +55,8 @@ var checkForSuperCall = function(prototype, property) {
     var methodString = '' + prototype[property]
     var variableNameMatch = methodString.match(/(\w+) *= *this/)
     var variableName = variableNameMatch && variableNameMatch[1] + '|' || ''
-    var superRegex = new RegExp('(?:' + variableName + 'this)\\._super\\(')
+    var invoker = '(\\.(call|apply))?\\('
+    var superRegex = new RegExp('(?:' + variableName + 'this)\\._super(' + invoker + ')')
     if ( shadow.IS_DEBUGGING && !methodString.match(superRegex) ) {
         console.warn('Overriding the base method `' + property + '` ' +
             'without calling `this._super()` within the method might cause ' +
@@ -145,9 +146,6 @@ shadow.Object = Object.create({}, {
                         throw new TypeError('The `_super` property is reserved ' +
                             'to allow object method inheritance.')
                     }
-                    if ( property == 'extend' ) {
-                        throw new TypeError('The `extend` method cannot be over-written.')
-                    }
                     var isBasePropertyFn = typeof Base[property] == 'function'
                     if ( isBasePropertyFn ) {
                         checkForSuperCall(prototype, property)
@@ -170,8 +168,6 @@ shadow.Object = Object.create({}, {
                     Instance.name + '" already exists.')
             }
             shadow[Instance.name] = Instance
-
-            shadow.buildAll(_.caseDash(Instance.name))
 
             return Instance
         }

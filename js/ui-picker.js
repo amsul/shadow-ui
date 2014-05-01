@@ -10,12 +10,15 @@
 }(function(shadow, $) { 'use strict';
 
 
+var el = shadow._.el
+
+
 /**
  * Construct a picker object.
  */
 shadow('picker', {
 
-    extend: 'text-field',
+    extend: 'data-field',
 
     attrs: {
         opened: false
@@ -31,63 +34,74 @@ shadow('picker', {
     },
     classNamesPrefix: 'picker',
 
+
+    /**
+     * Build out the templating for the picker.
+     */
     template: function() {
 
         var picker = this
         var classes = picker.classNames
-        var el = shadow._.el
 
-        var frag = document.createDocumentFragment()
-
-        // Create the nodes set as the content.
-        var contentNodes = picker.content
-        if ( contentNodes ) {
-            if ( !Array.isArray(contentNodes) ) {
-                contentNodes = [contentNodes]
-            }
-            contentNodes.forEach(function(contentNode) {
-                frag.appendChild(contentNode)
-            })
-        }
-
-        // Create the nodes that contain the actual picker.
-        var valueHolder = el()
-        picker.get('value', { bound: true }, function(value) {
-            valueHolder.textContent = value
+        // Setup the states of the host element.
+        var $host = picker.$host.addClass(classes.host)
+        picker.get('opened', { bound: true }, function(value) {
+            $host.toggleClass(classes.opened, value)
         })
+
+        // Bind the open/close triggers.
+        var eventNames = 'click.' + picker.id + ' focusin.' + picker.id
+        var onClickToOpen = function(event) {
+            event.stopPropagation()
+            bindDocumentClickToClose(picker)
+            picker.open()
+        }
+        picker.$el.on(eventNames, onClickToOpen)
+        picker.$host.on(eventNames, onClickToOpen)
+
+        // Create the nodes that contain the content.
         var pickerHolder = el(classes.holder,
             el(classes.frame,
                 el(classes.wrap,
                     el(classes.box,
-                        valueHolder)
+                        picker.content)
                     )
                 )
             )
+
+        var frag = document.createDocumentFragment()
+
         frag.appendChild(pickerHolder)
 
-        // Create the states of the source element.
-        var $el = picker.$el.addClass(classes.host)
-        picker.get('opened', { bound: true }, function(value) {
-            $el.toggleClass(classes.opened, value)
-        })
-
         return frag
-    },
+    }, //template
 
 
     /**
-     *  Create a picker object.
+     * Open & close the picker.
      */
-    create: function(options) {
-
-        // Create the shadow object.
-        var picker = this._super(options)
-
-        // Return the new picker object.
-        return picker
+    open: function() {
+        if ( !this.attrs.opened ) this.attrs.opened = true
+    },
+    close: function() {
+        if ( this.attrs.opened ) this.attrs.opened = false
+    },
+    toggle: function() {
+        this.attrs.opened = !this.attrs.opened
     }
 
 }) //shadow('picker')
+
+
+/**
+ * When the document is clicked, close the picker.
+ */
+function bindDocumentClickToClose(picker) {
+
+    $(document).on('click', function() {
+        picker.close()
+    })
+}
 
 
 }));

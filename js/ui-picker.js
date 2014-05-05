@@ -36,18 +36,23 @@ shadow('picker', {
 
 
     /**
-     * Build out the templating for the picker.
+     * Create a picker object.
      */
-    template: function() {
+    create: function(options) {
 
-        var picker = this
+        var picker = this._super(options)
         var classes = picker.classNames
 
         // Setup the states of the host element.
         var $host = picker.$host.addClass(classes.host)
-        picker.get('opened', { bound: true }, function(value) {
+        var isOpened = picker.get('opened', { bound: true }, function(value) {
             $host.toggleClass(classes.opened, value)
         })
+
+        // If it’s already opened, bind the document click.
+        if ( isOpened ) {
+            bindDocumentClickToClose(picker)
+        }
 
         // Bind the open/close triggers.
         var eventNames = 'click.' + picker.id + ' focusin.' + picker.id
@@ -58,6 +63,18 @@ shadow('picker', {
         }
         picker.$el.on(eventNames, onClickToOpen)
         picker.$host.on(eventNames, onClickToOpen)
+
+        return picker
+    },
+
+
+    /**
+     * Build out the templating for the picker.
+     */
+    template: function() {
+
+        var picker = this
+        var classes = picker.classNames
 
         // Create the nodes that contain the content.
         var pickerHolder = el(classes.holder,
@@ -70,9 +87,7 @@ shadow('picker', {
             )
 
         var frag = document.createDocumentFragment()
-
         frag.appendChild(pickerHolder)
-
         return frag
     }, //template
 

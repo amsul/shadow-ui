@@ -18,9 +18,11 @@ shadow.Object.extend({
 
     id: null,
     attrs: null,
+    dict: null,
     classNames: null,
     classNamesPrefix: null,
     content: null,
+    setup: null,
     template: null,
 
 
@@ -49,8 +51,11 @@ shadow.Object.extend({
         // Get and merge the attributes from the source element.
         options.attrs = $.extend({}, this.attrs, options.attrs, getShadowAttributes($element))
 
-        // Setup the starting attributes.
-        setupShadowAttributes(options.attrs)
+        // Make sure we have a dict hash.
+        options.dict = $.extend({}, this.dict, options.dict)
+
+        // Make sure we have a class names hash.
+        options.classNames = $.extend({}, this.classNames, options.classNames)
 
         // Now we instantiate the shadow object.
         var element = this._super(options)
@@ -76,24 +81,32 @@ shadow.Object.extend({
         })
         _.define(element, 'content', frag)
 
-        // Prefix and lock the class names.
+        // Prefix and seal the class names.
         _.define(element, 'classNames',
             prefixifyClassNames(element.classNames, element.classNamesPrefix)
         )
         Object.seal(element.classNames)
 
-        // Attach the relevant shadow element nodes.
-        attachShadowNodes(element)
+        // Setup the starting attributes before everything gets sealed.
+        if ( element.setup ) {
+            element.setup()
+        }
 
-        // Define the relationship between the element nodes.
-        defineShadowNodesRelationships(element)
+        // Freeze any changes to dict terms.
+        Object.freeze(element.dict)
 
         // Copy attributes to the source element and
         // convert them into getters & setters.
-        copyShadowAttributes(element)
+        copyShadowAttributes(element.$el, $element[0].attributes, element.attrs)
 
-        // Now let’s prevent adding/removing attributes.
+        // Now seal the attributes.
         Object.seal(element.attrs)
+
+        // Attach the relevant shadow element nodes.
+        attachShadowNodes(element)
+
+        // Define the relationship between the element and the host.
+        defineHostOwnership($element[0], element.$host && element.$host[0])
 
         // Return the new element object.
         return element
@@ -128,6 +141,24 @@ shadow.Object.extend({
                 'the element must first be constructed.')
         }
         $.fn.off.apply(element.$el, arguments)
+    },
+
+
+    /**
+     * Get an attribute of the shadow element.
+     */
+    get: function(name) {
+        return this.attrs[name]
+    },
+
+
+    /**
+     * Set an attribute of the shadow element.
+     */
+    set: function(name, value, options) {
+        var element = this
+        if ( !(name in element.attrs) ) return
+        element.attrs[name] = value
     }
 
 
@@ -153,18 +184,6 @@ function getShadowAttributes($element) {
     })
 
     return attributes
-}
-
-
-/**
- * Set up the shadow element’s starting attributes.
- */
-function setupShadowAttributes(attrs) {
-    for ( var attrName in attrs ) {
-        if ( typeof attrs[attrName] == 'function' ) {
-            attrs[attrName] = attrs[attrName].call(attrs)
-        }
-    }
 }
 
 
@@ -210,15 +229,14 @@ function attachShadowNodes(element) {
 
 
 /**
- * Define the relationships between the shadow elements.
+ * Define the relationship between the element and the host.
  */
-function defineShadowNodesRelationships(element) {
-
-    if ( element.$host && element.$host[0] !== element.$el[0] ) {
-        if ( !element.$host[0].id ) {
-            element.$host[0].id = 'host_' + element.id
+function defineHostOwnership(elementNode, hostNode) {
+    if ( hostNode && hostNode !== elementNode ) {
+        if ( !hostNode.id ) {
+            hostNode.id = 'host_' + elementNode.id
         }
-        _.aria(element.$el[0], 'owns', element.$host[0].id)
+        _.aria(elementNode, 'owns', hostNode.id)
     }
 }
 
@@ -226,10 +244,7 @@ function defineShadowNodesRelationships(element) {
 /**
  * Copy shadow ui attributes to the source element.
  */
-function copyShadowAttributes(element) {
-    var $element = element.$el
-    var elementAttrs = $element[0].attributes
-    var shadowAttrs = element.attrs
+function copyShadowAttributes($element, elementAttrs, shadowAttrs) {
     for (var prop in shadowAttrs) {
         var propAttr = 'data-ui-' + _.caseDash(prop)
         var propValue = shadowAttrs[prop]
@@ -254,15 +269,23 @@ function decorateShadowAttribute($element, shadowAttrs, prop) {
             return currValue
         },
         set: function(value) {
-            var event = $.Event('set:' + prop, {
+            var eventSet = $.Event('set:' + prop, {
                 value: value,
                 name: prop
             })
-            $element.trigger(event)
-            if ( !event.isDefaultPrevented() ) {
-                currValue = event.value
+            $element.trigger(eventSet)
+            var previousValue = currValue
+            var isPrevented = eventSet.isDefaultPrevented()
+            if ( !isPrevented ) {
+                currValue = eventSet.value
                 updateShadowAttribute($element, prop, currValue)
             }
+            var eventUpdate = $.Event('updated:' + prop, {
+                value: isPrevented ? value : currValue,
+                previousValue: previousValue,
+                name: prop
+            })
+            $element.trigger(eventUpdate)
         }
     })
 }

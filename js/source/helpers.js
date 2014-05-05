@@ -114,6 +114,7 @@ var _ = shadow._ = {
      */
     el: function(options, childEls) {
         var className
+        var attributes
         var elName = 'div'
         if ( options ) {
             if ( typeof options == 'string' ) {
@@ -126,6 +127,9 @@ var _ = shadow._ = {
                 if ( options.klass ) {
                     className = options.klass
                 }
+                if ( options.attrs ) {
+                    attributes = options.attrs
+                }
             }
         }
         else if ( !(childEls instanceof Node) ) {
@@ -134,6 +138,9 @@ var _ = shadow._ = {
         var el = document.createElement(elName)
         if ( className ) {
             el.className = className
+        }
+        if ( attributes ) for ( var attrName in attributes ) {
+            el.setAttribute(attrName, attributes[attrName])
         }
         if ( childEls != null ) {
             if ( !Array.isArray(childEls) ) {

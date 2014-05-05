@@ -24,6 +24,32 @@ describe('shadow.Element', function() {
     })
 
 
+    describe('.setup()', function() {
+
+        it('allows the opportunity to set the stage before all is sealed', function() {
+            var element = shadow.Element.create({
+                $el: $('<div />'),
+                attrs: {
+                    normal: true,
+                    uponCreation: null
+                },
+                dict: {
+                    term: 'awesome'
+                },
+                setup: function() {
+                    var attrs = this.attrs
+                    var dict = this.dict
+                    attrs.uponCreation = attrs.normal === true ?
+                        'yup' : 'nope'
+                    dict.term = 'epic'
+                }
+            })
+            expect(element.attrs.uponCreation).toBe('yup')
+            expect(element.dict.term).toBe('epic')
+        })
+    })
+
+
     describe('.on()', function() {
 
         var BindingElement = shadow.Element.extend({
@@ -33,16 +59,19 @@ describe('shadow.Element', function() {
             }
         })
 
-        it('binds callbacks to fire when attributes change', function() {
+        it('binds callbacks to fire before attributes are changed', function() {
             var bindingElement = BindingElement.create({
                 $el: $('<div />')
             })
-            var triggered = false
-            bindingElement.on('set:checked', function() {
-                triggered = true
+            var value
+            var updatingValue
+            bindingElement.on('set:checked', function(event) {
+                value = bindingElement.attrs.value
+                updatingValue = event.value
             })
             bindingElement.attrs.checked = false
-            expect(triggered).toBe(true)
+            expect(value).toBe(undefined)
+            expect(updatingValue).toBe(false)
         })
 
         it('can prevent the default attribute change action', function() {
@@ -65,6 +94,24 @@ describe('shadow.Element', function() {
             })
             bindingElement.attrs.checked = 'hah'
             expect(bindingElement.attrs.checked).toBe('alternateValue')
+        })
+
+        it('binds callbacks to fire after attributes are changed', function() {
+            var bindingElement = BindingElement.create({
+                $el: $('<div />')
+            })
+            var value
+            var previousValue
+            var currentValue
+            bindingElement.on('updated:checked', function(event) {
+                value = event.value
+                previousValue = event.previousValue
+                currentValue = bindingElement.attrs.checked
+            })
+            bindingElement.attrs.checked = false
+            expect(value).toBe(false)
+            expect(previousValue).toBe(true)
+            expect(currentValue).toBe(false)
         })
     })
 
@@ -189,20 +236,6 @@ describe('shadow.Element', function() {
             expect(customElement.attrs.something).not.toBe(undefined)
         })
 
-        it('can be a function that returns the initial value', function() {
-            var element = shadow.Element.create({
-                $el: $('<div />'),
-                attrs: {
-                    normal: true,
-                    uponCreation: function() {
-                        return this.normal === true ?
-                            'yup' : 'nope'
-                    }
-                }
-            })
-            expect(element.attrs.uponCreation).toBe('yup')
-        })
-
         it('mirrors changes to the source element’s `data-ui-*` attributes', function() {
 
             customElement.attrs.key = 'anotherValue'
@@ -234,6 +267,37 @@ describe('shadow.Element', function() {
         })
 
         it('mirrors changes to the shadow element’s `.attrs` property object')
+    })
+
+
+    describe('.dict', function() {
+
+        var element = shadow.Element.create({
+            $el: $('<div />'),
+            dict: {
+                some: 'definition'
+            }
+        })
+
+        it('holds the diction terms to be used for templating', function() {
+            expect(element.dict.some).toBe('definition')
+        })
+
+        it('is editable before construction', function() {
+            var DictEl = shadow.Element.extend({
+                name: 'DictEl',
+                attrs: {
+                    one: true
+                }
+            })
+            DictEl.attrs.two = true
+            expect(DictEl.attrs.one).toBe(true)
+            expect(DictEl.attrs.two).toBe(true)
+        })
+
+        it('is frozen after construction', function() {
+            expect(Object.isFrozen(element.dict)).toBe(true)
+        })
     })
 
 
@@ -368,6 +432,23 @@ describe('shadow.Element', function() {
             })
             var contentFnNode = elementFnNode.$host.html()
             expect(contentFnNode).toBe('<div>some content :)</div>')
+        })
+
+        it('requires a host element if the source is an input', function() {
+            function fail() {
+                shadow.Element.create({
+                    $el: '<input />',
+                    template: 'some content'
+                })
+            }
+            expect(fail).toThrowError()
+            function pass() {
+                shadow.Element.create({
+                    $el: '<div />',
+                    template: 'some content'
+                })
+            }
+            expect(pass).not.toThrowError()
         })
     })
 

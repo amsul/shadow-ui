@@ -103,6 +103,20 @@ describe('shadow._', function() {
             expect(element.className).toBe('my-class')
         })
 
+        it('can be passed an options object to create different elements', function() {
+            var section = el({
+                name: 'section',
+                klass: 'some class-names',
+                attrs: {
+                    title: 'Nice title'
+                }
+            }, 'Section content')
+            expect(section.nodeName).toBe('SECTION')
+            expect(section.className).toBe('some class-names')
+            expect(section.title).toBe('Nice title')
+            expect(section.innerHTML).toBe('Section content')
+        })
+
         it('can optionally have children dom nodes', function() {
             var child = el('child')
             var parent = el('parent', child)

@@ -1,10 +1,5 @@
 describe('shadow.DataField', function() {
 
-    it('is an instance of the shadow object', function() {
-        expect(shadow.Object.is('classOf', shadow.DataField)).toBe(true)
-        expect(shadow.DataField.is('instanceOf', shadow.Object)).toBe(true)
-    })
-
     it('is an instance of the shadow element', function() {
         expect(shadow.Element.is('classOf', shadow.DataField)).toBe(true)
         expect(shadow.DataField.is('instanceOf', shadow.Element)).toBe(true)
@@ -287,6 +282,7 @@ describe('shadow.DataField', function() {
         it('returns the value of an attribute of the shadow element', function() {
             expect(dataField.get('something')).toBe(true)
             expect(dataField.get('anotherThing')).toBe('awesome')
+            expect(dataField.get('nonExistent')).toBe(undefined)
         })
 
         it('can have a callback', function() {
@@ -757,27 +753,6 @@ describe('shadow.DataField', function() {
         it('is a map of formatting rules to format values', function() {
             var formattedValue = dataField.format('very cool')
             expect(formattedValue).toBe('why:very em:cool')
-        })
-    })
-
-
-    describe('.template', function() {
-
-        it('requires a host element if the source is an input', function() {
-            function fail() {
-                shadow.DataField.create({
-                    $el: '<input />',
-                    template: 'some content'
-                })
-            }
-            expect(fail).toThrowError()
-            function pass() {
-                shadow.DataField.create({
-                    $el: '<div />',
-                    template: 'some content'
-                })
-            }
-            expect(pass).not.toThrowError()
         })
     })
 

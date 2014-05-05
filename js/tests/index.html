@@ -10,6 +10,39 @@
       padding: 2.5% 5% 40%;
     }
   </style>
+  <style>
+    .picker {
+      background: pink;
+      padding: 10px;
+    }
+    .picker__holder {
+      display: none;
+      background: grey;
+      margin-top: 5px;
+    }
+    .picker--opened .picker__holder {
+      display: block;
+    }
+    .picker__nav--prev:after {
+      content: "<";
+    }
+    .picker__nav--next:after {
+      content: ">";
+    }
+    .picker__day--highlighted {
+      box-shadow: 0 0 1px 2px white;
+    }
+    .picker__day--selected {
+      font-weight: bold;
+      color: #0089ec;
+    }
+    .picker__day--today:before {
+      content: '^';
+      font-size: 8px;
+      vertical-align: top;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
 
@@ -20,6 +53,8 @@
   <script src="jquery/jquery.1.7.0.js"></script>
   <script src="../shadow.js"></script>
   <script src="../ui-data-field.js"></script>
+  <script src="../ui-picker.js"></script>
+  <script src="../ui-pickadate.js"></script>
 
   <script src="spec/shadow/core.js"></script>
   <!-- <script src="spec/shadow/build.js"></script> -->
@@ -27,6 +62,27 @@
   <script src="spec/shadow/objects/Object.js"></script>
   <script src="spec/shadow/objects/Element.js"></script>
   <script src="spec/ui-data-field.js"></script>
+  <script src="spec/ui-picker.js"></script>
+  <script src="spec/ui-pickadate.js"></script>
+
+  <div
+    id="pickadate"
+    type="text"
+    data-ui="pickadate"
+    data-ui-opened="true"
+    data-uii-select="2014-05-15T04:00:00.000Z"
+    >
+    <div>some default text <button>goes here!</button></div>
+  </div>
+
+  <script>
+    setTimeout(function() {
+      window.$pickadate = $('#pickadate')
+      window.pickadate = shadow.Pickadate.create({
+        $el: $pickadate
+      })
+    }, 600)
+  </script>
 
 </body>
 </html>

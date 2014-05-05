@@ -23,16 +23,35 @@ shadow('data-field', {
         allowMultiple: null,
         allowRange: null,
         format: null,
-        formatMultiple: function() {
-            // <before first>{<before middle>|<before last>}<after last>
-            return this.allowMultiple ? '{, |, }' : null
-        },
-        formatRange: function() {
-            // <before from>{<before to>}<after to>
-            return this.allowRange ? '{ - }' : null
-        }
+        formatMultiple: null,
+        formatRange: null
     },
     formats: null,
+
+
+    /**
+     * Setup the attrs before everything gets sealed
+     * and before getters and setters are made.
+     */
+    setup: function() {
+
+        var dataField = this
+        var attrs = dataField.attrs
+
+        // If a format is expected, there must be formatters available.
+        if ( attrs.format && !dataField.formats ) {
+            throw new TypeError('The `formats` hash map is required.')
+        }
+
+        if ( attrs.allowMultiple && !attrs.formatMultiple ) {
+            attrs.formatMultiple = '{, |, }' // <before first>{<before middle>|<before last>}<after last>
+        }
+
+        if ( attrs.allowRange && !attrs.formatRange ) {
+            attrs.formatRange = '{ - }' // <before from>{<before to>}<after to>
+        }
+
+    },
 
 
     /**
@@ -42,11 +61,6 @@ shadow('data-field', {
 
         // Create the shadow object.
         var dataField = this._super(options)
-
-        // If a format is expected, there must be formatters available.
-        if ( dataField.attrs.format && !dataField.formats ) {
-            throw new TypeError('The `formats` hash map is required.')
-        }
 
         // When there are formats, prepare it to be format-able.
         if ( dataField.formats ) {
@@ -255,6 +269,8 @@ shadow('data-field', {
      */
     get: function(name, options, callback) {
 
+        var dataField = this
+
         if ( typeof options == 'function' ) {
             callback = options
             options = null
@@ -262,7 +278,6 @@ shadow('data-field', {
 
         options = options || {}
 
-        var dataField = this
         var formattedValue = function(val) {
             if ( options.format ) {
                 val = dataField.format(val)
@@ -270,7 +285,8 @@ shadow('data-field', {
             return val
         }
 
-        var value = formattedValue(dataField.attrs[name])
+        var value = dataField._super(name)
+        value = formattedValue(value)
 
         if ( typeof callback == 'function' ) {
             callback(value)

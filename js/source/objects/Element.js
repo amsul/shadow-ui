@@ -318,15 +318,16 @@ function prefixifyClassNames(classNames, prefix) {
     if ( !classNames ) {
         throw new TypeError('No `classNames` were given to prefix.')
     }
+    var prefixClassName = function(className) {
+        var classNameDelimiter = !prefix || !className ||
+            className.match(/^-/) ? '' : '__'
+        return prefix + classNameDelimiter + className
+    }
     for ( var name in classNames ) {
         var classList = classNames[name]
         if ( typeof classList == 'string' ) {
             classNames[name] = classList.split(' ').
-                map(function(className) {
-                    var classNameDelimiter = !prefix || !className ||
-                        className.match(/^-/) ? '' : '__'
-                    return prefix + classNameDelimiter + className
-                }).
+                map(prefixClassName).
                 join(' ')
         }
     }

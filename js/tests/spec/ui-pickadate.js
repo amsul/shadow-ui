@@ -63,7 +63,7 @@ describe('shadow.Pickadate', function() {
             var date = [2013, 3, 20]
             expect(pickadate.attrs.value).toBe(null)
             pickadate.attrs.select = date
-            expect(pickadate.attrs.value).toEqual(JSON.stringify(date))
+            expect(pickadate.attrs.value).toEqual('20 April, 2013')
             pickadate.attrs.select = null
             expect(pickadate.attrs.value).toBe('')
         })
@@ -356,6 +356,11 @@ describe('shadow.Pickadate', function() {
     })
 
 
+    describe('.parse()', function() {
+        it('parses dates')
+    })
+
+
     describe('.attrs', function() {
 
         describe('.min', function() {
@@ -367,40 +372,385 @@ describe('shadow.Pickadate', function() {
         })
 
         describe('.today', function() {
-            it('determines the date today'/*, function() {
-                expect(shadow.Pickadate.attrs.today).toBe(null)
+
+            it('determines the date today', function() {
                 var pickadate = shadow.Pickadate.create({
                     $el: $('<div />')
                 })
-                var today = new Date()
-                today.setHours(0, 0, 0, 0)
-                expect(pickadate.attrs.today).toEqual(today)
-            }*/)
+                var today = pickadate.attrs.today
+                var $today = pickadate.$el.find('.' + pickadate.classNames.today)
+                expect($today.text()).toBe('' + today[2])
+            })
         })
 
         describe('.view', function() {
-            it('determines the month in view of the calendar'/*, function() {
-                var pickadate = shadow.Pickadate.create({
-                    $el: $('<div />')
-                })
-                var view = new Date()
-                view.setHours(0, 0, 0, 0)
-                view.setDate(1)
-                expect(pickadate.attrs.view).toEqual(view)
-            }*/)
-        })
 
-        describe('.select', function() {
-            it('determines the date selected'/*, function() {
+            it('determines the month in view', function() {
+
+                var pickadate = shadow.Pickadate.create({
+                    $el: $('<div />'),
+                    attrs: {
+                        view: [2013, 2, 4]
+                    }
+                })
+                var attrs = pickadate.attrs
+                var classes = pickadate.classNames
+
+                expect(attrs.view).toEqual([2013, 2, 1])
+                var $month = pickadate.$el.find('.' + classes.month)
+                expect($month.text()).toBe('March')
+                var $year = pickadate.$el.find('.' + classes.year)
+                expect($year.text()).toBe('2013')
+            })
+
+            it('can be updated after creation', function() {
+
                 var pickadate = shadow.Pickadate.create({
                     $el: $('<div />')
                 })
-                console.log(pickadate.attrs.select);
-            }*/)
+                var attrs = pickadate.attrs
+                var dict = pickadate.dict
+                var classes = pickadate.classNames
+
+                var view = new Date()
+                view = [view.getFullYear(), view.getMonth(), 1]
+                expect(attrs.view).toEqual(view)
+                var $month = pickadate.$el.find('.' + classes.month)
+                expect($month.text()).toBe(dict.monthsFull[view[1]])
+                var $year = pickadate.$el.find('.' + classes.year)
+                expect($year.text()).toBe('' + view[0])
+            })
         })
 
         describe('.highlight', function() {
-            it('determines the date highlighted')
+
+            it('determines the date highlighted and the month in view', function() {
+
+                var pickadate = shadow.Pickadate.create({
+                    $el: $('<div />'),
+                    attrs: {
+                        highlight: [2013, 2, 4]
+                    }
+                })
+                var attrs = pickadate.attrs
+                var classes = pickadate.classNames
+
+                var highlight = pickadate.attrs.highlight
+                var $highlight = pickadate.$el.find('.' + classes.highlighted)
+                expect($highlight.text()).toBe('' + highlight[2])
+
+                expect(attrs.highlight).toEqual([2013, 2, 4])
+                expect(attrs.view).toEqual([2013, 2, 1])
+                var $month = pickadate.$el.find('.' + classes.month)
+                expect($month.text()).toBe('March')
+                var $year = pickadate.$el.find('.' + classes.year)
+                expect($year.text()).toBe('2013')
+            })
+
+            it('can be updated after creation', function() {
+
+                var pickadate = shadow.Pickadate.create({
+                    $el: $('<div />')
+                })
+                var attrs = pickadate.attrs
+                var classes = pickadate.classNames
+
+                attrs.highlight = [2013, 2, 4]
+
+                var $highlight = pickadate.$el.find('.' + classes.highlighted)
+                expect($highlight.text()).toBe('4')
+                var $month = pickadate.$el.find('.' + classes.month)
+                expect($month.text()).toBe('March')
+                var $year = pickadate.$el.find('.' + classes.year)
+                expect($year.text()).toBe('2013')
+            })
+        })
+
+        describe('.select', function() {
+
+            it('determines the date selected, the date highlighted, and the month in view', function() {
+
+                var pickadate = shadow.Pickadate.create({
+                    $el: $('<div />'),
+                    attrs: {
+                        select: [2013, 2, 4]
+                    }
+                })
+                var attrs = pickadate.attrs
+                var classes = pickadate.classNames
+
+                var $select = pickadate.$el.find('.' + pickadate.classNames.selected)
+                expect($select.text()).toBe('4')
+                var $highlight = pickadate.$el.find('.' + pickadate.classNames.highlighted)
+                expect($highlight.text()).toBe('4')
+
+                expect(attrs.select).toEqual([2013, 2, 4])
+                expect(attrs.highlight).toEqual([2013, 2, 4])
+                expect(attrs.view).toEqual([2013, 2, 1])
+                expect(attrs.value).toBe('4 March, 2013')
+                var $month = pickadate.$el.find('.' + classes.month)
+                expect($month.text()).toBe('March')
+                var $year = pickadate.$el.find('.' + classes.year)
+                expect($year.text()).toBe('2013')
+            })
+
+            it('can be updated after creation', function() {
+
+                var pickadate = shadow.Pickadate.create({
+                    $el: $('<div />')
+                })
+                var attrs = pickadate.attrs
+                var classes = pickadate.classNames
+
+                attrs.select = [2013, 2, 4]
+
+                var $select = pickadate.$el.find('.' + pickadate.classNames.selected)
+                expect($select.text()).toBe('4')
+                var $highlight = pickadate.$el.find('.' + pickadate.classNames.highlighted)
+                expect($highlight.text()).toBe('4')
+                var $month = pickadate.$el.find('.' + classes.month)
+                expect($month.text()).toBe('March')
+                var $year = pickadate.$el.find('.' + classes.year)
+                expect($year.text()).toBe('2013')
+            })
+        })
+
+        describe('.value', function() {
+
+            it('determines the element’s value, the date selected, the date highlighted, and the month in view', function() {
+
+                var pickadate = shadow.Pickadate.create({
+                    $el: $('<div />'),
+                    attrs: {
+                        value: '4 March, 2013'
+                    }
+                })
+                var attrs = pickadate.attrs
+
+                expect(attrs.value).toBe('4 March, 2013')
+                expect(attrs.select).toEqual([2013, 2, 4])
+                expect(attrs.highlight).toEqual([2013, 2, 4])
+                expect(attrs.view).toEqual([2013, 2, 1])
+            })
+
+            it('can only be declared at the time of creation', function() {
+
+                var pickadate = shadow.Pickadate.create({
+                    $el: $('<div />')
+                })
+                var attrs = pickadate.attrs
+
+                expect(attrs.value).toBe(null)
+                expect(attrs.select).toBe(null)
+
+                attrs.value = '4 March, 2013'
+
+                expect(attrs.value).toBe('4 March, 2013')
+                expect(attrs.select).not.toEqual([2013, 2, 4])
+                expect(attrs.highlight).not.toEqual([2013, 2, 4])
+                expect(attrs.view).not.toEqual([2013, 2, 1])
+            })
+        })
+
+        describe('.format', function() {
+
+            it('is used to format the value', function() {
+                var pickadate = shadow.Pickadate.create({
+                    $el: $('<div />'),
+                    attrs: {
+                        select: [2012, 7, 14],
+                        format: 'yyyy-mm-dd'
+                    }
+                })
+                var attrs = pickadate.attrs
+                expect(attrs.value).toBe('2012-08-14')
+                attrs.format = 'dddd, d mmm, yyyy'
+                expect(attrs.value).toBe('Tuesday, 14 Aug, 2012')
+            })
+
+            it('is used to parse the value', function() {
+                var pickadate = shadow.Pickadate.create({
+                    $el: $('<div />'),
+                    attrs: {
+                        value: '2013-05-02',
+                        format: 'yyyy-mm-dd'
+                    }
+                })
+                var attrs = pickadate.attrs
+                expect(attrs.select).toEqual([2013, 4, 2])
+            })
+        })
+
+    })
+
+
+    describe('.formats', function() {
+
+        describe('.d()', function() {
+            var pickadate = shadow.Pickadate.create({
+                $el: $('<div />'),
+                attrs: {
+                    format: 'd mmmm, yyyy'
+                }
+            })
+            it('formats a date array value into the date', function() {
+                expect(pickadate.formats.d([2014, 2, 5])).toEqual(5)
+                expect(pickadate.formats.d([2012, 10, 23])).toEqual(23)
+            })
+            it('parses a date by slicing out the date unit', function() {
+                var parsed = pickadate.formats.d('4 August, 1988', true)
+                expect(parsed).toBe('4')
+                parsed = pickadate.formats.d('14 August, 1988', true)
+                expect(parsed).toBe('14')
+            })
+        })
+
+        describe('.dd()', function() {
+            var pickadate = shadow.Pickadate.create({
+                $el: $('<div />'),
+                attrs: {
+                    format: 'dd mmmm, yyyy'
+                }
+            })
+            it('formats a date array value into the date with a leading zero', function() {
+                expect(pickadate.formats.dd([2014, 2, 5])).toEqual('05')
+                expect(pickadate.formats.dd([2012, 10, 23])).toEqual('23')
+            })
+            it('parses a date with a leading zero by slicing out the date unit', function() {
+                var parsed = pickadate.formats.d('04 August, 1988', true)
+                expect(parsed).toBe('04')
+                parsed = pickadate.formats.dd('14 August, 1988', true)
+                expect(parsed).toBe('14')
+            })
+        })
+
+        describe('.ddd()', function() {
+            var pickadate = shadow.Pickadate.create({
+                $el: $('<div />'),
+                attrs: {
+                    format: 'ddd, d mmmm, yyyy'
+                }
+            })
+            it('formats a date array value into the short weekday', function() {
+                expect(pickadate.formats.ddd.call(pickadate, [2014, 2, 5])).toEqual('Wed')
+                expect(pickadate.formats.ddd.call(pickadate, [2012, 10, 23])).toEqual('Fri')
+            })
+            it('parses a short weekday by slicing out the weekday unit', function() {
+                var parsed = pickadate.formats.ddd('Tue, 6 May, 2014', true)
+                expect(parsed).toBe('Tue')
+            })
+        })
+
+        describe('.dddd()', function() {
+            var pickadate = shadow.Pickadate.create({
+                $el: $('<div />'),
+                attrs: {
+                    format: 'dddd, d mmmm, yyyy'
+                }
+            })
+            it('formats a date array value into the full weekday', function() {
+                expect(pickadate.formats.dddd.call(pickadate, [2014, 2, 5])).toEqual('Wednesday')
+                expect(pickadate.formats.dddd.call(pickadate, [2012, 10, 23])).toEqual('Friday')
+            })
+            it('parses a full weekday by slicing out the weekday unit', function() {
+                var parsed = pickadate.formats.ddd('Tuesday, 6 May, 2014', true)
+                expect(parsed).toBe('Tuesday')
+            })
+        })
+
+        describe('.m()', function() {
+            var pickadate = shadow.Pickadate.create({
+                $el: $('<div />'),
+                attrs: {
+                    format: 'm-d-yyyy'
+                }
+            })
+            it('formats a date array value into the month', function() {
+                expect(pickadate.formats.m([2014, 2, 5])).toEqual(3)
+                expect(pickadate.formats.m([2012, 10, 23])).toEqual(11)
+            })
+            it('parses a month by slicing out the month unit', function() {
+                var parsed = pickadate.formats.m('4-20-2014', true)
+                expect(parsed).toBe('4')
+                parsed = pickadate.formats.m('10-20-2014', true)
+                expect(parsed).toBe('10')
+            })
+        })
+
+        describe('.mm()', function() {
+            var pickadate = shadow.Pickadate.create({
+                $el: $('<div />'),
+                attrs: {
+                    format: 'mm-d-yyyy'
+                }
+            })
+            it('formats a date array value into the month with a leading zero', function() {
+                expect(pickadate.formats.mm([2014, 2, 5])).toEqual('03')
+                expect(pickadate.formats.mm([2012, 10, 23])).toEqual('11')
+            })
+            it('parses a month with a leading zero by slicing out the month unit', function() {
+                var parsed = pickadate.formats.mm('04-20-2014', true)
+                expect(parsed).toBe('04')
+                parsed = pickadate.formats.mm('10-20-2014', true)
+                expect(parsed).toBe('10')
+            })
+        })
+
+        describe('.mmm()', function() {
+            var pickadate = shadow.Pickadate.create({
+                $el: $('<div />'),
+                attrs: {
+                    format: 'mmm-d-yyyy'
+                }
+            })
+            it('formats a date array value into the short month name', function() {
+                expect(pickadate.formats.mmm.call(pickadate, [2014, 2, 5])).toEqual('Mar')
+                expect(pickadate.formats.mmm.call(pickadate, [2012, 10, 23])).toEqual('Nov')
+            })
+            it('parses a short month name by slicing out the month unit', function() {
+                var parsed = pickadate.formats.mmm('Apr-20-2014', true)
+                expect(parsed).toBe('Apr')
+                parsed = pickadate.formats.mmm('Oct-20-2014', true)
+                expect(parsed).toBe('Oct')
+            })
+        })
+
+        describe('.mmmm()', function() {
+            var pickadate = shadow.Pickadate.create({
+                $el: $('<div />'),
+                attrs: {
+                    format: 'mmmm-d-yyyy'
+                }
+            })
+            it('formats a date array value into the full month name', function() {
+                expect(pickadate.formats.mmmm.call(pickadate, [2014, 2, 5])).toEqual('March')
+                expect(pickadate.formats.mmmm.call(pickadate, [2012, 10, 23])).toEqual('November')
+            })
+            it('parses a full month name by slicing out the month unit', function() {
+                var parsed = pickadate.formats.mmmm('April-20-2014', true)
+                expect(parsed).toBe('April')
+                parsed = pickadate.formats.mmmm('October-20-2014', true)
+                expect(parsed).toBe('October')
+            })
+        })
+
+        describe('.yyyy()', function() {
+            var pickadate = shadow.Pickadate.create({
+                $el: $('<div />'),
+                attrs: {
+                    format: 'yyyy-mm-dd'
+                }
+            })
+            it('formats a date array value into the year', function() {
+                expect(pickadate.formats.yyyy([2014, 2, 5])).toEqual(2014)
+                expect(pickadate.formats.yyyy([2012, 10, 23])).toEqual(2012)
+            })
+            it('parses a year by slicing out the year unit', function() {
+                var parsed = pickadate.formats.yyyy('2014-04-20', true)
+                expect(parsed).toBe('2014')
+                parsed = pickadate.formats.yyyy('2010-12-04', true)
+                expect(parsed).toBe('2010')
+            })
         })
 
     })

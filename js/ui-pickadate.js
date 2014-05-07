@@ -12,6 +12,9 @@
 
 var _ = shadow._
 var el = _.el
+var leadZero = function(number) {
+    return (number > 9 ? '' : '0') + number
+}
 
 
 /**
@@ -37,7 +40,10 @@ shadow('pickadate', {
         highlight: null,
 
         // The selected date that mirrors the value.
-        select: null
+        select: null,
+
+        // The default formatting to use.
+        format: 'd mmmm, yyyy'
     },
 
     dict: {
@@ -90,6 +96,74 @@ shadow('pickadate', {
         buttonClear: 'button button--clear',
     },
 
+    formats: {
+        d: function(value, isParsing) {
+            if ( isParsing ) {
+                value = value.match(/^\d{1,2}/)
+                return value && value[0]
+            }
+            return value[2]
+        },
+        dd: function(value, isParsing) {
+            if ( isParsing ) {
+                value = value.match(/^\d{1,2}/)
+                return value && value[0]
+            }
+            return leadZero(value[2])
+        },
+        ddd: function(value, isParsing) {
+            if ( isParsing ) {
+                value = value.match(/^\w+/)
+                return value && value[0]
+            }
+            var day = new Date(value[0], value[1], value[2])
+            return this.dict.weekdaysShort[day.getDay()]
+        },
+        dddd: function(value, isParsing) {
+            if ( isParsing ) {
+                value = value.match(/^\w+/)
+                return value && value[0]
+            }
+            var day = new Date(value[0], value[1], value[2])
+            return this.dict.weekdaysFull[day.getDay()]
+        },
+        m: function(value, isParsing) {
+            if ( isParsing ) {
+                value = value.match(/^\d{1,2}/)
+                return value && value[0]
+            }
+            return value[1] + 1
+        },
+        mm: function(value, isParsing) {
+            if ( isParsing ) {
+                value = value.match(/^\d{1,2}/)
+                return value && value[0]
+            }
+            return leadZero(value[1] + 1)
+        },
+        mmm: function(value, isParsing) {
+            if ( isParsing ) {
+                value = value.match(/^\w+/)
+                return value && value[0]
+            }
+            return this.dict.monthsShort[value[1]]
+        },
+        mmmm: function(value, isParsing) {
+            if ( isParsing ) {
+                value = value.match(/^\w+/)
+                return value && value[0]
+            }
+            return this.dict.monthsFull[value[1]]
+        },
+        yyyy: function(value, isParsing) {
+            if ( isParsing ) {
+                value = value.match(/^\d{4}/)
+                return value && value[0]
+            }
+            return value[0]
+        }
+    },
+
 
     /**
      * Setup the attrs before everything gets sealed
@@ -106,9 +180,15 @@ shadow('pickadate', {
         var today = new Date()
         attrs.today = [today.getFullYear(), today.getMonth(), today.getDate()]
 
+        // Set the initial value.
+        if ( attrs.value ) {
+            attrs.select = pickadate.parse(attrs.value)
+        }
+
         // Set the initial select.
         if ( attrs.select ) {
-            console.log(attrs.select);
+            attrs.highlight = attrs.select.slice(0)
+            attrs.value = pickadate.format(attrs.select)
         }
 
         // Set the initial highlight.
@@ -119,37 +199,44 @@ shadow('pickadate', {
         // Set the initial view.
         if ( !attrs.view ) {
             attrs.view = attrs.highlight.slice(0)
-            attrs.view[2] = 1
         }
+        attrs.view[2] = 1
 
-        // Whenever the select is set, format it accordingly.
-        pickadate.on('set:select.' + pickadate.id, function(event) {
+        // Whenever the select is assigned, format it accordingly.
+        pickadate.on('assign:select.' + pickadate.id, function(event) {
             var value = event.value
             if ( _.isTypeOf(value, 'date') ) {
                 event.value = [value.getFullYear(), value.getMonth(), value.getDate()]
             }
         })
 
-        // Whenever the view is set, the date should be the month’s first.
-        pickadate.on('set:view.' + pickadate.id, function(event) {
+        // Whenever the view is assigned, the date should be the month’s first.
+        pickadate.on('assign:view.' + pickadate.id, function(event) {
             var value = event.value
             event.value = [value[0], value[1], 1]
         })
 
         // Whenever the highlight is updated, the view should be updated.
-        pickadate.on('updated:highlight.' + pickadate.id, function(event) {
+        pickadate.on('set:highlight.' + pickadate.id, function(event) {
             attrs.view = event.value.slice(0)
         })
 
         // Whenever the select is updated, the highlight should be updated.
-        pickadate.on('updated:select.' + pickadate.id, function(event) {
+        pickadate.on('set:select.' + pickadate.id, function(event) {
             var value = event.value
             if ( value ) {
                 attrs.highlight = value.slice(0)
-                attrs.value = JSON.stringify(value)
+                attrs.value = pickadate.format(value)
             }
             else {
                 attrs.value = ''
+            }
+        })
+
+        // Whenever the format is updated, the value should be re-formatted.
+        pickadate.on('set:format.' + pickadate.id, function(event) {
+            if ( attrs.select ) {
+                attrs.value = pickadate.format(attrs.select)
             }
         })
 
@@ -189,7 +276,7 @@ shadow('pickadate', {
         })
 
         // Bind updating the year and month labels.
-        pickadate.on('updated:highlight.' + pickadate.id, function(event) {
+        pickadate.on('set:highlight.' + pickadate.id, function(event) {
 
             var value = event.value
             var year = value[0]
@@ -280,7 +367,11 @@ shadow('pickadate', {
                 (today === dateTime ? ' ' + classes.today : ''),
             attrs: {
                 role: 'button',
-                title: date,
+                title: pickadate.format([
+                    date.getFullYear(),
+                    date.getMonth(),
+                    date.getDate()
+                ]),
                 'data-pick': dateTime
             }
         }, date.getDate())
@@ -351,10 +442,10 @@ shadow('pickadate', {
 
         var classes = pickadate.classNames
         var attrs = pickadate.attrs
-        var today = attrs.today
+        var view = attrs.view
 
         // Create the header.
-        var header = pickadate.createHeader(today[0], today[1])
+        var header = pickadate.createHeader(view[0], view[1])
         contentFrag.appendChild(header)
 
         // Create the grid.
@@ -365,20 +456,20 @@ shadow('pickadate', {
         grid.appendChild(pickadate.createGridHead())
 
         // Create the grid’s body.
-        var gridBody = pickadate.createGridBody(today[0], today[1])
+        var gridBody = pickadate.createGridBody(view[0], view[1])
         grid.appendChild(gridBody)
 
         // Create the footer.
         contentFrag.appendChild(pickadate.createFooter())
 
         // Bind updating the grid’s body.
-        pickadate.on('updated:highlight.' + pickadate.id, function(event) {
+        pickadate.on('set:highlight.' + pickadate.id, function(event) {
             var value = event.value
             $gridBody.empty().append(pickadate.createMonth(value[0], value[1]))
         })
 
         // Bind updating the selected day.
-        pickadate.on('updated:select.' + pickadate.id, function(event) {
+        pickadate.on('set:select.' + pickadate.id, function(event) {
             if ( !event.value ) {
                 $gridBody.find('.' + classes.selected).
                     removeClass(classes.selected)
@@ -394,7 +485,29 @@ shadow('pickadate', {
 
         // Create and return the fragment.
         return pickadate._super()
-    } //template
+    }, //template
+
+
+    /**
+     * Parse a date into it’s attribute format.
+     */
+    parse: function(string) {
+        var pickadate = this
+        var value = pickadate._super(string)
+        var month
+        if ( 'mmmm' in value ) {
+            month = pickadate.dict.monthsFull.indexOf(value.mmmm)
+        }
+        else if ( 'mmm' in value ) {
+            month = pickadate.dict.monthsShort.indexOf(value.mmm)
+        }
+        return [
+            ~~value.yyyy,
+            month !== undefined ? month :
+                ~~('mm' in value ? value.mm : value.m) - 1,
+            ~~('dd' in value ? value.dd : value.d)
+        ]
+    }
 
 }) //shadow('pickadate')
 

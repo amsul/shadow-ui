@@ -1,6 +1,6 @@
 
 /*!
- * Shadow UI v0.6.0, 2014/05/04
+ * Shadow UI v0.6.0, 2014/05/07
  * By Amsul, http://amsul.ca
  * Hosted on http://amsul.github.io/shadow-ui
  * Licensed under MIT
@@ -601,7 +601,7 @@ function decorateShadowAttribute($element, shadowAttrs, prop) {
             return currValue;
         },
         set: function(value) {
-            var eventSet = $.Event("set:" + prop, {
+            var eventSet = $.Event("assign:" + prop, {
                 value: value,
                 name: prop
             });
@@ -612,7 +612,7 @@ function decorateShadowAttribute($element, shadowAttrs, prop) {
                 currValue = eventSet.value;
                 updateShadowAttribute($element, prop, currValue);
             }
-            var eventUpdate = $.Event("updated:" + prop, {
+            var eventUpdate = $.Event("set:" + prop, {
                 value: isPrevented ? value : currValue,
                 previousValue: previousValue,
                 name: prop

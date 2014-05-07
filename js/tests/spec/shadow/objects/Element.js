@@ -65,7 +65,7 @@ describe('shadow.Element', function() {
             })
             var value
             var updatingValue
-            bindingElement.on('set:checked', function(event) {
+            bindingElement.on('assign:checked', function(event) {
                 value = bindingElement.attrs.value
                 updatingValue = event.value
             })
@@ -78,7 +78,7 @@ describe('shadow.Element', function() {
             var bindingElement = BindingElement.create({
                 $el: $('<div />')
             })
-            bindingElement.on('set:checked', function(event) {
+            bindingElement.on('assign:checked', function(event) {
                 event.preventDefault()
             })
             bindingElement.attrs.checked = 'hah'
@@ -89,7 +89,7 @@ describe('shadow.Element', function() {
             var bindingElement = BindingElement.create({
                 $el: $('<div />')
             })
-            bindingElement.on('set:checked', function(event) {
+            bindingElement.on('assign:checked', function(event) {
                 event.value = 'alternateValue'
             })
             bindingElement.attrs.checked = 'hah'
@@ -103,7 +103,7 @@ describe('shadow.Element', function() {
             var value
             var previousValue
             var currentValue
-            bindingElement.on('updated:checked', function(event) {
+            bindingElement.on('set:checked', function(event) {
                 value = event.value
                 previousValue = event.previousValue
                 currentValue = bindingElement.attrs.checked
@@ -124,10 +124,10 @@ describe('shadow.Element', function() {
 
         it('unbinds callbacks expected to fire when attributes change', function() {
             var triggered = false
-            element.on('set:id', function() {
+            element.on('assign:id', function() {
                 triggered = true
             })
-            element.off('set:id')
+            element.off('assign:id')
             element.attrs.id = 'hah'
             expect(triggered).toBe(false)
         })

@@ -95,7 +95,7 @@ shadow('data-field', {
 
             // When the attribute value is set, update
             // the element value after formatting.
-            dataField.on('set:value.' + dataField.id, function(event) {
+            dataField.on('assign:value.' + dataField.id, function(event) {
                 dataField.$input[0].value = dataField.format(event.value)
             })
 
@@ -129,18 +129,18 @@ shadow('data-field', {
 
         var formatValueUnit = function(valueUnit) {
 
-            if ( !formatsHash ) {
-                return typeof valueUnit == 'object' ?
-                    JSON.stringify(valueUnit) : valueUnit
+            if ( formatsHash ) {
+                return toFormattingArray(dataField.attrs.format, formatsHash).
+                    map(function(chunk) {
+                        return chunk.f ?
+                            formatsHash[chunk.f].call(dataField, valueUnit) :
+                            chunk
+                    }).
+                    join('')
             }
 
-            return toFormattingArray(dataField.attrs.format, formatsHash).
-                map(function(chunk) {
-                    return chunk.f ?
-                        formatsHash[chunk.f](valueUnit) :
-                        chunk
-                }).
-                join('')
+            return typeof valueUnit == 'object' ?
+                    JSON.stringify(valueUnit) : valueUnit
         }
 
         // If multiple values are allowed, setup the combo formatter.
@@ -243,7 +243,7 @@ shadow('data-field', {
             toFormattingArray(dataField.attrs.format, formatsHash).
                 forEach(function(chunk) {
                     if ( chunk.f ) {
-                        var chunkValue = formatsHash[chunk.f](stringUnit, true)
+                        var chunkValue = formatsHash[chunk.f].call(dataField, stringUnit, true)
                         if ( !stringUnit.match(new RegExp('^' + chunkValue)) ) {
                             throw new SyntaxError('The value parsed by the ' +
                                 '`' + chunk.f + '` formatting rule did not ' +
@@ -291,7 +291,7 @@ shadow('data-field', {
         if ( typeof callback == 'function' ) {
             callback(value)
             if ( options.bound ) {
-                dataField.on('set:' + name + '.' + dataField.id, function(event) {
+                dataField.on('assign:' + name + '.' + dataField.id, function(event) {
                     callback(formattedValue(event.value))
                 })
             }

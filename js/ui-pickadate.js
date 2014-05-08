@@ -27,8 +27,8 @@ shadow('pickadate', {
     attrs: {
 
         // The min/max range.
-        min: -Infinity,
-        max: Infinity,
+        min: null,
+        max: null,
 
         // The date today.
         today: null,
@@ -173,12 +173,17 @@ shadow('pickadate', {
 
         var pickadate = this
         var attrs = pickadate.attrs
+        var convertDate = pickadate.convertDate
 
         pickadate._super()
 
         // Set the initial “today”.
-        var today = new Date()
-        attrs.today = [today.getFullYear(), today.getMonth(), today.getDate()]
+        attrs.today = convertDate(new Date())
+
+        // Set the initial minimum date.
+        if ( attrs.min ) {
+            console.log(attrs.min);
+        }
 
         // Set the initial value.
         if ( attrs.value ) {
@@ -187,45 +192,53 @@ shadow('pickadate', {
 
         // Set the initial select.
         if ( attrs.select ) {
-            attrs.highlight = attrs.select.slice(0)
+            attrs.select = convertDate(attrs.select)
+            attrs.highlight = convertDate(attrs.select)
             attrs.value = pickadate.format(attrs.select)
         }
 
         // Set the initial highlight.
-        if ( !attrs.highlight ) {
-            attrs.highlight = attrs.today.slice(0)
+        if ( attrs.highlight ) {
+            attrs.highlight = convertDate(attrs.highlight)
+        }
+        else {
+            attrs.highlight = convertDate(attrs.today)
         }
 
         // Set the initial view.
-        if ( !attrs.view ) {
-            attrs.view = attrs.highlight.slice(0)
+        if ( attrs.view ) {
+            attrs.view = convertDate([attrs.view[0], attrs.view[1], 1])
         }
-        attrs.view[2] = 1
+        else {
+            attrs.view = convertDate([attrs.highlight[0], attrs.highlight[1], 1])
+        }
 
         // Whenever the select is assigned, format it accordingly.
         pickadate.on('assign:select.' + pickadate.id, function(event) {
-            var value = event.value
-            if ( _.isTypeOf(value, 'date') ) {
-                event.value = [value.getFullYear(), value.getMonth(), value.getDate()]
-            }
+            event.value = convertDate(event.value)
+        })
+
+        // Whenever the highlight is assigned, format it accordingly.
+        pickadate.on('assign:highlight.' + pickadate.id, function(event) {
+            event.value = convertDate(event.value)
         })
 
         // Whenever the view is assigned, the date should be the month’s first.
         pickadate.on('assign:view.' + pickadate.id, function(event) {
             var value = event.value
-            event.value = [value[0], value[1], 1]
+            event.value = convertDate([value[0], value[1], 1])
         })
 
         // Whenever the highlight is updated, the view should be updated.
         pickadate.on('set:highlight.' + pickadate.id, function(event) {
-            attrs.view = event.value.slice(0)
+            attrs.view = event.value
         })
 
         // Whenever the select is updated, the highlight should be updated.
         pickadate.on('set:select.' + pickadate.id, function(event) {
             var value = event.value
             if ( value ) {
-                attrs.highlight = value.slice(0)
+                attrs.highlight = value
                 attrs.value = pickadate.format(value)
             }
             else {
@@ -242,6 +255,25 @@ shadow('pickadate', {
 
         return pickadate
     },
+
+
+    /**
+     * Convert a value representative of a date into a valid date array.
+     */
+    convertDate: function(value) {
+        if ( !value ) {
+            return value
+        }
+        if ( Array.isArray(value) ) {
+            value = new Date(value[0], value[1], value[2])
+        }
+        if ( _.isTypeOf(value, 'date') ) {
+            value = [value.getFullYear(), value.getMonth(), value.getDate()]
+        }
+        Object.freeze(value)
+        return value
+    },
+
 
     createHeader: function(year, month) {
 
@@ -270,7 +302,7 @@ shadow('pickadate', {
         // Bind updating the highlight when the nav is clicked.
         $([navPrev, navNext]).on('click', function(event) {
             var target = event.target
-            var highlight = attrs.highlight
+            var highlight = attrs.highlight.slice(0)
             highlight[1] += target == navPrev ? -1 : 1
             attrs.highlight = highlight
         })
@@ -323,7 +355,7 @@ shadow('pickadate', {
             attrs: { type: 'button' }
         }, dict.today)
         $(todayNode).on('click', function() {
-            attrs.select = attrs.today.slice(0)
+            attrs.select = attrs.today
         })
         var clearNode = el({
             name: 'button',

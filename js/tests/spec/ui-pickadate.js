@@ -70,12 +70,41 @@ describe('shadow.Pickadate', function() {
     })
 
 
+    describe('.convertDate()', function() {
+
+        it('converts any date representation into a valid date array', function() {
+
+            var pickadate = shadow.Pickadate.create({
+                $el: $('<div />')
+            })
+            var date
+
+            date = pickadate.convertDate(new Date(2012, 1, 24))
+            expect(date).toEqual([2012, 1, 24])
+            expect(Object.isFrozen(date)).toBe(true)
+
+            date = pickadate.convertDate([2013, 2, 4])
+            expect(date).toEqual([2013, 2, 4])
+            expect(Object.isFrozen(date)).toBe(true)
+
+            date = pickadate.convertDate([2012, -1, 10])
+            expect(date).toEqual([2011, 11, 10])
+            expect(Object.isFrozen(date)).toBe(true)
+
+            date = pickadate.convertDate([2014, 1, 40])
+            expect(date).toEqual([2014, 2, 12])
+            expect(Object.isFrozen(date)).toBe(true)
+        })
+    })
+
+
     describe('.createHeader()', function() {
 
         var pickadate = shadow.Pickadate.create({
             $el: $('<div />')
         })
         var attrs = pickadate.attrs
+        var dict = pickadate.dict
         var classes = pickadate.classNames
 
         it('creates a header container element with a month and year label', function() {
@@ -88,25 +117,47 @@ describe('shadow.Pickadate', function() {
 
         it('binds click events to the nav buttons to update the highlight', function() {
 
-            var currentHighlight = attrs.highlight
+            var expectedHighlight
+            var month
+            var year
+
             var classPrev = '.' + classes.navPrev.split(' ').join('.')
+
+            for ( var i = 0; i < 24; i++ ) {
+
+                expectedHighlight = new Date(attrs.highlight[0],
+                    attrs.highlight[1] - 1, attrs.highlight[2])
+                expectedHighlight = [expectedHighlight.getFullYear(),
+                    expectedHighlight.getMonth(), expectedHighlight.getDate()]
+
+                pickadate.$el.find(classPrev).trigger('click')
+                expect(attrs.highlight).toEqual(expectedHighlight)
+
+                month = pickadate.$el.find('.' + classes.month)
+                expect(month.text()).toBe(dict.monthsFull[expectedHighlight[1]])
+
+                year = pickadate.$el.find('.' + classes.year)
+                expect(year.text()).toBe('' + expectedHighlight[0])
+            }
+
             var classNext = '.' + classes.navNext.split(' ').join('.')
 
-            pickadate.$el.find(classPrev).trigger('click')
-            currentHighlight[1] -= 1
-            expect(attrs.highlight).toEqual(currentHighlight)
+            for ( var i = 0; i < 24; i++ ) {
 
-            pickadate.$el.find(classPrev).trigger('click')
-            currentHighlight[1] -= 1
-            expect(attrs.highlight).toEqual(currentHighlight)
+                expectedHighlight = new Date(attrs.highlight[0],
+                    attrs.highlight[1] + 1, attrs.highlight[2])
+                expectedHighlight = [expectedHighlight.getFullYear(),
+                    expectedHighlight.getMonth(), expectedHighlight.getDate()]
 
-            pickadate.$el.find(classNext).trigger('click')
-            currentHighlight[1] += 1
-            expect(attrs.highlight).toEqual(currentHighlight)
+                pickadate.$el.find(classNext).trigger('click')
+                expect(attrs.highlight).toEqual(expectedHighlight)
 
-            pickadate.$el.find(classNext).trigger('click')
-            currentHighlight[1] += 1
-            expect(attrs.highlight).toEqual(currentHighlight)
+                month = pickadate.$el.find('.' + classes.month)
+                expect(month.text()).toBe(dict.monthsFull[expectedHighlight[1]])
+
+                year = pickadate.$el.find('.' + classes.year)
+                expect(year.text()).toBe('' + expectedHighlight[0])
+            }
         })
 
         it('binds updates to the highlight to update the month and year labels', function() {
@@ -364,7 +415,14 @@ describe('shadow.Pickadate', function() {
     describe('.attrs', function() {
 
         describe('.min', function() {
-            it('to do')
+            it('determines the minimum date value'/*, function() {
+                var pickadate = window.picker = shadow.Pickadate.create({
+                    $el: $('<div />'),
+                    attrs: {
+                        min: [2014, 2, 4]
+                    }
+                })
+            }*/)
         })
 
         describe('.max', function() {

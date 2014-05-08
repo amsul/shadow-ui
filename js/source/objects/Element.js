@@ -269,12 +269,12 @@ function decorateShadowAttribute($element, shadowAttrs, prop) {
             return currValue
         },
         set: function(value) {
+            var previousValue = currValue
             var eventSet = $.Event('assign:' + prop, {
                 value: value,
                 name: prop
             })
             $element.trigger(eventSet)
-            var previousValue = currValue
             var isPrevented = eventSet.isDefaultPrevented()
             if ( !isPrevented ) {
                 currValue = eventSet.value

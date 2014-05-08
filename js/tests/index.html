@@ -69,17 +69,16 @@
     id="pickadate"
     type="text"
     data-ui="pickadate"
-    data-ui-opened="true"
     >
     <div>some default text <button>goes here!</button></div>
   </div>
 
   <script>
+    var pickadate = shadow.Pickadate.create({
+      $el: $('#pickadate')
+    })
     setTimeout(function() {
-      window.$pickadate = $('#pickadate')
-      window.pickadate = shadow.Pickadate.create({
-        $el: $pickadate
-      })
+      pickadate.open()
     }, 600)
   </script>
 

@@ -160,6 +160,34 @@ describe('shadow.Pickadate', function() {
             }
         })
 
+        it('disables click events to the previous month nav button when the min limit is reached', function() {
+            var pickadate = shadow.Pickadate.create({
+                $el: $('<div />'),
+                attrs: {
+                    min: [2014, 4, 4]
+                }
+            })
+            pickadate.attrs.highlight = [2014, 4, 10]
+            var classes = pickadate.classNames
+            var className = '.' + classes.navPrev.split(' ').join('.')
+            var isDisabled = pickadate.$el.find(className)[0].disabled
+            expect(isDisabled).toBe(true)
+        })
+
+        it('disables click events to the next month nav button when the max limit is reached', function() {
+            var pickadate = shadow.Pickadate.create({
+                $el: $('<div />'),
+                attrs: {
+                    max: [2014, 4, 24]
+                }
+            })
+            pickadate.attrs.highlight = [2014, 4, 10]
+            var classes = pickadate.classNames
+            var className = '.' + classes.navNext.split(' ').join('.')
+            var isDisabled = pickadate.$el.find(className)[0].disabled
+            expect(isDisabled).toBe(true)
+        })
+
         it('binds updates to the highlight to update the month and year labels', function() {
             var getMonthAndYear = function() {
                 return pickadate.$el.find('.' + classes.month).text() +
@@ -415,18 +443,83 @@ describe('shadow.Pickadate', function() {
     describe('.attrs', function() {
 
         describe('.min', function() {
-            it('determines the minimum date value'/*, function() {
-                var pickadate = window.picker = shadow.Pickadate.create({
+
+            it('determines the minimum date value', function() {
+                var pickadate = shadow.Pickadate.create({
                     $el: $('<div />'),
                     attrs: {
-                        min: [2014, 2, 4]
+                        min: [2014, 4, 4]
                     }
                 })
-            }*/)
+                pickadate.highlight = [2014, 4, 10]
+
+                var dateTime = new Date(2014, 4, 4).getTime()
+                var $date = pickadate.$el.find('[data-pick=' + dateTime + ']')
+                expect($date.length).toBe(1)
+
+                dateTime = new Date(2014, 4, 3).getTime()
+                $date = pickadate.$el.find('[data-pick=' + dateTime + ']')
+                expect($date.length).toBe(0)
+            })
+
+            it('can be updated after creation', function() {
+
+                var pickadate = shadow.Pickadate.create({
+                    $el: $('<div />')
+                })
+                var attrs = pickadate.attrs
+
+                pickadate.highlight = [2014, 4, 10]
+                attrs.min = [2014, 4, 4]
+
+                var dateTime = new Date(2014, 4, 4).getTime()
+                var $date = pickadate.$el.find('[data-pick=' + dateTime + ']')
+                expect($date.length).toBe(1)
+
+                dateTime = new Date(2014, 4, 3).getTime()
+                $date = pickadate.$el.find('[data-pick=' + dateTime + ']')
+                expect($date.length).toBe(0)
+            })
         })
 
         describe('.max', function() {
-            it('to do')
+
+            it('determines the maximum date value', function() {
+                var pickadate = shadow.Pickadate.create({
+                    $el: $('<div />'),
+                    attrs: {
+                        max: [2014, 4, 24]
+                    }
+                })
+                pickadate.highlight = [2014, 4, 10]
+
+                var dateTime = new Date(2014, 4, 24).getTime()
+                var $date = pickadate.$el.find('[data-pick=' + dateTime + ']')
+                expect($date.length).toBe(1)
+
+                dateTime = new Date(2014, 4, 25).getTime()
+                $date = pickadate.$el.find('[data-pick=' + dateTime + ']')
+                expect($date.length).toBe(0)
+            })
+
+            it('can be updated after creation', function() {
+
+                var pickadate = shadow.Pickadate.create({
+                    $el: $('<div />')
+                })
+                var attrs = pickadate.attrs
+
+                pickadate.highlight = [2014, 4, 10]
+                attrs.max = [2014, 4, 24]
+
+                var dateTime = new Date(2014, 4, 24).getTime()
+                var $date = pickadate.$el.find('[data-pick=' + dateTime + ']')
+                expect($date.length).toBe(1)
+
+                dateTime = new Date(2014, 4, 25).getTime()
+                $date = pickadate.$el.find('[data-pick=' + dateTime + ']')
+                expect($date.length).toBe(0)
+            })
         })
 
         describe('.today', function() {

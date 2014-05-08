@@ -1,6 +1,6 @@
 
 /*!
- * Shadow UI v0.6.0, 2014/05/07
+ * Shadow UI v0.6.0, 2014/05/08
  * By Amsul, http://amsul.ca
  * Hosted on http://amsul.github.io/shadow-ui
  * Licensed under MIT

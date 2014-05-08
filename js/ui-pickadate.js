@@ -79,7 +79,7 @@ shadow('pickadate', {
         selectYear: 'select select--year',
         navPrev: 'nav nav--prev',
         navNext: 'nav nav--next',
-        navDisabled: 'nav nav--disabled',
+        navDisabled: 'nav--disabled',
 
         grid: 'grid',
         weekday: 'weekday',
@@ -180,9 +180,12 @@ shadow('pickadate', {
         // Set the initial “today”.
         attrs.today = convertDate(new Date())
 
-        // Set the initial minimum date.
+        // Set the initial limit dates.
         if ( attrs.min ) {
-            console.log(attrs.min);
+            attrs.min = convertDate(attrs.min)
+        }
+        if ( attrs.max ) {
+            attrs.max = convertDate(attrs.max)
         }
 
         // Set the initial value.
@@ -246,6 +249,16 @@ shadow('pickadate', {
             }
         })
 
+        // Whenever the min is updated, the highlight should be updated.
+        pickadate.on('set:min.' + pickadate.id, function(event) {
+            attrs.highlight = event.value
+        })
+
+        // Whenever the max is updated, the highlight should be updated.
+        pickadate.on('set:max.' + pickadate.id, function(event) {
+            attrs.highlight = event.value
+        })
+
         // Whenever the format is updated, the value should be re-formatted.
         pickadate.on('set:format.' + pickadate.id, function(event) {
             if ( attrs.select ) {
@@ -299,11 +312,29 @@ shadow('pickadate', {
         var header = el({ name: 'header', klass: classes.header },
             [monthLabel, yearLabel, navPrev, navNext])
 
+        var updateNavNode = function(navNode, value) {
+            var isDisabled
+            if ( value ) {
+                isDisabled = value[0] === attrs.view[0] &&
+                    value[1] === attrs.view[1]
+            }
+            if ( isDisabled ) {
+                navNode.classList.add(classes.navDisabled)
+                navNode.disabled = true
+            }
+            else if ( navNode.disabled ) {
+                navNode.classList.remove(classes.navDisabled)
+                navNode.disabled = false
+            }
+        }
+
+        updateNavNode(navPrev, attrs.min)
+        updateNavNode(navNext, attrs.max)
+
         // Bind updating the highlight when the nav is clicked.
         $([navPrev, navNext]).on('click', function(event) {
-            var target = event.target
             var highlight = attrs.highlight.slice(0)
-            highlight[1] += target == navPrev ? -1 : 1
+            highlight[1] += event.target == navPrev ? -1 : 1
             attrs.highlight = highlight
         })
 
@@ -328,6 +359,11 @@ shadow('pickadate', {
                 var newMonthLabel = pickadate.createHeaderMonth(month)
                 header.replaceChild(newMonthLabel, monthLabel)
                 monthLabel = newMonthLabel
+            }
+
+            if ( year !== previousYear || month !== previousMonth ) {
+                updateNavNode(navPrev, attrs.min)
+                updateNavNode(navNext, attrs.max)
             }
         })
 
@@ -389,24 +425,41 @@ shadow('pickadate', {
             today = new Date(today[0], today[1], today[2]).getTime()
         }
 
+        var min = attrs.min
+        if ( min ) {
+            min = new Date(min[0], min[1], min[2]).getTime()
+        }
+
+        var max = attrs.max
+        if ( max ) {
+            max = new Date(max[0], max[1], max[2]).getTime()
+        }
+
         var date = new Date(year, month, day)
         var dateTime = date.getTime()
+
+        var isDisabled = $.isNumeric(min) && min > dateTime ||
+            $.isNumeric(max) && max < dateTime
 
         var dayNode = el({
             klass: classes.day +
                 (selected === dateTime ? ' ' + classes.selected : '') +
                 (highlighted === dateTime ? ' ' + classes.highlighted : '') +
-                (today === dateTime ? ' ' + classes.today : ''),
+                (today === dateTime ? ' ' + classes.today : '') +
+                (isDisabled ? ' ' + classes.disabled : ''),
             attrs: {
                 role: 'button',
                 title: pickadate.format([
                     date.getFullYear(),
                     date.getMonth(),
                     date.getDate()
-                ]),
-                'data-pick': dateTime
+                ])
             }
         }, date.getDate())
+
+        if ( !isDisabled ) {
+            dayNode.setAttribute('data-pick', dateTime)
+        }
 
         return el({ name: 'td' }, dayNode)
     },

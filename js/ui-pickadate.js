@@ -173,19 +173,19 @@ shadow('pickadate', {
 
         var pickadate = this
         var attrs = pickadate.attrs
-        var convertDate = pickadate.convertDate
+        var intoDateAttr = pickadate.intoDateAttr
 
         pickadate._super()
 
         // Set the initial “today”.
-        attrs.today = convertDate(new Date())
+        attrs.today = intoDateAttr(new Date())
 
         // Set the initial limit dates.
         if ( attrs.min ) {
-            attrs.min = convertDate(attrs.min)
+            attrs.min = intoDateAttr(attrs.min)
         }
         if ( attrs.max ) {
-            attrs.max = convertDate(attrs.max)
+            attrs.max = intoDateAttr(attrs.max)
         }
 
         // Set the initial value.
@@ -195,41 +195,43 @@ shadow('pickadate', {
 
         // Set the initial select.
         if ( attrs.select ) {
-            attrs.select = convertDate(attrs.select)
-            attrs.highlight = convertDate(attrs.select)
+            attrs.select = intoDateAttr(attrs.select)
+            attrs.highlight = intoDateAttr(attrs.select)
             attrs.value = pickadate.format(attrs.select)
         }
 
         // Set the initial highlight.
         if ( attrs.highlight ) {
-            attrs.highlight = convertDate(attrs.highlight)
+            attrs.highlight = intoDateAttr(attrs.highlight)
         }
         else {
-            attrs.highlight = convertDate(attrs.today)
+            attrs.highlight = intoDateAttr(attrs.today)
         }
 
         // Set the initial view.
         if ( attrs.view ) {
-            attrs.view = convertDate([attrs.view[0], attrs.view[1], 1])
+            attrs.view = intoDateAttr([attrs.view[0], attrs.view[1], 1])
         }
         else {
-            attrs.view = convertDate([attrs.highlight[0], attrs.highlight[1], 1])
+            attrs.view = intoDateAttr([attrs.highlight[0], attrs.highlight[1], 1])
         }
 
         // Whenever the select is assigned, format it accordingly.
         pickadate.on('assign:select.' + pickadate.id, function(event) {
-            event.value = convertDate(event.value)
+            event.value = intoDateAttr(event.value)
         })
 
         // Whenever the highlight is assigned, format it accordingly.
         pickadate.on('assign:highlight.' + pickadate.id, function(event) {
-            event.value = convertDate(event.value)
+            var value = intoDateAttr(event.value)
+            value = pickadate.nextEnabledDate(value)
+            event.value = value
         })
 
         // Whenever the view is assigned, the date should be the month’s first.
         pickadate.on('assign:view.' + pickadate.id, function(event) {
             var value = event.value
-            event.value = convertDate([value[0], value[1], 1])
+            event.value = intoDateAttr([value[0], value[1], 1])
         })
 
         // Whenever the highlight is updated, the view should be updated.
@@ -251,12 +253,12 @@ shadow('pickadate', {
 
         // Whenever the min is updated, the highlight should be updated.
         pickadate.on('set:min.' + pickadate.id, function(event) {
-            attrs.highlight = event.value
+            attrs.highlight = attrs.highlight
         })
 
         // Whenever the max is updated, the highlight should be updated.
         pickadate.on('set:max.' + pickadate.id, function(event) {
-            attrs.highlight = event.value
+            attrs.highlight = attrs.highlight
         })
 
         // Whenever the format is updated, the value should be re-formatted.
@@ -267,13 +269,77 @@ shadow('pickadate', {
         })
 
         return pickadate
+    }, //setup
+
+
+    /**
+     * Parse a date into it’s attribute format.
+     */
+    parse: function(string) {
+        var pickadate = this
+        var value = pickadate._super(string)
+        var month
+        if ( 'mmmm' in value ) {
+            month = pickadate.dict.monthsFull.indexOf(value.mmmm)
+        }
+        else if ( 'mmm' in value ) {
+            month = pickadate.dict.monthsShort.indexOf(value.mmm)
+        }
+        return [
+            ~~value.yyyy,
+            month !== undefined ? month :
+                ~~('mm' in value ? value.mm : value.m) - 1,
+            ~~('dd' in value ? value.dd : value.d)
+        ]
     },
 
 
     /**
-     * Convert a value representative of a date into a valid date array.
+     * Compares two dates in various ways.
      */
-    convertDate: function(value) {
+    compare: function(one, comparison, two) {
+
+        var args = arguments
+
+        if ( args.length < 3 ) {
+            two = args[1]
+        }
+
+        if ( one == null || two == null ) {
+            return false
+        }
+
+        var toTime = function(array) {
+            return new Date(array[0], array[1], array[2]).getTime()
+        }
+
+        if ( Array.isArray(one) ) {
+            one = toTime(one)
+        }
+
+        if ( Array.isArray(two) ) {
+            two = toTime(two)
+        }
+
+        // Compare the first as greater than the other.
+        if ( comparison == 'greater' ) {
+            return one > two
+        }
+
+        // Compare the first as lesser than the other.
+        if ( comparison == 'lesser' ) {
+            return one < two
+        }
+
+        // Compare the dates as equal.
+        return one === two
+    },
+
+
+    /**
+     * Convert a date representation into a valid date array.
+     */
+    intoDateAttr: function(value) {
         if ( !value ) {
             return value
         }
@@ -284,6 +350,22 @@ shadow('pickadate', {
             value = [value.getFullYear(), value.getMonth(), value.getDate()]
         }
         Object.freeze(value)
+        return value
+    },
+
+
+    /**
+     * Checks if a date is disabled and then returns the next enabled one.
+     */
+    nextEnabledDate: function(value) {
+        var pickadate = this
+        var attrs = pickadate.attrs
+        if ( pickadate.compare(attrs.min, 'greater', value) ) {
+            value = attrs.min.slice(0)
+        }
+        else if ( pickadate.compare(attrs.max, 'lesser', value) ) {
+            value = attrs.max.slice(0)
+        }
         return value
     },
 
@@ -409,43 +491,19 @@ shadow('pickadate', {
         var pickadate = this
         var classes = pickadate.classNames
         var attrs = pickadate.attrs
-
-        var selected = attrs.select
-        if ( selected ) {
-            selected = new Date(selected[0], selected[1], selected[2]).getTime()
-        }
-
-        var highlighted = attrs.highlight
-        if ( highlighted ) {
-            highlighted = new Date(highlighted[0], highlighted[1], highlighted[2]).getTime()
-        }
-
-        var today = attrs.today
-        if ( today ) {
-            today = new Date(today[0], today[1], today[2]).getTime()
-        }
-
-        var min = attrs.min
-        if ( min ) {
-            min = new Date(min[0], min[1], min[2]).getTime()
-        }
-
-        var max = attrs.max
-        if ( max ) {
-            max = new Date(max[0], max[1], max[2]).getTime()
-        }
+        var compare = pickadate.compare
 
         var date = new Date(year, month, day)
         var dateTime = date.getTime()
 
-        var isDisabled = $.isNumeric(min) && min > dateTime ||
-            $.isNumeric(max) && max < dateTime
+        var isDisabled = compare(attrs.min, 'greater', dateTime) ||
+            compare(attrs.max, 'lesser', dateTime)
 
         var dayNode = el({
             klass: classes.day +
-                (selected === dateTime ? ' ' + classes.selected : '') +
-                (highlighted === dateTime ? ' ' + classes.highlighted : '') +
-                (today === dateTime ? ' ' + classes.today : '') +
+                (compare(attrs.select, dateTime) ? ' ' + classes.selected : '') +
+                (compare(attrs.highlight, dateTime) ? ' ' + classes.highlighted : '') +
+                (compare(attrs.today, dateTime) ? ' ' + classes.today : '') +
                 (isDisabled ? ' ' + classes.disabled : ''),
             attrs: {
                 role: 'button',
@@ -570,29 +628,7 @@ shadow('pickadate', {
 
         // Create and return the fragment.
         return pickadate._super()
-    }, //template
-
-
-    /**
-     * Parse a date into it’s attribute format.
-     */
-    parse: function(string) {
-        var pickadate = this
-        var value = pickadate._super(string)
-        var month
-        if ( 'mmmm' in value ) {
-            month = pickadate.dict.monthsFull.indexOf(value.mmmm)
-        }
-        else if ( 'mmm' in value ) {
-            month = pickadate.dict.monthsShort.indexOf(value.mmm)
-        }
-        return [
-            ~~value.yyyy,
-            month !== undefined ? month :
-                ~~('mm' in value ? value.mm : value.m) - 1,
-            ~~('dd' in value ? value.dd : value.d)
-        ]
-    }
+    } //template
 
 }) //shadow('pickadate')
 

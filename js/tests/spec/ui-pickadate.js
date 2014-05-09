@@ -70,7 +70,69 @@ describe('shadow.Pickadate', function() {
     })
 
 
-    describe('.convertDate()', function() {
+    describe('.parse()', function() {
+
+        it('parses a date string into the date array format', function() {
+            var pickadate = shadow.Pickadate.create({
+                $el: $('#pickadate')
+            })
+            expect(pickadate.parse('4 August, 1988')).toEqual([1988, 7, 4])
+            pickadate.attrs.format = 'yyyy-mm-dd'
+            expect(pickadate.parse('2012-12-21')).toEqual([2012, 11, 21])
+        })
+    })
+
+
+    describe('.compare()', function() {
+
+        it('compares two dates as equal', function() {
+            var pickadate = shadow.Pickadate.create({
+                $el: $('#pickadate')
+            })
+            var equality
+            equality = pickadate.compare([2014, 4, 4], [2014, 4, 4])
+            expect(equality).toBe(true)
+            equality = pickadate.compare([2013, 4, 4], [2014, 4, 4])
+            expect(equality).toBe(false)
+            equality = pickadate.compare([2014, 4, 4], 1399176000000)
+            expect(equality).toBe(true)
+            equality = pickadate.compare([2013, 4, 4], 1400040000000)
+            expect(equality).toBe(false)
+        })
+
+        it('compares two dates as the first being greater', function() {
+            var pickadate = shadow.Pickadate.create({
+                $el: $('#pickadate')
+            })
+            var equality
+            equality = pickadate.compare([2014, 4, 4], 'greater', [2014, 4, 1])
+            expect(equality).toBe(true)
+            equality = pickadate.compare([2013, 4, 4], 'greater', [2014, 4, 14])
+            expect(equality).toBe(false)
+            equality = pickadate.compare([2014, 4, 4], 'greater', 1398916800000)
+            expect(equality).toBe(true)
+            equality = pickadate.compare([2013, 4, 4], 'greater', 1400040000000)
+            expect(equality).toBe(false)
+        })
+
+        it('compares two dates as the first being lesser', function() {
+            var pickadate = shadow.Pickadate.create({
+                $el: $('#pickadate')
+            })
+            var equality
+            equality = pickadate.compare([2014, 4, 4], 'lesser', [2014, 4, 1])
+            expect(equality).toBe(false)
+            equality = pickadate.compare([2013, 4, 4], 'lesser', [2014, 4, 14])
+            expect(equality).toBe(true)
+            equality = pickadate.compare([2014, 4, 4], 'lesser', 1398916800000)
+            expect(equality).toBe(false)
+            equality = pickadate.compare([2013, 4, 4], 'lesser', 1400040000000)
+            expect(equality).toBe(true)
+        })
+    })
+
+
+    describe('.intoDateAttr()', function() {
 
         it('converts any date representation into a valid date array', function() {
 
@@ -79,21 +141,37 @@ describe('shadow.Pickadate', function() {
             })
             var date
 
-            date = pickadate.convertDate(new Date(2012, 1, 24))
+            date = pickadate.intoDateAttr(new Date(2012, 1, 24))
             expect(date).toEqual([2012, 1, 24])
             expect(Object.isFrozen(date)).toBe(true)
 
-            date = pickadate.convertDate([2013, 2, 4])
+            date = pickadate.intoDateAttr([2013, 2, 4])
             expect(date).toEqual([2013, 2, 4])
             expect(Object.isFrozen(date)).toBe(true)
 
-            date = pickadate.convertDate([2012, -1, 10])
+            date = pickadate.intoDateAttr([2012, -1, 10])
             expect(date).toEqual([2011, 11, 10])
             expect(Object.isFrozen(date)).toBe(true)
 
-            date = pickadate.convertDate([2014, 1, 40])
+            date = pickadate.intoDateAttr([2014, 1, 40])
             expect(date).toEqual([2014, 2, 12])
             expect(Object.isFrozen(date)).toBe(true)
+        })
+    })
+
+
+    describe('.nextEnabledDate()', function() {
+
+        it('checks if a date is disabled and returns the next enabled one', function() {
+
+            var pickadate = shadow.Pickadate.create({
+                $el: $('<div />'),
+                attrs: {
+                    min: [2014, 4, 4]
+                }
+            })
+            var date = pickadate.nextEnabledDate([2014, 4, 1])
+            expect(date).toEqual([2014, 4, 4])
         })
     })
 
@@ -435,11 +513,6 @@ describe('shadow.Pickadate', function() {
     })
 
 
-    describe('.parse()', function() {
-        it('parses dates')
-    })
-
-
     describe('.attrs', function() {
 
         describe('.min', function() {
@@ -451,7 +524,7 @@ describe('shadow.Pickadate', function() {
                         min: [2014, 4, 4]
                     }
                 })
-                pickadate.highlight = [2014, 4, 10]
+                pickadate.attrs.highlight = [2014, 4, 10]
 
                 var dateTime = new Date(2014, 4, 4).getTime()
                 var $date = pickadate.$el.find('[data-pick=' + dateTime + ']')
@@ -469,7 +542,7 @@ describe('shadow.Pickadate', function() {
                 })
                 var attrs = pickadate.attrs
 
-                pickadate.highlight = [2014, 4, 10]
+                attrs.highlight = [2014, 4, 10]
                 attrs.min = [2014, 4, 4]
 
                 var dateTime = new Date(2014, 4, 4).getTime()
@@ -479,6 +552,22 @@ describe('shadow.Pickadate', function() {
                 dateTime = new Date(2014, 4, 3).getTime()
                 $date = pickadate.$el.find('[data-pick=' + dateTime + ']')
                 expect($date.length).toBe(0)
+            })
+
+            it('updates the highlight if it is out of range', function() {
+
+                var pickadate = shadow.Pickadate.create({
+                    $el: $('<div />')
+                })
+                var attrs = pickadate.attrs
+
+                attrs.highlight = [2014, 4, 10]
+
+                attrs.min = [2014, 4, 4]
+                expect(attrs.highlight).toEqual([2014, 4, 10])
+
+                attrs.min = [2014, 4, 14]
+                expect(attrs.highlight).toEqual([2014, 4, 14])
             })
         })
 
@@ -491,7 +580,7 @@ describe('shadow.Pickadate', function() {
                         max: [2014, 4, 24]
                     }
                 })
-                pickadate.highlight = [2014, 4, 10]
+                pickadate.attrs.highlight = [2014, 4, 10]
 
                 var dateTime = new Date(2014, 4, 24).getTime()
                 var $date = pickadate.$el.find('[data-pick=' + dateTime + ']')
@@ -509,7 +598,7 @@ describe('shadow.Pickadate', function() {
                 })
                 var attrs = pickadate.attrs
 
-                pickadate.highlight = [2014, 4, 10]
+                attrs.highlight = [2014, 4, 10]
                 attrs.max = [2014, 4, 24]
 
                 var dateTime = new Date(2014, 4, 24).getTime()
@@ -519,6 +608,22 @@ describe('shadow.Pickadate', function() {
                 dateTime = new Date(2014, 4, 25).getTime()
                 $date = pickadate.$el.find('[data-pick=' + dateTime + ']')
                 expect($date.length).toBe(0)
+            })
+
+            it('updates the highlight if it is out of range', function() {
+
+                var pickadate = shadow.Pickadate.create({
+                    $el: $('<div />')
+                })
+                var attrs = pickadate.attrs
+
+                attrs.highlight = [2014, 4, 10]
+
+                attrs.max = [2014, 4, 14]
+                expect(attrs.highlight).toEqual([2014, 4, 10])
+
+                attrs.max = [2014, 4, 4]
+                expect(attrs.highlight).toEqual([2014, 4, 4])
             })
         })
 

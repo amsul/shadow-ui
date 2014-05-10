@@ -43,7 +43,10 @@ shadow('pickadate', {
         select: null,
 
         // The default formatting to use.
-        format: 'd mmmm, yyyy'
+        format: 'd mmmm, yyyy',
+
+        // The first day of the week. Truth-y sets to Monday.
+        firstDay: null
     },
 
     dict: {
@@ -501,6 +504,7 @@ shadow('pickadate', {
 
         var dayNode = el({
             klass: classes.day +
+                ' ' + (attrs.view[1] === date.getMonth() ? classes.infocus : classes.outfocus) +
                 (compare(attrs.select, dateTime) ? ' ' + classes.selected : '') +
                 (compare(attrs.highlight, dateTime) ? ' ' + classes.highlighted : '') +
                 (compare(attrs.today, dateTime) ? ' ' + classes.today : '') +
@@ -524,10 +528,12 @@ shadow('pickadate', {
 
     createWeek: function(year, month, week) {
         var pickadate = this
+        var firstDay = pickadate.attrs.firstDay
         var offset = new Date(year, month, 1).getDay()
         var days = []
         for ( var i = 1; i <= 7; i++ ) {
             var day = (week * 7) + i - offset
+            if ( firstDay ) day += 1
             days.push(pickadate.createDay(year, month, day))
         }
         return el({ name: 'tr' }, days)
@@ -535,8 +541,13 @@ shadow('pickadate', {
 
     createMonth: function(year, month) {
         var frag = document.createDocumentFragment()
+        var firstDay = this.attrs.firstDay
+        var offset = 0
+        if ( firstDay && new Date(year, month, 1).getDay() === 0 ) {
+            offset = -1
+        }
         for ( var i = 0; i <= 5; i++ ) {
-            frag.appendChild(this.createWeek(year, month, i))
+            frag.appendChild(this.createWeek(year, month, i + offset))
         }
         return frag
     },
@@ -556,12 +567,19 @@ shadow('pickadate', {
     createGridHead: function() {
         var pickadate = this
         var dict = pickadate.dict
+        var weekdaysShort = dict.weekdaysShort.slice(0)
+        var weekdaysFull = dict.weekdaysFull.slice(0)
+        var firstDay = pickadate.attrs.firstDay
+        if ( firstDay ) {
+            weekdaysShort.push( weekdaysShort.shift() )
+            weekdaysFull.push( weekdaysFull.shift() )
+        }
         return el({ name: 'thead' },
-            dict.weekdaysShort.map(function(weekday, index) {
+            weekdaysShort.map(function(weekday, index) {
                 return el({
                     name: 'th',
                     attrs: {
-                        title: dict.weekdaysFull[index]
+                        title: weekdaysFull[index]
                     }
                 }, weekday)
             })
@@ -585,10 +603,9 @@ shadow('pickadate', {
 
         var classes = pickadate.classNames
         var attrs = pickadate.attrs
-        var view = attrs.view
 
         // Create the header.
-        var header = pickadate.createHeader(view[0], view[1])
+        var header = pickadate.createHeader(attrs.view[0], attrs.view[1])
         contentFrag.appendChild(header)
 
         // Create the grid.
@@ -596,19 +613,26 @@ shadow('pickadate', {
         contentFrag.appendChild(grid)
 
         // Create the grid’s head.
-        grid.appendChild(pickadate.createGridHead())
+        var gridHead = pickadate.createGridHead()
+        grid.appendChild(gridHead)
 
         // Create the grid’s body.
-        var gridBody = pickadate.createGridBody(view[0], view[1])
+        var gridBody = pickadate.createGridBody(attrs.view[0], attrs.view[1])
         grid.appendChild(gridBody)
 
         // Create the footer.
         contentFrag.appendChild(pickadate.createFooter())
 
+        // Bind updating the grid.
+        pickadate.on('set:firstDay.' + pickadate.id, function() {
+            grid.replaceChild(pickadate.createGridHead(), gridHead)
+            $gridBody.html(pickadate.createMonth(attrs.view[0], attrs.view[1]))
+        })
+
         // Bind updating the grid’s body.
         pickadate.on('set:highlight.' + pickadate.id, function(event) {
             var value = event.value
-            $gridBody.empty().append(pickadate.createMonth(value[0], value[1]))
+            $gridBody.html(pickadate.createMonth(value[0], value[1]))
         })
 
         // Bind updating the selected day.

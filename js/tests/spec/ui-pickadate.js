@@ -394,6 +394,17 @@ describe('shadow.Pickadate', function() {
             week = pickadate.createWeek(2013, 2, 5)
             expect(week.innerText).toBe([31, 1, 2, 3, 4, 5, 6].join(''))
         })
+
+        it('shifts days of the week forward by one if the first day is Monday', function() {
+            var pickadate = shadow.Pickadate.create({
+                $el: $('<div />'),
+                attrs: {
+                    firstDay: 1
+                }
+            })
+            var week = pickadate.createWeek(2013, 2, 2)
+            expect(week.innerText).toBe([11, 12, 13, 14, 15, 16, 17].join(''))
+        })
     })
 
 
@@ -413,6 +424,24 @@ describe('shadow.Pickadate', function() {
                 [21, 22, 23, 24, 25, 26, 27].join(''),
                 [28, 29, 30, 1, 2, 3, 4].join(''),
                 [5, 6, 7, 8, 9, 10, 11].join('')
+            ].join(''))
+        })
+
+        it('shifts weeks of the month backward by one if the first day is Monday and the month starts on Monday', function() {
+            var pickadate = shadow.Pickadate.create({
+                $el: $('<div />'),
+                attrs: {
+                    firstDay: 1
+                }
+            })
+            var month = pickadate.createMonth(2013, 11)
+            expect(month.textContent).toBe([
+                [25, 26, 27, 28, 29, 30, 1].join(''),
+                [2, 3, 4, 5, 6, 7, 8].join(''),
+                [9, 10, 11, 12, 13, 14, 15].join(''),
+                [16, 17, 18, 19, 20, 21, 22].join(''),
+                [23, 24, 25, 26, 27, 28, 29].join(''),
+                [30, 31, 1, 2, 3, 4, 5].join('')
             ].join(''))
         })
     })
@@ -439,6 +468,19 @@ describe('shadow.Pickadate', function() {
             var gridHead = pickadate.createGridHead()
             expect(gridHead.innerText).toBe(
                 ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].join('')
+            )
+        })
+
+        it('shifts weekday labels by one if the first day is Monday', function() {
+            var pickadate = shadow.Pickadate.create({
+                $el: $('<div />'),
+                attrs: {
+                    firstDay: 1
+                }
+            })
+            var gridHead = pickadate.createGridHead()
+            expect(gridHead.innerText).toBe(
+                ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].join('')
             )
         })
     })
@@ -834,6 +876,32 @@ describe('shadow.Pickadate', function() {
                 })
                 var attrs = pickadate.attrs
                 expect(attrs.select).toEqual([2013, 4, 2])
+            })
+        })
+
+        describe('.firstDay', function() {
+
+            it('is used to set the first day of the week to Monday', function() {
+                var pickadate = shadow.Pickadate.create({
+                    $el: $('<div />'),
+                    attrs: {
+                        firstDay: 1
+                    }
+                })
+                var $weekday = pickadate.$el.find('thead').children().first()
+                expect($weekday.text()).toBe('Mon')
+            })
+
+            it('can be updated after creation', function() {
+                var pickadate = shadow.Pickadate.create({
+                    $el: $('<div />')
+                })
+                var previousFirstDate = pickadate.$el.find('td').first().text()
+                pickadate.attrs.firstDay = 1
+                var $weekday = pickadate.$el.find('thead').children().first()
+                expect($weekday.text()).toBe('Mon')
+                var $date = pickadate.$el.find('td').first()
+                expect($date.text()).not.toBe(previousFirstDate)
             })
         })
 

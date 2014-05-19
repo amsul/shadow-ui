@@ -293,35 +293,6 @@ describe('shadow.DataField', function() {
             value = dataField.get('anotherThing', { format: true })
             expect(value).toBe('value: awesome')
         })
-
-        xit('can get a formatted value with a bound callback', function() {
-
-            var fn = {
-                callback: $.noop
-            }
-            var value
-            spyOn(fn, 'callback')
-
-            dataField.get('something', { bound: true, format: true }, fn.callback)
-            value = fn.callback.calls.mostRecent().args[0]
-            expect(fn.callback.calls.count()).toBe(1)
-            expect(value).toBe('value: false')
-
-            dataField.attrs.something = true
-            expect(fn.callback.calls.count()).toBe(2)
-            value = fn.callback.calls.mostRecent().args[0]
-            expect(value).toBe('value: true')
-
-            dataField.get('anotherThing', { bound: true, format: true }, fn.callback)
-            expect(fn.callback.calls.count()).toBe(3)
-            value = fn.callback.calls.mostRecent().args[0]
-            expect(value).toBe('value: epic')
-
-            dataField.attrs.anotherThing = 'awesome'
-            expect(fn.callback.calls.count()).toBe(4)
-            value = fn.callback.calls.mostRecent().args[0]
-            expect(value).toBe('value: awesome')
-        })
     })
 
 

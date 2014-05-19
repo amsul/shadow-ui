@@ -1172,7 +1172,35 @@ describe('shadow.Pickadate', function() {
             )
         })
 
-        it('creates selected/highlighted/disabled grid cells')
+        it('creates selected/highlighted/disabled grid cells', function() {
+
+            var selected = gridBodyYears.querySelector('.' + pickadate.classNames.selected)
+            var highlighted = gridBodyYears.querySelector('.' + pickadate.classNames.highlighted)
+
+            expect(selected).toBe(null)
+            expect(highlighted).toBe(null)
+
+            pickadate.attrs.select = [1988, 7, 14]
+
+            selected = gridBodyYears.querySelector('.' + pickadate.classNames.selected)
+            highlighted = gridBodyYears.querySelector('.' + pickadate.classNames.selected)
+
+            expect(selected.innerText).toBe('1988')
+            expect(highlighted.innerText).toBe('1988')
+
+            var disabled = gridBodyYears.querySelector('.' + pickadate.classNames.disabled)
+            expect(disabled).toBe(null)
+
+            pickadate.attrs.min = [1984, 7, 14]
+
+            disabled = gridBodyYears.querySelectorAll('.' + pickadate.classNames.disabled)
+            expect(disabled.length).toBe(5)
+            expect(disabled[0].innerText).toBe('1979')
+            expect(disabled[1].innerText).toBe('1980')
+            expect(disabled[2].innerText).toBe('1981')
+            expect(disabled[3].innerText).toBe('1982')
+            expect(disabled[4].innerText).toBe('1983')
+        })
     })
 
 
@@ -1202,7 +1230,34 @@ describe('shadow.Pickadate', function() {
             expect(highlight).not.toEqual(newHighlight)
         })
 
-        it('creates selected/highlighted/disabled grid cells')
+        it('creates selected/highlighted/disabled grid cells', function() {
+
+            var selected = gridBodyMonths.querySelector('.' + pickadate.classNames.selected)
+            var highlighted = gridBodyMonths.querySelector('.' + pickadate.classNames.highlighted)
+
+            expect(selected).toBe(null)
+            expect(highlighted).toBe(null)
+
+            pickadate.attrs.select = [1988, 7, 14]
+
+            selected = gridBodyMonths.querySelector('.' + pickadate.classNames.selected)
+            highlighted = gridBodyMonths.querySelector('.' + pickadate.classNames.selected)
+
+            expect(selected.innerText).toBe('Aug')
+            expect(highlighted.innerText).toBe('Aug')
+
+            var disabled = gridBodyMonths.querySelector('.' + pickadate.classNames.disabled)
+            expect(disabled).toBe(null)
+
+            pickadate.attrs.min = [1988, 4, 14]
+
+            disabled = gridBodyMonths.querySelectorAll('.' + pickadate.classNames.disabled)
+            expect(disabled.length).toBe(4)
+            expect(disabled[0].innerText).toBe('Jan')
+            expect(disabled[1].innerText).toBe('Feb')
+            expect(disabled[2].innerText).toBe('Mar')
+            expect(disabled[3].innerText).toBe('Apr')
+        })
     })
 
 
@@ -1264,53 +1319,36 @@ describe('shadow.Pickadate', function() {
             )
         })
 
-        it('creates selected/highlighted/disabled grid cells')
-    })
+        it('creates selected/highlighted/disabled grid cells', function() {
 
+            var selected = gridBodyDates.querySelector('.' + pickadate.classNames.selected)
+            var highlighted = gridBodyDates.querySelector('.' + pickadate.classNames.highlighted)
 
-    describe('.createGridDay()', function() {
+            expect(selected).toBe(null)
+            expect(highlighted).toBe(null)
 
-        var pickadate = shadow.Pickadate.create({
-            $el: $('<div />')
-        })
-        var attrs = pickadate.attrs
-        var classes = pickadate.classNames
+            pickadate.attrs.select = [1988, 6, 14]
 
-        xit('creates a container for a day, given a year, month, and day', function() {
-            var dayNode = pickadate.createGridDay(2013, 3, 20)
-            expect(dayNode.innerText).toBe('20')
-            var date = new Date(2013, 3, 20)
-            expect(dayNode.innerHTML).toMatch(new RegExp(date.getTime()))
-        })
+            selected = gridBodyDates.querySelector('.' + pickadate.classNames.selected)
+            highlighted = gridBodyDates.querySelector('.' + pickadate.classNames.selected)
 
-        xit('adds the today class if the day is today', function() {
+            expect(selected.innerText).toBe('14')
+            expect(highlighted.innerText).toBe('14')
 
-            var dayNode = pickadate.createGridDay(2013, 3, 20)
-            expect(dayNode.querySelector('.' + classes.today)).toBe(null)
+            var disabled = gridBodyDates.querySelector('.' + pickadate.classNames.disabled)
+            expect(disabled).toBe(null)
 
-            var today = attrs.today
-            dayNode = pickadate.createGridDay(today[0], today[1], today[2])
-            expect(dayNode.querySelector('.' + classes.today)).not.toBe(null)
-        })
+            pickadate.attrs.min = [1988, 6, 4]
 
-        xit('adds the highlighted class if the day is highlighted', function() {
-
-            var dayNode = pickadate.createGridDay(2013, 3, 20)
-            expect(dayNode.querySelector('.' + classes.highlighted)).toBe(null)
-
-            attrs.highlight = [2013, 3, 20]
-            dayNode = pickadate.createGridDay(2013, 3, 20)
-            expect(dayNode.querySelector('.' + classes.highlighted)).not.toBe(null)
-        })
-
-        xit('adds the selected class if the day is selected', function() {
-
-            var dayNode = pickadate.createGridDay(2013, 3, 20)
-            expect(dayNode.querySelector('.' + classes.selected)).toBe(null)
-
-            attrs.select = new Date(2013, 3, 20)
-            dayNode = pickadate.createGridDay(2013, 3, 20)
-            expect(dayNode.querySelector('.' + classes.selected)).not.toBe(null)
+            disabled = gridBodyDates.querySelectorAll('.' + pickadate.classNames.disabled)
+            expect(disabled.length).toBe(7)
+            expect(disabled[0].innerText).toBe('27')
+            expect(disabled[1].innerText).toBe('28')
+            expect(disabled[2].innerText).toBe('29')
+            expect(disabled[3].innerText).toBe('30')
+            expect(disabled[4].innerText).toBe('1')
+            expect(disabled[5].innerText).toBe('2')
+            expect(disabled[6].innerText).toBe('3')
         })
     })
 

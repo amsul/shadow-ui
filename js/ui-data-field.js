@@ -267,34 +267,15 @@ shadow('data-field', {
     /**
      * Get a data field’s attribute with certain options.
      */
-    get: function(name, options, callback) {
+    get: function(name, options) {
 
         var dataField = this
-
-        if ( typeof options == 'function' ) {
-            callback = options
-            options = null
-        }
+        var value = dataField._super(name)
 
         options = options || {}
 
-        var formattedValue = function(val) {
-            if ( options.format ) {
-                val = dataField.format(val)
-            }
-            return val
-        }
-
-        var value = dataField._super(name)
-        value = formattedValue(value)
-
-        if ( typeof callback == 'function' ) {
-            callback(value)
-            if ( options.bound ) {
-                dataField.on('assign:' + name + '.' + dataField.id, function(event) {
-                    callback(formattedValue(event.value))
-                })
-            }
+        if ( options.format ) {
+            value = dataField.format(value)
         }
 
         return value

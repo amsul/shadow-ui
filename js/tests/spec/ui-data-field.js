@@ -285,50 +285,16 @@ describe('shadow.DataField', function() {
             expect(dataField.get('nonExistent')).toBe(undefined)
         })
 
-        it('can have a callback', function() {
-
-            var fn = {
-                callback: $.noop
-            }
-            spyOn(fn, 'callback')
-
-            dataField.get('something', fn.callback)
-            expect(fn.callback).toHaveBeenCalledWith(true)
-
-            dataField.get('anotherThing', fn.callback)
-            expect(fn.callback).toHaveBeenCalledWith('awesome')
-        })
-
-        it('can have a bound callbacks', function() {
-
-            var fn = {
-                callback: $.noop
-            }
-            spyOn(fn, 'callback')
-
-            dataField.get('something', { bound: true }, fn.callback)
-            expect(fn.callback.calls.count()).toBe(1)
-
-            dataField.attrs.something = false
-            expect(fn.callback.calls.count()).toBe(2)
-
-            dataField.get('anotherThing', { bound: true }, fn.callback)
-            expect(fn.callback.calls.count()).toBe(3)
-
-            dataField.attrs.anotherThing = 'epic'
-            expect(fn.callback.calls.count()).toBe(4)
-        })
-
         it('can get a formatted value', function() {
 
             var value = dataField.get('something', { format: true })
-            expect(value).toBe('value: false')
+            expect(value).toBe('value: true')
 
             value = dataField.get('anotherThing', { format: true })
-            expect(value).toBe('value: epic')
+            expect(value).toBe('value: awesome')
         })
 
-        it('can get a formatted value with a bound callback', function() {
+        xit('can get a formatted value with a bound callback', function() {
 
             var fn = {
                 callback: $.noop

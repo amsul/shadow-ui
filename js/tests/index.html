@@ -9,8 +9,14 @@
     body {
       padding: 2.5% 5% 40%;
     }
+    .summary .disabled {
+      display: none;
+    }
   </style>
   <style>
+    * {
+      box-sizing: border-box;
+    }
     .picker {
       background: pink;
       padding: 10px;
@@ -23,30 +29,81 @@
     .picker--opened .picker__holder {
       display: block;
     }
-    .picker__nav--prev:after {
+    .picker__button--prev:after {
       content: "<";
     }
-    .picker__nav--next:after {
+    .picker__button--next:after {
       content: ">";
     }
-    .picker__day--highlighted {
-      box-shadow: 0 0 1px 2px white;
+    .picker__button--scope {
+      width: 110px;
     }
-    .picker__day--selected {
-      font-weight: bold;
-      color: #0089ec;
+    .picker__box--body {
+      position: relative;
+      height: 160px;
+      overflow: hidden;
     }
-    .picker__day--today:before {
-      content: '^';
-      font-size: 8px;
-      vertical-align: top;
-      font-weight: bold;
+    .picker__container {
+      position: absolute;
+      z-index: 10;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 10px;
+      max-height: 100%;
+      transition: opacity .125s .125s ease-out;
+      -webkit-transform-origin: 50% 50%;
     }
-    .picker__day--disabled,
-    .picker__nav--disabled {
-      color: #ccc;
-      opacity: .5;
+    .picker__container[hidden] {
+      z-index: 5;
+      display: block;
+      opacity: 0;
+      max-height: 0;
+      transition: -webkit-transform .125s ease-out,
+                  opacity .125s ease-out,
+                  max-height 0 .125s;
+      -webkit-transform: scale(1.125);
     }
+    .picker__grid {
+      width: 100%;
+      height: 100%;
+      border-spacing: 0;
+      border-collapse: collapse;
+    }
+      .picker__grid th {
+        border-bottom: 1px solid #000;
+      }
+      .picker__grid-cell {
+        text-align: center;
+      }
+      .picker__grid-cell:hover:not(.picker__grid-cell--disabled) {
+        background: #eee;
+        cursor: default;
+      }
+      .picker__grid-cell--highlighted {
+        box-shadow: 0 0 1px 2px white;
+      }
+      .picker__grid-cell--selected {
+        font-weight: bold;
+        color: #0089ec;
+      }
+      .picker__grid-cell--now:before {
+        content: '^';
+        font-size: 8px;
+        vertical-align: top;
+        font-weight: bold;
+        position: absolute;
+        margin-left: -8px;
+      }
+      .picker__button--disabled,
+      .picker__grid-cell--disabled {
+        color: #ccc;
+        opacity: .75;
+      }
+      .picker__grid-cell--outfocus {
+        opacity: .25;
+      }
   </style>
 </head>
 <body>
@@ -74,6 +131,8 @@
     id="pickadate"
     type="text"
     data-ui="pickadate"
+    data-uii-min="[2014,4,4]"
+    data-uii-max="[2018,8,4]"
     >
     <div>some default text <button>goes here!</button></div>
   </div>

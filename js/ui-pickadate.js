@@ -46,14 +46,13 @@ shadow('pickadate', {
         format: 'd mmmm, yyyy',
 
         // The first day of the week. Truth-y sets to Monday.
-        firstDay: null
+        firstDay: null,
+
+        // Show either the months or dates grid.
+        show: null
     },
 
     dict: {
-
-        // Month nav labels.
-        monthPrev: 'Previous month',
-        monthNext: 'Next month',
 
         // Today and clear labels.
         today: 'Today',
@@ -75,28 +74,28 @@ shadow('pickadate', {
 
         host: ' --pickadate',
 
-        header: 'header',
-        month: 'month',
-        year: 'year',
-        selectMonth: 'select select--month',
-        selectYear: 'select select--year',
-        navPrev: 'nav nav--prev',
-        navNext: 'nav nav--next',
-        navDisabled: 'nav--disabled',
+        header: 'box box--header',
+        body: 'box box--body',
+        footer: 'box box--footer',
 
-        grid: 'grid',
-        weekday: 'weekday',
-        day: 'day',
-        disabled: 'day--disabled',
-        selected: 'day--selected',
-        highlighted: 'day--highlighted',
-        today: 'day--today',
-        infocus: 'day--infocus',
-        outfocus: 'day--outfocus',
+        container: 'container',
 
-        footer: 'footer',
+        buttonScope: 'button button--scope',
+        buttonPrev: 'button button--prev',
+        buttonNext: 'button button--next',
         buttonToday: 'button button--today',
         buttonClear: 'button button--clear',
+        buttonDisabled: 'button--disabled',
+
+        grid: 'grid',
+        gridTitle: 'grid-title',
+        gridCell: 'grid-cell',
+        disabled: 'grid-cell--disabled',
+        selected: 'grid-cell--selected',
+        highlighted: 'grid-cell--highlighted',
+        now: 'grid-cell--now',
+        infocus: 'grid-cell--infocus',
+        outfocus: 'grid-cell--outfocus',
     },
 
     formats: {
@@ -226,9 +225,8 @@ shadow('pickadate', {
 
         // Whenever the highlight is assigned, format it accordingly.
         pickadate.on('assign:highlight.' + pickadate.id, function(event) {
-            var value = intoDateAttr(event.value)
-            value = pickadate.nextEnabledDate(value)
-            event.value = value
+            var value = pickadate.nextEnabledDate(event.value)
+            event.value = intoDateAttr(value)
         })
 
         // Whenever the view is assigned, the date should be the month’s first.
@@ -276,6 +274,38 @@ shadow('pickadate', {
 
 
     /**
+     * Create a pickadate object.
+     */
+    create: function(options) {
+
+        var pickadate = this._super(options)
+        var attrs = pickadate.attrs
+
+        // Bind updating the select when clicked.
+        pickadate.$host.on('click', '[data-select]', function(event) {
+            var target = event.target
+            var value = $(target).data('select')
+            attrs.select = new Date(value)
+        })
+
+        // Bind updating the highlight when clicked.
+        pickadate.$host.on('click', '[data-highlight]', function(event) {
+            var target = event.target
+            var value = $(target).data('highlight')
+            attrs.highlight = new Date(value)
+            if ( attrs.show == 'years' ) {
+                attrs.show = 'months'
+            }
+            else {
+                attrs.show = null
+            }
+        })
+
+        return pickadate
+    },
+
+
+    /**
      * Parse a date into it’s attribute format.
      */
     parse: function(string) {
@@ -306,35 +336,66 @@ shadow('pickadate', {
 
         if ( args.length < 3 ) {
             two = args[1]
+            comparison = ''
         }
 
-        if ( one == null || two == null ) {
+        if ( !one || !two ) {
             return false
         }
 
-        var toTime = function(array) {
-            return new Date(array[0], array[1], array[2]).getTime()
+        var toDate = function(value) {
+            if ( Array.isArray(value) ) {
+                return new Date(value[0], value[1], value[2])
+            }
+            return new Date(value)
         }
 
-        if ( Array.isArray(one) ) {
-            one = toTime(one)
+        one = toDate(one)
+        two = toDate(two)
+
+        if ( comparison.match(/^decade ?/) ) {
+            comparison = comparison.replace(/^decade ?/, '')
+            one = one.getFullYear()
+            one = one - (one % 10)
+            two = two.getFullYear()
+            two = two - (two % 10)
         }
 
-        if ( Array.isArray(two) ) {
-            two = toTime(two)
+        else if ( comparison.match(/^year ?/) ) {
+            comparison = comparison.replace(/^year ?/, '')
+            one = one.getFullYear()
+            two = two.getFullYear()
         }
 
-        // Compare the first as greater than the other.
+        else if ( comparison.match(/^month ?/) ) {
+            comparison = comparison.replace(/^month ?/, '')
+            one.setDate(1)
+            two.setDate(1)
+        }
+
+        if ( _.isTypeOf(one, 'date') ) {
+            one = one.getTime()
+        }
+        if ( _.isTypeOf(two, 'date') ) {
+            two = two.getTime()
+        }
+
+        if ( comparison == 'greater equal' ) {
+            return one >= two
+        }
+
+        if ( comparison == 'lesser equal' ) {
+            return one <= two
+        }
+
         if ( comparison == 'greater' ) {
             return one > two
         }
 
-        // Compare the first as lesser than the other.
         if ( comparison == 'lesser' ) {
             return one < two
         }
 
-        // Compare the dates as equal.
         return one === two
     },
 
@@ -361,70 +422,195 @@ shadow('pickadate', {
      * Checks if a date is disabled and then returns the next enabled one.
      */
     nextEnabledDate: function(value) {
+
         var pickadate = this
         var attrs = pickadate.attrs
+
+        if ( _.isTypeOf(value, 'date') ) {
+            value = [value.getFullYear(), value.getMonth(), value.getDate()]
+        }
+
         if ( pickadate.compare(attrs.min, 'greater', value) ) {
             value = attrs.min.slice(0)
         }
+
         else if ( pickadate.compare(attrs.max, 'lesser', value) ) {
             value = attrs.max.slice(0)
         }
+
+        var safety = 100
+        var year = value[0]
+        var month = value[1]
+        var date = value[2]
+        var targetDate = new Date(year, month, date)
+
+        month = (month + 12) % 12
+
+        while ( safety && targetDate.getMonth() !== month ) {
+
+            if ( !safety ) throw 'fell into infinite loop..'
+            safety -= 1
+
+            date -= 1
+            targetDate = new Date(year, month, date)
+        }
+
+        value = [targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate()]
+
         return value
     },
 
 
-    createHeader: function(year, month) {
+    decadeOf: function(year) {
+        var offset = year % 10
+        year -= offset
+        return [year, year + (10 - 1)]
+    },
+
+
+    createHeader: function() {
+        var pickadate = this
+        return el({ name: 'header', klass: pickadate.classNames.header }, [
+            pickadate.createButtonScope(),
+            pickadate.createButtonNav(),
+            pickadate.createButtonNav('next')
+        ])
+    },
+
+    createBody: function() {
+
+        var pickadate = this
+
+        var body = el({ klass: pickadate.classNames.body }, [
+            pickadate.createGrid(null, [
+                pickadate.createGridHeadDates(),
+                pickadate.createGridBodyDates()
+            ]),
+            pickadate.createGrid('months', [
+                pickadate.createGridHeadMonths(),
+                pickadate.createGridBodyMonths()
+            ]),
+            pickadate.createGrid('years', [
+                pickadate.createGridHeadYears(),
+                pickadate.createGridBodyYears()
+            ])
+        ])
+
+        return body
+    },
+
+    createFooter: function() {
+        var pickadate = this
+        var classes = pickadate.classNames
+        return el({ name: 'footer', klass: classes.footer }, [
+            pickadate.createButtonToday(),
+            pickadate.createButtonClear()
+        ])
+    },
+
+    createButtonNav: function(direction) {
 
         var pickadate = this
         var attrs = pickadate.attrs
-        var dict = pickadate.dict
         var classes = pickadate.classNames
+        var compare = pickadate.compare
 
-        var navPrev = el({
+        var isNext = direction == 'next'
+
+        var buttonNav = el({
             name: 'button',
-            klass: classes.navPrev,
-            attrs: { type: 'button', title: dict.monthPrev }
-        })
-        var navNext = el({
-            name: 'button',
-            klass: classes.navNext,
-            attrs: { type: 'button', title: dict.monthNext }
+            klass: classes[ isNext ? 'buttonNext' : 'buttonPrev'],
+            attrs: { type: 'button' }
         })
 
-        var yearLabel = pickadate.createHeaderYear(year)
-        var monthLabel = pickadate.createHeaderMonth(month)
-
-        var header = el({ name: 'header', klass: classes.header },
-            [monthLabel, yearLabel, navPrev, navNext])
-
-        var updateNavNode = function(navNode, value) {
+        var updateNavNode = function() {
             var isDisabled
-            if ( value ) {
-                isDisabled = value[0] === attrs.view[0] &&
-                    value[1] === attrs.view[1]
+            var comparisonFor = attrs.show == 'years' ? 'decade' :
+                attrs.show == 'months' ? 'year' : 'month'
+            if ( isNext ) {
+                isDisabled = compare(attrs.max, comparisonFor + ' lesser equal', attrs.view)
+            }
+            else {
+                isDisabled = compare(attrs.min, comparisonFor + ' greater equal', attrs.view)
             }
             if ( isDisabled ) {
-                navNode.classList.add(classes.navDisabled)
-                navNode.disabled = true
+                buttonNav.classList.add(classes.buttonDisabled)
+                buttonNav.disabled = true
             }
-            else if ( navNode.disabled ) {
-                navNode.classList.remove(classes.navDisabled)
-                navNode.disabled = false
+            else if ( buttonNav.disabled ) {
+                buttonNav.classList.remove(classes.buttonDisabled)
+                buttonNav.disabled = false
             }
         }
 
-        updateNavNode(navPrev, attrs.min)
-        updateNavNode(navNext, attrs.max)
+        updateNavNode()
 
-        // Bind updating the highlight when the nav is clicked.
-        $([navPrev, navNext]).on('click', function(event) {
-            var highlight = attrs.highlight.slice(0)
-            highlight[1] += event.target == navPrev ? -1 : 1
-            attrs.highlight = highlight
+        // Bind updating the highlight when the nav button is clicked.
+        $(buttonNav).on('click', function() {
+            var year = attrs.highlight[0]
+            var month = attrs.highlight[1]
+            var date = attrs.highlight[2]
+            var shift = isNext ? 1 : -1
+            if ( attrs.show == 'years' ) {
+                year += shift * 10
+            }
+            else if ( attrs.show == 'months' ) {
+                year += shift
+            }
+            else {
+                month += shift
+            }
+            attrs.highlight = [year, month, date]
         })
 
         // Bind updating the year and month labels.
-        pickadate.on('set:highlight.' + pickadate.id, function(event) {
+        pickadate.on('set:view.' + pickadate.id, function() {
+            updateNavNode()
+        })
+        pickadate.on('set:show.' + pickadate.id, function() {
+            updateNavNode()
+        })
+
+        return buttonNav
+    },
+
+    createButtonScope: function() {
+
+        var pickadate = this
+        var attrs = pickadate.attrs
+        var classes = pickadate.classNames
+        var months = pickadate.dict.monthsFull
+
+        var scopedText = function() {
+            var year = attrs.view[0]
+            var month = attrs.view[1]
+            if ( attrs.show == 'years' ) {
+                var decade = pickadate.decadeOf(year)
+                return decade.join(' - ')
+            }
+            if ( attrs.show == 'months' ) {
+                return year
+            }
+            return months[month] + ' ' + year
+        }
+
+        var buttonScope = el({
+            name: 'button',
+            klass: classes.buttonScope,
+            attrs: { type: 'button' }
+        }, scopedText())
+
+        // Bind the click event to show the months grid.
+        $(buttonScope).on('click', function() {
+            attrs.show = attrs.show == 'years' ? null :
+                attrs.show == 'months' ? 'years' : 'months'
+        })
+
+        // Bind updating the year and month labels.
+        pickadate.on('set:show.' + pickadate.id, function() {
+            buttonScope.innerText = scopedText()
+        })
+        pickadate.on('set:view.' + pickadate.id, function(event) {
 
             var value = event.value
             var year = value[0]
@@ -434,160 +620,373 @@ shadow('pickadate', {
             var previousYear = previousValue[0]
             var previousMonth = previousValue[1]
 
-            if ( year !== previousYear ) {
-                var newYearLabel = pickadate.createHeaderYear(year)
-                header.replaceChild(newYearLabel, yearLabel)
-                yearLabel = newYearLabel
-            }
-
-            if ( month !== previousMonth ) {
-                var newMonthLabel = pickadate.createHeaderMonth(month)
-                header.replaceChild(newMonthLabel, monthLabel)
-                monthLabel = newMonthLabel
-            }
-
             if ( year !== previousYear || month !== previousMonth ) {
-                updateNavNode(navPrev, attrs.min)
-                updateNavNode(navNext, attrs.max)
+                buttonScope.innerText = scopedText()
             }
         })
 
-        return header
+        return buttonScope
     },
 
-    createHeaderYear: function(year) {
-        return el(this.classNames.year, year)
-    },
-
-    createHeaderMonth: function(month) {
-        var dict = this.dict
-        var classes = this.classNames
-        return el(classes.month, dict.monthsFull[month])
-    },
-
-    createFooter: function() {
+    createButtonToday: function() {
         var pickadate = this
-        var classes = pickadate.classNames
-        var dict = pickadate.dict
         var attrs = pickadate.attrs
         var todayNode = el({
             name: 'button',
-            klass: classes.buttonToday,
+            klass: pickadate.classNames.buttonToday,
             attrs: { type: 'button' }
-        }, dict.today)
+        }, pickadate.dict.today)
         $(todayNode).on('click', function() {
             attrs.select = attrs.today
+            if ( !attrs.show || attrs.show != 'dates' ) {
+                attrs.show = 'dates'
+            }
         })
-        var clearNode = el({
-            name: 'button',
-            klass: classes.buttonClear,
-            attrs: { type: 'button' }
-        }, dict.clear)
-        $(clearNode).on('click', function() {
-            attrs.select = null
-        })
-        return el({ name: 'footer', klass: classes.footer }, [todayNode, clearNode ])
+        return todayNode
     },
 
-    createDay: function(year, month, day) {
+    createButtonClear: function() {
+        var pickadate = this
+        var attrs = pickadate.attrs
+        var clearNode = el({
+            name: 'button',
+            klass: pickadate.classNames.buttonClear,
+            attrs: { type: 'button' }
+        }, pickadate.dict.clear)
+        $(clearNode).on('click', function() {
+            attrs.select = null
+            if ( !attrs.show || attrs.show != 'dates' ) {
+                attrs.show = 'dates'
+            }
+        })
+        return clearNode
+    },
+
+    createGrid: function(scope, children) {
+
+        if ( !scope ) {
+            scope = null
+        }
+
+        var pickadate = this
+        var attrs = pickadate.attrs
+        var classes = pickadate.classNames
+        var updateHiddenState = function(value) {
+            if ( value === scope ) {
+                grid.hidden = false
+                grid.tabIndex = 0
+            }
+            else {
+                grid.hidden = true
+                grid.removeAttribute('tabindex')
+            }
+        }
+
+        // Create the grid container holder.
+        var grid = el(classes.container,
+            el({ name: 'table', klass: classes.grid }, children))
+
+        // Set the initial hidden state.
+        updateHiddenState(attrs.show)
+
+        // Bind the update to reveal the grid.
+        pickadate.on('set:show.' + pickadate.id, function(event) {
+            updateHiddenState(event.value)
+        })
+
+        // Bind the update to remove the selections.
+        pickadate.on('set:select.' + pickadate.id, function(event) {
+            if ( !event.value ) {
+                $(grid).find('.' + classes.selected).
+                    removeClass(classes.selected)
+            }
+        })
+
+        return grid
+    },
+
+    createGridHeadYears: function() {
+
+        var pickadate = this
+        var year = pickadate.attrs.view[0]
+        var decadeRange = function(yr) {
+            var decade = pickadate.decadeOf(yr)
+            return decade.join(' - ')
+        }
+
+        var yearsNode = el({
+            name: 'th',
+            attrs: { scope: 'col', colspan: 5 }
+        }, decadeRange(year))
+
+        pickadate.on('set:view.' + pickadate.id, function(event) {
+            var newYear = event.value[0]
+            if ( newYear !== year ) {
+                year = newYear
+                yearsNode.innerText = decadeRange(year)
+            }
+        })
+
+        return el({ name: 'thead' }, yearsNode)
+    },
+
+    createGridHeadMonths: function() {
+
+        var pickadate = this
+        var year = pickadate.attrs.view[0]
+
+        var yearNode = el({ name: 'th', attrs: { scope: 'col', colspan: 4 } }, year)
+
+        pickadate.on('set:view.' + pickadate.id, function(event) {
+            var newYear = event.value[0]
+            if ( newYear !== year ) {
+                year = newYear
+                yearNode.innerText = year
+            }
+        })
+
+        return el({ name: 'thead' }, yearNode)
+    },
+
+    createGridHeadDates: function() {
 
         var pickadate = this
         var classes = pickadate.classNames
         var attrs = pickadate.attrs
+        var dict = pickadate.dict
+
+        var createWeekdays = function() {
+            var frag = document.createDocumentFragment()
+            var weekdaysShort = dict.weekdaysShort.slice(0)
+            var weekdaysFull = dict.weekdaysFull.slice(0)
+            var firstDay = attrs.firstDay
+            if ( firstDay ) {
+                weekdaysShort.push( weekdaysShort.shift() )
+                weekdaysFull.push( weekdaysFull.shift() )
+            }
+            for ( var i = 0; i < 7; i += 1 ) {
+                var weekday = el({
+                    name: 'th',
+                    klass: classes.gridTitle,
+                    attrs: { scope: 'col', title: weekdaysFull[i] }
+                }, weekdaysShort[i])
+                frag.appendChild(weekday)
+            }
+            return frag
+        }
+
+        var gridHead = el({ name: 'thead' }, createWeekdays())
+
+        // Bind updating the dates grid.
+        pickadate.on('set:firstDay.' + pickadate.id, function() {
+            gridHead.innerHTML = ''
+            gridHead.appendChild(createWeekdays())
+        })
+
+        return gridHead
+    },
+
+    createGridBodyYears: function() {
+
+        var pickadate = this
+        var attrs = pickadate.attrs
+        var classes = pickadate.classNames
         var compare = pickadate.compare
 
-        var date = new Date(year, month, day)
-        var dateTime = date.getTime()
+        var createGridCellYear = function(year) {
 
-        var isDisabled = compare(attrs.min, 'greater', dateTime) ||
-            compare(attrs.max, 'lesser', dateTime)
+            var date = new Date(year, attrs.highlight[1], attrs.highlight[2])
+            var dateTime = date.getTime()
 
-        var dayNode = el({
-            klass: classes.day +
-                ' ' + (attrs.view[1] === date.getMonth() ? classes.infocus : classes.outfocus) +
-                (compare(attrs.select, dateTime) ? ' ' + classes.selected : '') +
-                (compare(attrs.highlight, dateTime) ? ' ' + classes.highlighted : '') +
-                (compare(attrs.today, dateTime) ? ' ' + classes.today : '') +
-                (isDisabled ? ' ' + classes.disabled : ''),
-            attrs: {
-                role: 'button',
-                title: pickadate.format([
-                    date.getFullYear(),
-                    date.getMonth(),
-                    date.getDate()
-                ])
+            var isDisabled = compare(attrs.min, 'year greater', dateTime) ||
+                compare(attrs.max, 'year lesser', dateTime)
+
+            var yearNode = el({
+                name: 'td',
+                klass: classes.gridCell +
+                    ' ' + (compare(attrs.view, 'decade', date) ? classes.infocus : classes.outfocus) +
+                    (compare(attrs.select, 'year', dateTime) ? ' ' + classes.selected : '') +
+                    (compare(attrs.highlight, 'year', dateTime) ? ' ' + classes.highlighted : '') +
+                    (compare(attrs.today, 'year', dateTime) ? ' ' + classes.now : '') +
+                    (isDisabled ? ' ' + classes.disabled : '')
+            }, year)
+
+            if ( !isDisabled ) {
+                yearNode.setAttribute('data-highlight', dateTime)
             }
-        }, date.getDate())
 
-        if ( !isDisabled ) {
-            dayNode.setAttribute('data-pick', dateTime)
+            return yearNode
         }
 
-        return el({ name: 'td' }, dayNode)
+        var createGridRowGroupYears = function() {
+
+            var frag = document.createDocumentFragment()
+            var year = attrs.view[0]
+            var decadeStart = pickadate.decadeOf(year)[0]
+
+            for ( var i = 0; i < 3; i++ ) {
+                var row = el({ name: 'tr' })
+                for ( var j = 0; j < 4; j++ ) {
+                    var index = j + (i * 4) - 1
+                    var yearNode = createGridCellYear(decadeStart + index)
+                    row.appendChild(yearNode)
+                }
+                frag.appendChild(row)
+            }
+
+            return frag
+        }
+
+        // Create the grid body containing the years.
+        var gridBodyYears = el({ name: 'tbody' }, createGridRowGroupYears())
+
+        // Bind re-rendering the years’ grid body.
+        pickadate.on('set:view.' + pickadate.id, function() {
+            gridBodyYears.innerHTML = ''
+            gridBodyYears.appendChild(createGridRowGroupYears())
+        })
+
+        return gridBodyYears
     },
 
-    createWeek: function(year, month, week) {
-        var pickadate = this
-        var firstDay = pickadate.attrs.firstDay
-        var offset = new Date(year, month, 1).getDay()
-        var days = []
-        for ( var i = 1; i <= 7; i++ ) {
-            var day = (week * 7) + i - offset
-            if ( firstDay ) day += 1
-            days.push(pickadate.createDay(year, month, day))
-        }
-        return el({ name: 'tr' }, days)
-    },
+    createGridBodyMonths: function() {
 
-    createMonth: function(year, month) {
-        var frag = document.createDocumentFragment()
-        var firstDay = this.attrs.firstDay
-        var offset = 0
-        if ( firstDay && new Date(year, month, 1).getDay() === 0 ) {
-            offset = -1
-        }
-        for ( var i = 0; i <= 5; i++ ) {
-            frag.appendChild(this.createWeek(year, month, i + offset))
-        }
-        return frag
-    },
-
-    createGrid: function() {
         var pickadate = this
         var classes = pickadate.classNames
-        return el({
-            name: 'table',
-            klass: classes.grid,
-            attrs: {
-                tabindex: 0
-            }
-        })
-    },
-
-    createGridHead: function() {
-        var pickadate = this
+        var attrs = pickadate.attrs
         var dict = pickadate.dict
-        var weekdaysShort = dict.weekdaysShort.slice(0)
-        var weekdaysFull = dict.weekdaysFull.slice(0)
-        var firstDay = pickadate.attrs.firstDay
-        if ( firstDay ) {
-            weekdaysShort.push( weekdaysShort.shift() )
-            weekdaysFull.push( weekdaysFull.shift() )
+        var compare = pickadate.compare
+
+        var createGridCellMonth = function(month) {
+
+            var months = dict.monthsShort
+            var date = new Date(attrs.view[0], month, attrs.highlight[2])
+            var dateTime = date.getTime()
+
+            var isDisabled = compare(attrs.min, 'month greater', dateTime) ||
+                compare(attrs.max, 'month lesser', dateTime)
+
+            var monthNode = el({
+                name: 'td',
+                klass: classes.gridCell +
+                    (compare(attrs.select, 'month', dateTime) ? ' ' + classes.selected : '') +
+                    (compare(attrs.highlight, 'month', dateTime) ? ' ' + classes.highlighted : '') +
+                    (compare(attrs.today, 'month', dateTime) ? ' ' + classes.now : '') +
+                    (isDisabled ? ' ' + classes.disabled : '')
+            }, months[date.getMonth()])
+
+            if ( !isDisabled ) {
+                monthNode.setAttribute('data-highlight', dateTime)
+            }
+
+            return monthNode
         }
-        return el({ name: 'thead' },
-            weekdaysShort.map(function(weekday, index) {
-                return el({
-                    name: 'th',
-                    attrs: {
-                        title: weekdaysFull[index]
-                    }
-                }, weekday)
-            })
-        )
+
+        var createGridRowGroupMonths = function() {
+
+            var frag = document.createDocumentFragment()
+
+            for ( var i = 0; i < 3; i++ ) {
+                var row = el({ name: 'tr' })
+                for ( var j = 0; j < 4; j++ ) {
+                    var index = j + (i * 4)
+                    var monthNode = createGridCellMonth(index)
+                    row.appendChild(monthNode)
+                }
+                frag.appendChild(row)
+            }
+
+            return frag
+        }
+
+        // Create the grid body containing the months.
+        var gridBodyMonths = el({ name: 'tbody' }, createGridRowGroupMonths())
+
+        // Bind re-rendering the months’ grid body.
+        pickadate.on('set:view.' + pickadate.id, function() {
+            gridBodyMonths.innerHTML = ''
+            gridBodyMonths.appendChild(createGridRowGroupMonths())
+        })
+
+        return gridBodyMonths
     },
 
-    createGridBody: function(year, month) {
-        return el({ name: 'tbody' }, this.createMonth(year, month))
+    createGridBodyDates: function() {
+
+        var pickadate = this
+        var attrs = pickadate.attrs
+        var classes = pickadate.classNames
+        var compare = pickadate.compare
+
+        var createGridCellDay = function(year, month, day) {
+
+            var date = new Date(year, month, day)
+            var dateTime = date.getTime()
+
+            var isDisabled = compare(attrs.min, 'greater', dateTime) ||
+                compare(attrs.max, 'lesser', dateTime)
+
+            var dayNode = el({
+                name: 'td',
+                klass: classes.gridCell +
+                    ' ' + (attrs.view[1] === date.getMonth() ? classes.infocus : classes.outfocus) +
+                    (compare(attrs.select, dateTime) ? ' ' + classes.selected : '') +
+                    (compare(attrs.highlight, dateTime) ? ' ' + classes.highlighted : '') +
+                    (compare(attrs.today, dateTime) ? ' ' + classes.now : '') +
+                    (isDisabled ? ' ' + classes.disabled : '')
+            }, date.getDate())
+
+            if ( !isDisabled ) {
+                dayNode.setAttribute('data-select', dateTime)
+            }
+
+            return dayNode
+        }
+
+        var createGridRowWeek = function(year, month, week) {
+
+            var firstDay = attrs.firstDay
+            var offset = new Date(year, month, 1).getDay()
+            var frag = document.createDocumentFragment()
+
+            for ( var i = 1; i <= 7; i++ ) {
+                var day = (week * 7) + i - offset
+                if ( firstDay ) day += 1
+                frag.appendChild(createGridCellDay(year, month, day))
+            }
+
+            return el({ name: 'tr' }, frag)
+        }
+
+        var createGridRowGroupDates = function() {
+
+            var year = attrs.view[0]
+            var month = attrs.view[1]
+            var firstDay = attrs.firstDay
+            var frag = document.createDocumentFragment()
+
+            var offset = 0
+            if ( firstDay && new Date(year, month, 1).getDay() === 0 ) {
+                offset = -1
+            }
+
+            for ( var i = 0; i <= 5; i++ ) {
+                frag.appendChild(createGridRowWeek(year, month, i + offset))
+            }
+
+            return frag
+        }
+
+        var gridBodyDates = el({ name: 'tbody' }, createGridRowGroupDates())
+
+        // Bind re-rendering the dates’ grid body.
+        var events = 'set:view.' + pickadate.id + ' set:firstDay.' + pickadate.id
+        pickadate.on(events, function() {
+            gridBodyDates.innerHTML = ''
+            gridBodyDates.appendChild(createGridRowGroupDates())
+        })
+
+        return gridBodyDates
     },
 
 
@@ -598,61 +997,15 @@ shadow('pickadate', {
 
         var pickadate = this
 
-        // Take out the original content.
-        var contentFrag = pickadate.content
+        // Grab the fragment and add the segments.
+        var frag = pickadate.content
+        frag.appendChild(pickadate.createHeader())
+        frag.appendChild(pickadate.createBody())
+        frag.appendChild(pickadate.createFooter())
 
-        var classes = pickadate.classNames
-        var attrs = pickadate.attrs
-
-        // Create the header.
-        var header = pickadate.createHeader(attrs.view[0], attrs.view[1])
-        contentFrag.appendChild(header)
-
-        // Create the grid.
-        var grid = pickadate.createGrid()
-        contentFrag.appendChild(grid)
-
-        // Create the grid’s head.
-        var gridHead = pickadate.createGridHead()
-        grid.appendChild(gridHead)
-
-        // Create the grid’s body.
-        var gridBody = pickadate.createGridBody(attrs.view[0], attrs.view[1])
-        grid.appendChild(gridBody)
-
-        // Create the footer.
-        contentFrag.appendChild(pickadate.createFooter())
-
-        // Bind updating the grid.
-        pickadate.on('set:firstDay.' + pickadate.id, function() {
-            grid.replaceChild(pickadate.createGridHead(), gridHead)
-            $gridBody.html(pickadate.createMonth(attrs.view[0], attrs.view[1]))
-        })
-
-        // Bind updating the grid’s body.
-        pickadate.on('set:highlight.' + pickadate.id, function(event) {
-            var value = event.value
-            $gridBody.html(pickadate.createMonth(value[0], value[1]))
-        })
-
-        // Bind updating the selected day.
-        pickadate.on('set:select.' + pickadate.id, function(event) {
-            if ( !event.value ) {
-                $gridBody.find('.' + classes.selected).
-                    removeClass(classes.selected)
-            }
-        })
-
-        // Bind updating the selected value when clicked.
-        var $gridBody = $(gridBody).on('click', '[data-pick]', function(event) {
-            var target = event.target
-            var value = $(target).data('pick')
-            attrs.select = new Date(value)
-        })
-
-        // Create and return the fragment.
+        // Finally, apply the super wrapper.
         return pickadate._super()
-    } //template
+    }
 
 }) //shadow('pickadate')
 

@@ -434,17 +434,10 @@ describe('shadow.Element', function() {
             expect(contentFnNode).toBe('<div>some content :)</div>')
         })
 
-        it('requires a host element if the source is an input', function() {
-            function fail() {
-                shadow.Element.create({
-                    $el: '<input />',
-                    template: 'some content'
-                })
-            }
-            expect(fail).toThrowError()
+        it('creates a host element if the source is an input with a template', function() {
             function pass() {
                 shadow.Element.create({
-                    $el: '<div />',
+                    $el: '<input />',
                     template: 'some content'
                 })
             }

@@ -2,7 +2,7 @@
 
     // Register as an anonymous module.
     if ( typeof define == 'function' && define.amd )
-        define(['shadow','jquery'], factory)
+        define(['shadow', 'jquery'], factory)
 
     // Or using browser globals.
     else factory(shadow, jQuery)
@@ -102,7 +102,10 @@ shadow('data-field', {
             // When the element value is set, update
             // the attribute value after parsing.
             dataField.$input.on('input.' + dataField.id, function() {
-                dataField.attrs.value = dataField.parse(this.value)
+                var value = dataField.parse(this.value)
+                if ( value ) {
+                    dataField.attrs.value = value
+                }
             })
 
             // Set the starting value.
@@ -184,6 +187,10 @@ shadow('data-field', {
             throw new TypeError('The parser expects a string.')
         }
 
+        if ( !string ) {
+            return ''
+        }
+
         var dataField = this
         var parseValueUnit = function(valueUnit) {
 
@@ -249,7 +256,7 @@ shadow('data-field', {
                                 '`' + chunk.f + '` formatting rule did not ' +
                                 'match the value being parsed.\n' +
                                 'Value being parsed: “' + stringUnit + '”.\n' +
-                                'Rule parsed value: “' + chunkValue + '”.');
+                                'Value parsed by rule: “' + chunkValue + '”.');
                         }
                         stringUnit = stringUnit.slice(chunkValue.length)
                         parsedHash[chunk.f] = chunkValue

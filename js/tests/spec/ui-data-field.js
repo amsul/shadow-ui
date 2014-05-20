@@ -305,7 +305,7 @@ describe('shadow.DataField', function() {
                 var dataFieldNoValue = shadow.DataField.create({
                     $el: $('<input />')
                 })
-                expect(dataFieldNoValue.attrs.value).toBe('')
+                expect(dataFieldNoValue.attrs.value).toBe(null)
                 expect(dataFieldNoValue.$input.val()).toBe('')
 
                 var dataFieldValue = shadow.DataField.create({
@@ -695,23 +695,6 @@ describe('shadow.DataField', function() {
 
 
     describe('.$host', function() {
-
-        it('is required if the source is an input and there is a template', function() {
-            function fail() {
-                shadow.DataField.create({
-                    $el: $('<input />'),
-                    template: '<p>some epic content</p>'
-                })
-            }
-            expect(fail).toThrowError()
-            function pass() {
-                shadow.DataField.create({
-                    $el: $('<div />'),
-                    template: '<p>some epic content</p>'
-                })
-            }
-            expect(pass).not.toThrowError()
-        })
 
         it('is the container for the template content', function() {
             var $host = $('<div />')

@@ -2,7 +2,7 @@
 
     // Register as an anonymous module.
     if ( typeof define == 'function' && define.amd )
-        define(['shadow','jquery'], factory)
+        define(['shadow', 'jquery'], factory)
 
     // Or using browser globals.
     else factory(shadow, jQuery)
@@ -192,7 +192,10 @@ shadow('pickadate', {
 
         // Set the initial value.
         if ( attrs.value ) {
-            attrs.select = pickadate.parse(attrs.value)
+            var selection = pickadate.parse(attrs.value)
+            if ( selection ) {
+                attrs.select = selection
+            }
         }
 
         // Set the initial select.
@@ -311,6 +314,9 @@ shadow('pickadate', {
     parse: function(string) {
         var pickadate = this
         var value = pickadate._super(string)
+        if ( !value ) {
+            return null
+        }
         var month
         if ( 'mmmm' in value ) {
             month = pickadate.dict.monthsFull.indexOf(value.mmmm)

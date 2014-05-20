@@ -2,7 +2,7 @@
 
     // Register as an anonymous module.
     if ( typeof define == 'function' && define.amd )
-        define(['shadow','jquery'], factory)
+        define(['shadow', 'jquery'], factory)
 
     // Or using browser globals.
     else factory(shadow, jQuery)

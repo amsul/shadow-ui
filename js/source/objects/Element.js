@@ -201,8 +201,9 @@ function attachShadowNodes(element) {
 
     // Insert the template if there is one.
     if ( element.template ) {
-        if ( !element.$host || !(element.$host[0] instanceof Element) ) {
-            throw new TypeError('No `$host` element found.')
+        if ( !element.$host ) {
+            _.define(element, '$host', $('<div>'))
+            element.$el.after(element.$host)
         }
         var template = element.template
         if ( typeof template == 'function' ) {

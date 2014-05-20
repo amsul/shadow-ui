@@ -1,6 +1,6 @@
 
 /*!
- * Shadow UI v0.6.0, 2014/05/09
+ * Shadow UI v0.6.0, 2014/05/19
  * By Amsul, http://amsul.ca
  * Hosted on http://amsul.github.io/shadow-ui
  * Licensed under MIT
@@ -548,8 +548,9 @@ function attachShadowNodes(element) {
     }
     // Insert the template if there is one.
     if (element.template) {
-        if (!element.$host || !(element.$host[0] instanceof Element)) {
-            throw new TypeError("No `$host` element found.");
+        if (!element.$host) {
+            _.define(element, "$host", $("<div>"));
+            element.$el.after(element.$host);
         }
         var template = element.template;
         if (typeof template == "function") {

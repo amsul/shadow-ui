@@ -658,7 +658,7 @@ describe('shadow.DataField', function() {
                             }
                             return romans[value]
                         }
-                    },
+                    }//,
                     // formatUnit: function(value) {
                     //     value = value.roman
                     //     for ( var numeral in romans ) {
@@ -712,7 +712,7 @@ describe('shadow.DataField', function() {
                             }
                             return romans[value]
                         }
-                    },
+                    }//,
                     // formatUnit: function(value) {
                     //     value = value.roman
                     //     for ( var numeral in romans ) {
@@ -860,7 +860,7 @@ describe('shadow.DataField', function() {
                     }
                     return val.split(' ')[1]
                 }
-            },
+            }//,
             // formatUnit: function(hash) {
             //     return this._super(hash.Y + ' ' + hash.M)
             // }

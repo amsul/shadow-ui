@@ -43,13 +43,14 @@ shadow('picker', {
 
         var picker = this._super(options)
         var classes = picker.classNames
+        var attrs = picker.attrs
 
         // Setup the states of the host element.
         var $host = picker.$host.addClass(classes.host)
         picker.on('set:opened', function(event) {
             var value = event.value
             $host.toggleClass(classes.opened, value)
-            if ( value ) {
+            if ( value && value != 'always' ) {
                 bindDocumentClickToClose(picker)
             }
             else {
@@ -58,8 +59,8 @@ shadow('picker', {
         })
 
         // If it’s already opened, bind the document click.
-        if ( picker.attrs.opened ) {
-            picker.open()
+        if ( attrs.opened ) {
+            attrs.opened = attrs.opened
         }
 
         // Bind the open/close triggers.

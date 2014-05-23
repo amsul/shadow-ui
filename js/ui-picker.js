@@ -11,6 +11,7 @@
 
 
 var el = shadow._.el
+var $document = $(document)
 
 
 /**
@@ -46,23 +47,31 @@ shadow('picker', {
         // Setup the states of the host element.
         var $host = picker.$host.addClass(classes.host)
         picker.on('set:opened', function(event) {
-            $host.toggleClass(classes.opened, event.value)
+            var value = event.value
+            $host.toggleClass(classes.opened, value)
+            if ( value ) {
+                bindDocumentClickToClose(picker)
+            }
+            else {
+                $document.off('click.' + picker.id)
+            }
         })
 
         // If it’s already opened, bind the document click.
         if ( picker.attrs.opened ) {
-            bindDocumentClickToClose(picker)
+            picker.open()
         }
 
         // Bind the open/close triggers.
         var eventNames = 'click.' + picker.id + ' focusin.' + picker.id
-        var onClickToOpen = function(event) {
-            event.stopPropagation()
-            bindDocumentClickToClose(picker)
+        picker.$el.on(eventNames, function() {
             picker.open()
+        })
+        if ( picker.$el[0] !== picker.$host[0] ) {
+            picker.$host.on(eventNames, function() {
+                picker.open()
+            })
         }
-        picker.$el.on(eventNames, onClickToOpen)
-        picker.$host.on(eventNames, onClickToOpen)
 
         return picker
     },
@@ -113,8 +122,19 @@ shadow('picker', {
  */
 function bindDocumentClickToClose(picker) {
 
-    $(document).on('click', function() {
-        picker.close()
+    var pickerEl = picker.$el[0]
+    var pickerHost = picker.$host[0]
+
+    $document.on('click.' + picker.id, function(event) {
+        var target = event.target
+        if (
+            pickerEl !== target &&
+            pickerHost !== target &&
+            !pickerEl.contains(target) &&
+            !pickerHost.contains(target)
+        ) {
+            picker.close()
+        }
     })
 }
 

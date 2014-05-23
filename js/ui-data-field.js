@@ -18,8 +18,9 @@ shadow('data-field', {
     $input: null,
 
     attrs: {
+        select: null,
         value: null,
-        submitValue: null,
+        hiddenInput: null,
         allowMultiple: null,
         allowRange: null,
         format: null,
@@ -51,6 +52,25 @@ shadow('data-field', {
             attrs.formatRange = '{ - }' // <before from>{<before to>}<after to>
         }
 
+        // Set the starting select.
+        if ( attrs.value ) {
+            var selection = dataField.parse(attrs.value)
+            if ( selection ) {
+                attrs.select = selection
+            }
+        }
+
+        // Set the starting value.
+        else if ( attrs.select ) {
+            attrs.value = dataField.format(attrs.select)
+        }
+
+        // Bind updating the value when select is set.
+        dataField.on('set:select.' + dataField.id, function(event) {
+            var value = event.value
+            attrs.value = value ? dataField.format(value) : ''
+        })
+
     },
 
 
@@ -61,27 +81,24 @@ shadow('data-field', {
 
         // Create the shadow object.
         var dataField = this._super(options)
+        var attrs = dataField.attrs
 
-        // When there are formats, prepare it to be format-able.
+        // When there are formats, make sure it is format-able.
         if ( dataField.formats ) {
-
-            // Make sure the element has a format for the value.
-            if ( !dataField.attrs.format ) {
+            if ( !attrs.format ) {
                 throw new TypeError('The `format` attribute is required.')
             }
-
-            // Prevent adding/removing more formats.
             Object.seal(dataField.formats)
         }
 
         // Set the data field input.
         if ( !dataField.$input ) {
-            if ( dataField.attrs.submitValue ) {
-                shadow._.define(dataField, '$input', $('<input type=hidden>'))
-                dataField.$host.after(dataField.$input)
-            }
-            else if ( dataField.$el[0].nodeName == 'INPUT' ) {
+            if ( dataField.$el[0].nodeName == 'INPUT' ) {
                 shadow._.define(dataField, '$input', dataField.$el)
+            }
+            else if ( attrs.hiddenInput ) {
+                shadow._.define(dataField, '$input', $('<input type=hidden>'))
+                dataField.$el.after(dataField.$input)
             }
         }
 
@@ -93,28 +110,22 @@ shadow('data-field', {
                     'the `$el` must be an input element.')
             }
 
-            // When the attribute value is set, update
-            // the element value after formatting.
-            dataField.on('assign:value.' + dataField.id, function(event) {
-                dataField.$input[0].value = dataField.format(event.value)
+            // Set the starting element value.
+            if ( attrs.value ) {
+                dataField.$input.val(attrs.value)
+            }
+
+            // Set the starting select.
+            var value = dataField.$input.val()
+            if ( !attrs.value && value ) {
+                attrs.select = dataField.parse(value)
+            }
+
+            // Bind updating the element’s value when value is set.
+            dataField.on('set:value.' + dataField.id, function(event) {
+                dataField.$input[0].value = event.value
             })
 
-            // When the element value is set, update
-            // the attribute value after parsing.
-            dataField.$input.on('input.' + dataField.id, function() {
-                var value = dataField.parse(this.value)
-                if ( value ) {
-                    dataField.attrs.value = value
-                }
-            })
-
-            // Set the starting value.
-            if ( dataField.attrs.value ) {
-                dataField.$input[0].value = dataField.format(dataField.attrs.value)
-            }
-            else {
-                dataField.$input.triggerHandler('input.' + dataField.id)
-            }
         }
 
         // Return the new data field object.
@@ -143,7 +154,7 @@ shadow('data-field', {
             }
 
             return typeof valueUnit == 'object' ?
-                    JSON.stringify(valueUnit) : valueUnit
+                    JSON.stringify(valueUnit) : '' + valueUnit
         }
 
         // If multiple values are allowed, setup the combo formatter.
@@ -170,12 +181,12 @@ shadow('data-field', {
     }, //format
 
 
-    /**
-     * Convert a parsed unit hash into a formatted string.
-     */
-    formatUnit: function(unitHash) {
-        return unitHash
-    },
+    // /**
+    //  * Convert a parsed unit hash into a formatted string.
+    //  */
+    // formatUnit: function(unitHash) {
+    //     return unitHash
+    // },
 
 
     /**
@@ -188,7 +199,7 @@ shadow('data-field', {
         }
 
         if ( !string ) {
-            return ''
+            return null
         }
 
         var dataField = this
@@ -201,7 +212,7 @@ shadow('data-field', {
                 var parsedHash = dataField.parseUnit(valueUnit)
 
                 // Convert the unit hash into a value unit.
-                valueUnit = dataField.formatUnit(parsedHash)
+                valueUnit = /*dataField.formatUnit(*/parsedHash/*)*/
             }
 
             // Try to evaluate it as JSON.

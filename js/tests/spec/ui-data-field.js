@@ -6,9 +6,116 @@ describe('shadow.DataField', function() {
     })
 
 
+    describe('.setup()', function() {
+
+        it('makes sure a formats hash is given when a format is provided', function() {
+            function fail() {
+                shadow.DataField.create({
+                    $el: $('<div />'),
+                    attrs: {
+                        format: 'Y'
+                    }
+                })
+            }
+            expect(fail).toThrowError()
+            function pass() {
+                shadow.DataField.create({
+                    $el: $('<div />'),
+                    formats: { },
+                    attrs: {
+                        format: 'Y'
+                    }
+                })
+            }
+            expect(pass).not.toThrowError()
+        })
+
+        it('sets the default format for multiple values', function() {
+            var dataField = shadow.DataField.create({
+                $el: $('<div />'),
+                attrs: {
+                    allowMultiple: true
+                }
+            })
+            expect(dataField.attrs.formatMultiple).toBe('{, |, }')
+            dataField = shadow.DataField.create({
+                $el: $('<div />'),
+                attrs: {
+                    formatMultiple: '{ and | and }',
+                    allowMultiple: true
+                }
+            })
+            expect(dataField.attrs.formatMultiple).toBe('{ and | and }')
+        })
+
+        it('sets the default format for range values', function() {
+            var dataField = shadow.DataField.create({
+                $el: $('<div />'),
+                attrs: {
+                    allowRange: true
+                }
+            })
+            expect(dataField.attrs.formatRange).toBe('{ - }')
+            dataField = shadow.DataField.create({
+                $el: $('<div />'),
+                attrs: {
+                    formatRange: '{ and }',
+                    allowRange: true
+                }
+            })
+            expect(dataField.attrs.formatRange).toBe('{ and }')
+        })
+
+        it('sets the starting value from the select', function() {
+            var dataField = shadow.DataField.create({
+                $el: $('<div />'),
+                attrs: {
+                    select: 'hi',
+                    format: 'Y y'
+                },
+                formats: {
+                    Y: function(val) {
+                        return val.toUpperCase()
+                    },
+                    y: function(val) {
+                        return val
+                    }
+                }
+            })
+            expect(dataField.attrs.value).toBe('HI hi')
+        })
+
+        it('updates the value when select is set', function() {
+            var dataField = shadow.DataField.create({
+                $el: $('<div />')
+            })
+            expect(dataField.attrs.value).not.toBe('hi')
+            dataField.attrs.select = 'hi'
+            expect(dataField.attrs.value).toBe('hi')
+            dataField = shadow.DataField.create({
+                $el: $('<div />'),
+                attrs: {
+                    format: 'Y y'
+                },
+                formats: {
+                    Y: function(val) {
+                        return val.toUpperCase()
+                    },
+                    y: function(val) {
+                        return val
+                    }
+                }
+            })
+            expect(dataField.attrs.value).not.toBe('HI hi')
+            dataField.attrs.select = 'hi'
+            expect(dataField.attrs.value).toBe('HI hi')
+        })
+    })
+
+
     describe('.create()', function() {
 
-        it('creates shadow data field elements', function() {
+        it('creates a shadow data field element', function() {
             var dataField = shadow.DataField.create({
                 $el: $('<div />')
             })
@@ -16,7 +123,39 @@ describe('shadow.DataField', function() {
             expect(dataField.$el.data('ui')).toBe('data-field')
         })
 
-        it('must have an input element if one is specified in the options', function() {
+        it('makes sure formats are provided when needed', function() {
+            function fail() {
+                shadow.DataField.create({
+                    $el: $('<div />'),
+                    formats: { Y: function() {} }
+                })
+            }
+            expect(fail).toThrowError()
+            function pass() {
+                shadow.DataField.create({
+                    $el: $('<div />'),
+                    formats: { Y: function() {} },
+                    attrs: {
+                        format: 'Y'
+                    }
+                })
+            }
+            expect(pass).not.toThrowError()
+        })
+
+        it('creates a hidden input if one is neeeded', function() {
+            var dataField = shadow.DataField.create({
+                $el: $('<div />'),
+                attrs: {
+                    hiddenInput: true
+                }
+            })
+            expect(dataField.$input).not.toBe(null)
+            expect(dataField.$input[0].nodeName).toBe('INPUT')
+            expect(dataField.$input[0].type).toBe('hidden')
+        })
+
+        it('must have a valid input element if one is passed', function() {
             function fail() {
                 shadow.DataField.create({
                     $el: $('<div />'),
@@ -31,6 +170,27 @@ describe('shadow.DataField', function() {
                 })
             }
             expect(pass).not.toThrowError()
+        })
+
+        it('sets the starting element value from the value', function() {
+            var dataField = shadow.DataField.create({
+                $el: $('<input />'),
+                attrs: {
+                    value: 'something'
+                }
+            })
+            expect(dataField.$input.val()).toBe('something')
+        })
+
+        it('updates the element’s value when value is set', function() {
+            var dataField = shadow.DataField.create({
+                $el: $('<input />'),
+                attrs: {
+                    value: 'something'
+                }
+            })
+            dataField.attrs.value = 'another thing'
+            expect(dataField.$input.val()).toBe('another thing')
         })
     })
 
@@ -121,7 +281,7 @@ describe('shadow.DataField', function() {
 
     describe('.formatUnit()', function() {
 
-        it('does no formatting by default', function() {
+        xit('does no formatting by default', function() {
             var dataField = shadow.DataField.create({
                 $el: $('<div />')
             })
@@ -129,7 +289,7 @@ describe('shadow.DataField', function() {
             expect(attr).toEqual({ something: true })
         })
 
-        it('can be changed to manipulate the attribute value to set', function() {
+        xit('can be changed to manipulate the attribute value to set', function() {
             var dataField = shadow.DataField.create({
                 $el: $('<div />'),
                 attrs: {
@@ -168,6 +328,13 @@ describe('shadow.DataField', function() {
                 dataField.parse(['something'])
             }
             expect(fail).toThrowError()
+            function pass() {
+                var dataField = shadow.DataField.create({
+                    $el: $('<div />')
+                })
+                dataField.parse('something')
+            }
+            expect(pass).not.toThrowError()
         })
 
         it('parses a formatted string value into an attribute value', function() {
@@ -298,20 +465,30 @@ describe('shadow.DataField', function() {
 
     describe('.attrs', function() {
 
-        describe('.value', function() {
+        describe('.select', function() {
+
+            it('is the parsed representation of the value', function() {
+                var dataField = shadow.DataField.create({
+                    $el: $('<div />'),
+                    attrs: {
+                        value: 'true'
+                    }
+                })
+                expect(dataField.attrs.select).toBe(true)
+            })
 
             it('is the value behind the data field’s input value', function() {
 
                 var dataFieldNoValue = shadow.DataField.create({
                     $el: $('<input />')
                 })
-                expect(dataFieldNoValue.attrs.value).toBe(null)
+                expect(dataFieldNoValue.attrs.select).toBe(null)
                 expect(dataFieldNoValue.$input.val()).toBe('')
 
                 var dataFieldValue = shadow.DataField.create({
                     $el: $('<input value="something" />')
                 })
-                expect(dataFieldValue.attrs.value).toBe('something')
+                expect(dataFieldValue.attrs.select).toBe('something')
                 expect(dataFieldValue.$input.val()).toBe('something')
             })
 
@@ -320,51 +497,53 @@ describe('shadow.DataField', function() {
             })
 
             it('mirrors the value from the attrs to the element', function() {
-                dataFieldSimple.attrs.value = 'hah'
-                expect(dataFieldSimple.$input.val()).toBe('hah')
-                dataFieldSimple.attrs.value = 4
+                dataFieldSimple.attrs.select = ''
+                expect(dataFieldSimple.$input.val()).toBe('')
+                dataFieldSimple.attrs.select = 4
                 expect(dataFieldSimple.$input.val()).toBe('4')
-                dataFieldSimple.attrs.value = [4,20]
+                dataFieldSimple.attrs.select = [4,20]
                 expect(dataFieldSimple.$input.val()).toBe('[4,20]')
-                dataFieldSimple.attrs.value = { very: 'cool' }
+                dataFieldSimple.attrs.select = { very: 'cool' }
                 expect(dataFieldSimple.$input.val()).toBe('{"very":"cool"}')
             })
 
-            it('mirrors the value from the element to the attrs', function() {
+            xit('mirrors the value from the element to the attrs', function() {
                 dataFieldSimple.$input.val('awesome').trigger('input')
-                expect(dataFieldSimple.attrs.value).toBe('awesome')
+                expect(dataFieldSimple.attrs.select).toBe('awesome')
                 dataFieldSimple.$input.val('4').trigger('input')
-                expect(dataFieldSimple.attrs.value).toBe(4)
+                expect(dataFieldSimple.attrs.select).toBe(4)
                 dataFieldSimple.$input.val('[4,20]').trigger('input')
-                expect(dataFieldSimple.attrs.value).toEqual([4,20])
+                expect(dataFieldSimple.attrs.select).toEqual([4,20])
                 dataFieldSimple.$input.val('{"very":"cool"}').trigger('input')
-                expect(dataFieldSimple.attrs.value).toEqual({ very: 'cool' })
+                expect(dataFieldSimple.attrs.select).toEqual({ very: 'cool' })
             })
         })
 
 
-        describe('.submitValue', function() {
+        describe('.value', function() {
+
+            it('is the string representation of the select', function() {
+                var dataField = shadow.DataField.create({
+                    $el: $('<div />'),
+                    attrs: {
+                        select: true
+                    }
+                })
+                expect(dataField.attrs.value).toBe('true')
+            })
+        })
+
+
+        describe('.hiddenInput', function() {
 
             it('creates a hidden input for non-inputs', function() {
                 var dataField = shadow.DataField.create({
                     $el: $('<div />'),
                     attrs: {
-                        submitValue: true
+                        hiddenInput: true
                     }
                 })
                 expect(dataField.$input && dataField.$input[0].nodeName).toBe('INPUT')
-            })
-
-            it('ensures there’s an input element to submit the value', function() {
-                var dataFieldAutoHidden = shadow.DataField.create({
-                    $el: $('<div />'),
-                    attrs: {
-                        submitValue: true
-                    }
-                })
-                var inputEl = dataFieldAutoHidden.$input && dataFieldAutoHidden.$input[0]
-                expect(inputEl.nodeName).toBe('INPUT')
-                expect(inputEl.type).toBe('hidden')
             })
         })
 
@@ -480,19 +659,19 @@ describe('shadow.DataField', function() {
                             return romans[value]
                         }
                     },
-                    formatUnit: function(value) {
-                        value = value.roman
-                        for ( var numeral in romans ) {
-                            if ( value === romans[numeral] ) {
-                                value = numeral
-                                break
-                            }
-                        }
-                        return this._super(value)
-                    }
+                    // formatUnit: function(value) {
+                    //     value = value.roman
+                    //     for ( var numeral in romans ) {
+                    //         if ( value === romans[numeral] ) {
+                    //             value = numeral
+                    //             break
+                    //         }
+                    //     }
+                    //     return this._super(value)
+                    // }
                 })
                 var parsedValue = dataField.parse('value: II - value: IV')
-                expect(parsedValue).toEqual([ 2, 4 ])
+                expect(parsedValue).toEqual([ { roman: 'II' }, { roman: 'IV' } ])
             })
 
             it('is used to format individual units of value within multiple values', function() {
@@ -534,19 +713,26 @@ describe('shadow.DataField', function() {
                             return romans[value]
                         }
                     },
-                    formatUnit: function(value) {
-                        value = value.roman
-                        for ( var numeral in romans ) {
-                            if ( value === romans[numeral] ) {
-                                value = numeral
-                                break
-                            }
-                        }
-                        return this._super(value)
-                    }
+                    // formatUnit: function(value) {
+                    //     value = value.roman
+                    //     for ( var numeral in romans ) {
+                    //         if ( value === romans[numeral] ) {
+                    //             value = numeral
+                    //             break
+                    //         }
+                    //     }
+                    //     return this._super(value)
+                    // }
                 })
                 var parsedValue = dataField.parse('value: IV, value: II - value: III, value: I - value: IV, value: V, value: I - value: II')
-                expect(parsedValue).toEqual([ 4, [2, 3], [1, 4], 5, [1, 2] ])
+                var expectedValue = [
+                    { roman: 'IV' },
+                    [ { roman: 'II' }, { roman: 'III' } ],
+                    [ { roman: 'I' }, { roman: 'IV' } ],
+                    { roman: 'V' },
+                    [ { roman: 'I' }, { roman: 'II' } ]
+                ]
+                expect(parsedValue).toEqual(expectedValue)
             })
 
             it('can have escaped characters', function() {
@@ -675,15 +861,16 @@ describe('shadow.DataField', function() {
                     return val.split(' ')[1]
                 }
             },
-            formatUnit: function(hash) {
-                return this._super(hash.Y + ' ' + hash.M)
-            }
+            // formatUnit: function(hash) {
+            //     return this._super(hash.Y + ' ' + hash.M)
+            // }
         })
 
 
         it('is a map of formatting rules to parse values', function() {
             var parsedValue = dataField.parse('why:neat em:stuff')
-            expect(parsedValue).toBe('neat stuff')
+            // expect(parsedValue).toBe('neat stuff')
+            expect(parsedValue).toEqual({ Y: 'neat', M: 'stuff' })
         })
 
 

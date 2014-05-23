@@ -1,6 +1,6 @@
 
 /*!
- * Shadow UI v0.6.0, 2014/05/19
+ * Shadow UI v0.6.0, 2014/05/22
  * By Amsul, http://amsul.ca
  * Hosted on http://amsul.github.io/shadow-ui
  * Licensed under MIT
@@ -471,8 +471,10 @@ shadow.Object.extend({
         Object.seal(element.attrs);
         // Attach the relevant shadow element nodes.
         attachShadowNodes(element);
+        // Build the template content.
+        buildTemplate(element);
         // Define the relationship between the element and the host.
-        defineHostOwnership($element[0], element.$host && element.$host[0]);
+        defineHostOwnership($element[0], element.$host && element.$host[0], $element[0].id || element.id);
         // Return the new element object.
         return element;
     },
@@ -546,13 +548,19 @@ function attachShadowNodes(element) {
     if (!element.$host && !nodeName.match(/^INPUT$/)) {
         _.define(element, "$host", element.$el);
     }
+    if (!element.$host) {
+        _.define(element, "$host", $("<div>"));
+        element.$el.after(element.$host);
+    }
+}
+
+/**
+ * Build out the template contents.
+ */
+function buildTemplate(element) {
+    var template = element.template;
     // Insert the template if there is one.
-    if (element.template) {
-        if (!element.$host) {
-            _.define(element, "$host", $("<div>"));
-            element.$el.after(element.$host);
-        }
-        var template = element.template;
+    if (template) {
         if (typeof template == "function") {
             template = element.template();
         }
@@ -566,10 +574,10 @@ function attachShadowNodes(element) {
 /**
  * Define the relationship between the element and the host.
  */
-function defineHostOwnership(elementNode, hostNode) {
+function defineHostOwnership(elementNode, hostNode, id) {
     if (hostNode && hostNode !== elementNode) {
         if (!hostNode.id) {
-            hostNode.id = "host_" + elementNode.id;
+            hostNode.id = "host_" + id;
         }
         _.aria(elementNode, "owns", hostNode.id);
     }

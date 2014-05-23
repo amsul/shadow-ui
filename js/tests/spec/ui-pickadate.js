@@ -970,7 +970,7 @@ describe('shadow.Pickadate', function() {
             expect(attrs.select).toEqual(today)
         })
 
-        it('binds clicks to reset the scope to dates', function() {
+        it('binds clicks to reset the scope', function() {
             var pickadate = shadow.Pickadate.create({
                 $el: $('<div />')
             })
@@ -978,7 +978,7 @@ describe('shadow.Pickadate', function() {
             var buttonToday = pickadate.createButtonToday()
             expect(attrs.show).toBe(null)
             buttonToday.click()
-            expect(attrs.show).toBe('dates')
+            expect(attrs.show).toBe(null)
         })
     })
 
@@ -1008,7 +1008,7 @@ describe('shadow.Pickadate', function() {
             expect(attrs.select).toBe(null)
         })
 
-        it('binds clicks to reset the scope to dates', function() {
+        it('binds clicks to reset the scope', function() {
             var pickadate = shadow.Pickadate.create({
                 $el: $('<div />')
             })
@@ -1016,7 +1016,7 @@ describe('shadow.Pickadate', function() {
             var buttonClear = pickadate.createButtonClear()
             expect(attrs.show).toBe(null)
             buttonClear.click()
-            expect(attrs.show).toBe('dates')
+            expect(attrs.show).toBe(null)
         })
     })
 

@@ -179,10 +179,10 @@ shadow('pickadate', {
 
         pickadate._super()
 
-        // Set the initial “today”.
+        // Set the starting “today”.
         attrs.today = intoDateAttr(new Date())
 
-        // Set the initial limit dates.
+        // Set the starting limit dates.
         if ( attrs.min ) {
             attrs.min = intoDateAttr(attrs.min)
         }
@@ -190,30 +190,21 @@ shadow('pickadate', {
             attrs.max = intoDateAttr(attrs.max)
         }
 
-        // Set the initial value.
-        if ( attrs.value ) {
-            var selection = pickadate.parse(attrs.value)
-            if ( selection ) {
-                attrs.select = selection
-            }
-        }
-
-        // Set the initial select.
+        // Set the starting select.
         if ( attrs.select ) {
             attrs.select = intoDateAttr(attrs.select)
             attrs.highlight = intoDateAttr(attrs.select)
-            attrs.value = pickadate.format(attrs.select)
         }
 
-        // Set the initial highlight.
-        if ( attrs.highlight ) {
+        // Set the starting highlight.
+        else if ( attrs.highlight ) {
             attrs.highlight = intoDateAttr(attrs.highlight)
         }
         else {
             attrs.highlight = intoDateAttr(attrs.today)
         }
 
-        // Set the initial view.
+        // Set the starting view.
         if ( attrs.view ) {
             attrs.view = intoDateAttr([attrs.view[0], attrs.view[1], 1])
         }
@@ -248,10 +239,6 @@ shadow('pickadate', {
             var value = event.value
             if ( value ) {
                 attrs.highlight = value
-                attrs.value = pickadate.format(value)
-            }
-            else {
-                attrs.value = ''
             }
         })
 
@@ -644,8 +631,8 @@ shadow('pickadate', {
         }, pickadate.dict.today)
         $(todayNode).on('click', function() {
             attrs.select = attrs.today
-            if ( !attrs.show || attrs.show != 'dates' ) {
-                attrs.show = 'dates'
+            if ( !attrs.show ) {
+                attrs.show = null
             }
         })
         return todayNode
@@ -661,8 +648,8 @@ shadow('pickadate', {
         }, pickadate.dict.clear)
         $(clearNode).on('click', function() {
             attrs.select = null
-            if ( !attrs.show || attrs.show != 'dates' ) {
-                attrs.show = 'dates'
+            if ( !attrs.show ) {
+                attrs.show = null
             }
         })
         return clearNode
@@ -692,7 +679,7 @@ shadow('pickadate', {
         var grid = el(classes.container,
             el({ name: 'table', klass: classes.grid }, children))
 
-        // Set the initial hidden state.
+        // Set the starting hidden state.
         updateHiddenState(attrs.show)
 
         // Bind the update to reveal the grid.

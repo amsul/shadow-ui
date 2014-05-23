@@ -17,7 +17,7 @@ describe('shadow', function() {
     })
 
     it('extends any of the registered ui interfaces', function() {
-        $dom.append('<input data-ui="input-component" data-ui-allow-multiple="true" data-ui-value="[4, 20, 316, 6969]">')
+        $dom.append('<input data-ui="input-component" data-ui-allow-multiple="true" data-ui-select="[4, 20, 316, 6969]">')
         expect(shadow.InputComponent).toBe(undefined)
         shadow('input-component', {
             extend: 'data-field',
@@ -45,7 +45,7 @@ describe('shadow', function() {
         expect(shadowInput.anotherThing).toBe(false)
         expect(shadowInput.attrs.something).toBe(true)
         expect(shadowInput.attrs.allowMultiple).toBe(true)
-        expect(shadowInput.attrs.value).toEqual([ 4, 20, 316, 6969 ])
+        expect(shadowInput.attrs.select).toEqual([ 4, 20, 316, 6969 ])
 
         $dom.empty()
     })

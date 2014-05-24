@@ -709,7 +709,7 @@ shadow('pickadate', {
 
         var yearsNode = el({
             name: 'th',
-            attrs: { scope: 'col', colspan: 5 }
+            attrs: { scope: 'col', colspan: 4 }
         }, decadeRange(year))
 
         pickadate.on('set:view.' + pickadate.id, function(event) {

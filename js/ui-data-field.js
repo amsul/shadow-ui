@@ -29,6 +29,10 @@ shadow('data-field', {
     },
     formats: null,
 
+    classNames: {
+        input: 'input',
+    },
+
 
     /**
      * Setup the attrs before everything gets sealed
@@ -110,6 +114,8 @@ shadow('data-field', {
                     'the `$el` must be an input element.')
             }
 
+            dataField.$input.addClass(dataField.classNames.input)
+
             // Set the starting element value.
             if ( attrs.value ) {
                 dataField.$input.val(attrs.value)
@@ -127,6 +133,13 @@ shadow('data-field', {
             })
 
         }
+
+        // Whenever the format is updated, the value should be re-formatted.
+        dataField.on('set:format.' + dataField.id + ' set:formatRange.' + dataField.id, function() {
+            if ( attrs.select ) {
+                attrs.value = dataField.format(attrs.select)
+            }
+        })
 
         // Return the new data field object.
         return dataField

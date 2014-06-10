@@ -28,7 +28,41 @@ describe('shadow.Pickadate', function() {
             expect(pickadate.attrs.view).toEqual(view)
         })
 
-        it('binds updates to the view to the correct date', function() {
+        it('sets up the select and highlight if there is a select attribute', function() {
+            var pickadate = shadow.Pickadate.create({
+                $el: $('<div />'),
+                attrs: {
+                    select: [2003, 2, 13]
+                }
+            })
+            expect(pickadate.attrs.select).toEqual([2003, 2, 13])
+            expect(pickadate.attrs.highlight).toEqual([2003, 2, 13])
+        })
+
+        it('sets up the select and highlight with ranges if there is a select attribute', function() {
+
+            var pickadate = shadow.Pickadate.create({
+                $el: $('<div />'),
+                attrs: {
+                    allowRange: true,
+                    select: [[2003, 2, 13]]
+                }
+            })
+            expect(pickadate.attrs.select).toEqual([[2003, 2, 13]])
+            expect(pickadate.attrs.highlight).toEqual([2003, 2, 13])
+
+            pickadate = shadow.Pickadate.create({
+                $el: $('<div />'),
+                attrs: {
+                    allowRange: true,
+                    select: [[2003, 2, 13], [2005, 4, 25]]
+                }
+            })
+            expect(pickadate.attrs.select).toEqual([[2003, 2, 13], [2005, 4, 25]])
+            expect(pickadate.attrs.highlight).toEqual([2005, 4, 25])
+        })
+
+        it('updates the view to the correct date when set', function() {
             var pickadate = shadow.Pickadate.create({
                 $el: $('<div />')
             })
@@ -36,7 +70,7 @@ describe('shadow.Pickadate', function() {
             expect(pickadate.attrs.view[2]).toBe(1)
         })
 
-        it('binds updates to the highlight to cascade to update the view', function() {
+        it('updates the highlight to cascade to update the view', function() {
             var pickadate = shadow.Pickadate.create({
                 $el: $('<div />')
             })
@@ -46,7 +80,7 @@ describe('shadow.Pickadate', function() {
             expect(pickadate.attrs.view).toEqual(view)
         })
 
-        it('binds updates to the select to cascade to update the highlight', function() {
+        it('updates the select to cascade to update the highlight', function() {
             var pickadate = shadow.Pickadate.create({
                 $el: $('<div />')
             })
@@ -56,7 +90,7 @@ describe('shadow.Pickadate', function() {
             expect(pickadate.attrs.highlight).toEqual(date)
         })
 
-        it('binds updates to the select to cascade to update the value', function() {
+        it('updates the select to cascade to update the value', function() {
             var pickadate = shadow.Pickadate.create({
                 $el: $('<div />')
             })
@@ -67,12 +101,73 @@ describe('shadow.Pickadate', function() {
             pickadate.attrs.select = null
             expect(pickadate.attrs.value).toBe('')
         })
+
+        it('updates the select with ranges while sorting the range', function() {
+
+            var pickadate = shadow.Pickadate.create({
+                $el: $('<div />'),
+                attrs: {
+                    allowRange: true
+                }
+            })
+
+            var fromDate = [2013, 3, 10]
+            var toDate = [2013, 5, 20]
+            pickadate.attrs.select = [fromDate, toDate]
+            expect(pickadate.attrs.value).toEqual('10 April, 2013 - 20 June, 2013')
+
+            fromDate = [2010, 4, 8]
+            toDate = [2010, 7, 23]
+            pickadate.attrs.select = [toDate, fromDate]
+            expect(pickadate.attrs.value).toEqual('8 May, 2010 - 23 August, 2010')
+        })
+
+        it('updates the select with ranges as the same date into a single value', function() {
+
+            var pickadate = shadow.Pickadate.create({
+                $el: $('<div />'),
+                attrs: {
+                    allowRange: true
+                }
+            })
+
+            var fromDate = [2013, 3, 20]
+            var toDate = [2013, 3, 20]
+            pickadate.attrs.select = [fromDate, toDate]
+            expect(pickadate.attrs.select).toEqual([fromDate])
+            expect(pickadate.attrs.value).toEqual('20 April, 2013')
+
+            var date = [2010, 8, 14]
+            pickadate.attrs.select = [date]
+            expect(pickadate.attrs.select).toEqual([date])
+            expect(pickadate.attrs.value).toEqual('14 September, 2010')
+        })
+
+        it('updates the select with ranges to cascade to update the highlight', function() {
+
+            var pickadate = shadow.Pickadate.create({
+                $el: $('<div />'),
+                attrs: {
+                    allowRange: true
+                }
+            })
+
+            var fromDate = [2013, 3, 10]
+            var toDate = [2013, 5, 20]
+            pickadate.attrs.select = [fromDate, toDate]
+            expect(pickadate.attrs.highlight).toEqual(toDate)
+
+            fromDate = [2010, 4, 8]
+            toDate = [2010, 7, 23]
+            pickadate.attrs.select = [toDate, fromDate]
+            expect(pickadate.attrs.highlight).toEqual(toDate)
+        })
     })
 
 
     describe('.create()', function() {
 
-        it('creates a pickadate object with clicks bound to select a value', function() {
+        it('binds click to select a value', function() {
             var pickadate = shadow.Pickadate.create({
                 $el: $('<div />')
             })
@@ -82,7 +177,7 @@ describe('shadow.Pickadate', function() {
             expect(pickadate.attrs.select).not.toBe(null)
         })
 
-        it('creates a pickadate object with clicks bound to highlight a value', function() {
+        it('binds clicks to highlight a value', function() {
             var pickadate = shadow.Pickadate.create({
                 $el: $('<div />')
             })
@@ -90,6 +185,22 @@ describe('shadow.Pickadate', function() {
             var highlight = pickadate.attrs.highlight.slice(0)
             $highlightor.first().trigger('click')
             expect(pickadate.attrs.highlight).not.toEqual(highlight)
+        })
+
+        it('binds shift + clicks to select a range value', function() {
+            var pickadate = shadow.Pickadate.create({
+                $el: $('<div />'),
+                attrs: {
+                    allowRange: true
+                }
+            })
+            pickadate.$host.find('[data-select]').eq(22).trigger('click')
+            expect(pickadate.attrs.select.length).toBe(1)
+            var click = $.Event('click', {
+                shiftKey: true
+            })
+            pickadate.$host.find('[data-select]').eq(24).trigger(click)
+            expect(pickadate.attrs.select.length).toBe(2)
         })
     })
 
@@ -399,7 +510,7 @@ describe('shadow.Pickadate', function() {
                 }
             })
             var date = pickadate.nextEnabledDate([2014, 4, 1])
-            expect(date).toEqual([2014, 4, 4])
+            expect(date).toEqual(new Date(2014, 4, 4))
         })
 
         it('checks if a dates is above the max and returns the next enabled one', function() {
@@ -410,7 +521,7 @@ describe('shadow.Pickadate', function() {
                 }
             })
             var date = pickadate.nextEnabledDate([2014, 5, 1])
-            expect(date).toEqual([2014, 4, 24])
+            expect(date).toEqual(new Date(2014, 4, 24))
         })
 
         it('checks if a date exists in a month and returns the next existing one', function() {
@@ -418,7 +529,75 @@ describe('shadow.Pickadate', function() {
                 $el: $('<div />')
             })
             var date = pickadate.nextEnabledDate([2014, 1, 31])
-            expect(date).toEqual([2014, 1, 28])
+            expect(date).toEqual(new Date(2014, 1, 28))
+        })
+    })
+
+
+    describe('.isSelected()', function() {
+
+        it('returns if a date is selected or not', function() {
+            var pickadate = shadow.Pickadate.create({
+                $el: $('<div />'),
+                attrs: {
+                    select: [2013, 3, 4]
+                }
+            })
+            var isSelected = pickadate.isSelected([2013, 3, 4])
+            expect(isSelected).toBe(true)
+            isSelected = pickadate.isSelected([2012, 4, 7])
+            expect(isSelected).toBe(false)
+        })
+
+        it('returns if a date is selected or not given a comparison scope', function() {
+            var pickadate = shadow.Pickadate.create({
+                $el: $('<div />'),
+                attrs: {
+                    select: [2013, 3, 4]
+                }
+            })
+            var isSelected = pickadate.isSelected([2013, 3, 14], 'month')
+            expect(isSelected).toBe(true)
+            isSelected = pickadate.isSelected([2014, 3, 14], 'month')
+            expect(isSelected).toBe(false)
+            isSelected = pickadate.isSelected([2013, 4, 4], 'year')
+            expect(isSelected).toBe(true)
+            isSelected = pickadate.isSelected([2014, 3, 4], 'year')
+            expect(isSelected).toBe(false)
+        })
+
+        it('returns if a date is selected within a range or not', function() {
+            var pickadate = shadow.Pickadate.create({
+                $el: $('<div />'),
+                attrs: {
+                    allowRange: true,
+                    select: [[2013, 3, 4], [2013, 5, 14]]
+                }
+            })
+            var isSelected = pickadate.isSelected([2013, 4, 7])
+            expect(isSelected).toBe(true)
+            isSelected = pickadate.isSelected([2013, 3, 2])
+            expect(isSelected).toBe(false)
+            isSelected = pickadate.isSelected([2013, 5, 22])
+            expect(isSelected).toBe(false)
+        })
+
+        it('returns if a date is selected within a range or not given a comparison scope', function() {
+            var pickadate = shadow.Pickadate.create({
+                $el: $('<div />'),
+                attrs: {
+                    allowRange: true,
+                    select: [[2013, 3, 4], [2013, 5, 14]]
+                }
+            })
+            var isSelected = pickadate.isSelected([2013, 4, 7], 'month')
+            expect(isSelected).toBe(true)
+            isSelected = pickadate.isSelected([2012, 4, 7], 'month')
+            expect(isSelected).toBe(false)
+            isSelected = pickadate.isSelected([2013, 2, 7], 'year')
+            expect(isSelected).toBe(true)
+            isSelected = pickadate.isSelected([2012, 4, 7], 'year')
+            expect(isSelected).toBe(false)
         })
     })
 
@@ -456,13 +635,14 @@ describe('shadow.Pickadate', function() {
 
     describe('.createBody()', function() {
 
-        it('creates a main body container element with 3 type of grids', function() {
+        it('creates a “focusable” body container element with 3 type of grids', function() {
             var pickadate = shadow.Pickadate.create({
                 $el: $('<div />')
             })
             var classes = pickadate.classNames
             var body = pickadate.createBody()
             expect(body.nodeName).toBe('DIV')
+            expect(body.tabIndex).toBe(0)
             expect(body.className).toBe(classes.body)
             var buttons = body.querySelectorAll('.' + classes.grid)
             expect(buttons.length).toBe(3)
@@ -970,6 +1150,23 @@ describe('shadow.Pickadate', function() {
             expect(attrs.select).toEqual(today)
         })
 
+        it('binds clicks to set the selection as “today” while ranges are allowed', function() {
+            var pickadate = shadow.Pickadate.create({
+                $el: $('<div />'),
+                attrs: {
+                    allowRange: true
+                }
+            })
+            var attrs = pickadate.attrs
+            var buttonToday = pickadate.createButtonToday()
+            expect(attrs.select).toBe(null)
+            buttonToday.click()
+            expect(attrs.select).not.toBe(null)
+            var today = new Date()
+            today = [today.getFullYear(), today.getMonth(), today.getDate()]
+            expect(attrs.select).toEqual([today])
+        })
+
         it('binds clicks to reset the scope', function() {
             var pickadate = shadow.Pickadate.create({
                 $el: $('<div />')
@@ -1003,7 +1200,22 @@ describe('shadow.Pickadate', function() {
             })
             var attrs = pickadate.attrs
             var buttonClear = pickadate.createButtonClear()
-            expect(attrs.select).toEqual([2014, 3, 4])
+            expect(attrs.select).not.toBe(null)
+            buttonClear.click()
+            expect(attrs.select).toBe(null)
+        })
+
+        it('binds clicks to remove the selection while ranges are allowed', function() {
+            var pickadate = shadow.Pickadate.create({
+                $el: $('<div />'),
+                attrs: {
+                    allowRange: true,
+                    select: [[2014, 3, 4]]
+                }
+            })
+            var attrs = pickadate.attrs
+            var buttonClear = pickadate.createButtonClear()
+            expect(attrs.select).not.toBe(null)
             buttonClear.click()
             expect(attrs.select).toBe(null)
         })
@@ -1023,12 +1235,11 @@ describe('shadow.Pickadate', function() {
 
     describe('.createGrid()', function() {
 
-        it('creates a “focusable” grid container', function() {
+        it('creates a grid container', function() {
             var pickadate = shadow.Pickadate.create({
                 $el: $('<div />')
             })
             var grid = pickadate.createGrid()
-            expect(grid.tabIndex).toBe(0)
             expect(grid.childNodes[0].nodeName).toBe('TABLE')
         })
 
@@ -1257,6 +1468,31 @@ describe('shadow.Pickadate', function() {
             expect(disabled[1].innerText).toBe('Feb')
             expect(disabled[2].innerText).toBe('Mar')
             expect(disabled[3].innerText).toBe('Apr')
+        })
+
+        it('shifts the date if the target month doesn’t have as many days as the highlight month', function() {
+
+            var pickadate = shadow.Pickadate.create({
+                $el: $('<div />'),
+                attrs: {
+                    highlight: [2013, 2, 31]
+                }
+            })
+
+            var gridBodyMonths = pickadate.createGridBodyMonths()
+            var months = gridBodyMonths.querySelectorAll('td')
+            var month = months[2]
+            var highlight = +month.dataset.highlight
+            var date = new Date(highlight)
+            expect(date.getDate()).toBe(31)
+
+            pickadate.attrs.highlight = [2013, 1, 31]
+            gridBodyMonths = pickadate.createGridBodyMonths()
+            months = gridBodyMonths.querySelectorAll('td')
+            month = months[1]
+            highlight = +month.dataset.highlight
+            date = new Date(highlight)
+            expect(date.getDate()).toBe(28)
         })
     })
 

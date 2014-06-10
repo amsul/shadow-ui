@@ -176,6 +176,7 @@ shadow('pickadate', {
         var pickadate = this
         var attrs = pickadate.attrs
         var intoDateAttr = pickadate.intoDateAttr
+        var compare = pickadate.compare
 
         pickadate._super()
 
@@ -192,8 +193,16 @@ shadow('pickadate', {
 
         // Set the starting select.
         if ( attrs.select ) {
-            attrs.select = intoDateAttr(attrs.select)
-            attrs.highlight = intoDateAttr(attrs.select)
+            if ( attrs.allowRange ) {
+                attrs.select = attrs.select.map(function(value) {
+                    return intoDateAttr(value)
+                })
+                attrs.highlight = intoDateAttr(attrs.select[attrs.select.length - 1])
+            }
+            else {
+                attrs.select = intoDateAttr(attrs.select)
+                attrs.highlight = intoDateAttr(attrs.select)
+            }
         }
 
         // Set the starting highlight.
@@ -214,7 +223,33 @@ shadow('pickadate', {
 
         // Whenever the select is assigned, format it accordingly.
         pickadate.on('assign:select.' + pickadate.id, function(event) {
-            event.value = intoDateAttr(event.value)
+            var value = event.value
+            if ( value && attrs.allowRange ) {
+                if ( !Array.isArray(value) ) {
+                    value = [value]
+                }
+                if ( value.length > 1 ) {
+                    if ( compare(value[0], value[1]) ) {
+                        value.pop()
+                    }
+                    else {
+                        var fromValue = value[0]
+                        var toValue = value[1]
+                        if ( compare(fromValue, 'greater', toValue) ) {
+                            fromValue = value[1]
+                            toValue = value[0]
+                        }
+                        value = [fromValue, toValue]
+                    }
+                }
+                value = value.map(function(valueItem) {
+                    return intoDateAttr(valueItem)
+                })
+            }
+            else {
+                value = intoDateAttr(value)
+            }
+            event.value = value
         })
 
         // Whenever the highlight is assigned, format it accordingly.
@@ -238,6 +273,9 @@ shadow('pickadate', {
         pickadate.on('set:select.' + pickadate.id, function(event) {
             var value = event.value
             if ( value ) {
+                if ( attrs.allowRange ) {
+                    value = value[value.length - 1]
+                }
                 attrs.highlight = value
             }
         })
@@ -250,13 +288,6 @@ shadow('pickadate', {
         // Whenever the max is updated, the highlight should be updated.
         pickadate.on('set:max.' + pickadate.id, function(event) {
             attrs.highlight = attrs.highlight
-        })
-
-        // Whenever the format is updated, the value should be re-formatted.
-        pickadate.on('set:format.' + pickadate.id, function(event) {
-            if ( attrs.select ) {
-                attrs.value = pickadate.format(attrs.select)
-            }
         })
 
         return pickadate
@@ -275,7 +306,22 @@ shadow('pickadate', {
         pickadate.$host.on('click', '[data-select]', function(event) {
             var target = event.target
             var value = $(target).data('select')
-            attrs.select = new Date(value)
+            if ( attrs.allowRange && event.shiftKey ) {
+                attrs.select = [
+                    attrs.select ? attrs.select[0] : attrs.highlight,
+                    new Date(value)
+                ]
+            }
+            else {
+                attrs.select = new Date(value)
+            }
+        })
+
+        // Prevent caret selection from occurring.
+        pickadate.$host.on('mousedown', '[data-select]', function(event) {
+            if ( event.shiftKey ) {
+                event.preventDefault()
+            }
         })
 
         // Bind updating the highlight when clicked.
@@ -365,6 +411,9 @@ shadow('pickadate', {
             one.setDate(1)
             two.setDate(1)
         }
+        else if ( comparison.match(/^date ?/) ) {
+            comparison = comparison.replace(/^date ?/, '')
+        }
 
         if ( _.isTypeOf(one, 'date') ) {
             one = one.getTime()
@@ -448,9 +497,31 @@ shadow('pickadate', {
             targetDate = new Date(year, month, date)
         }
 
-        value = [targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate()]
+        return targetDate
+    },
 
-        return value
+    isSelected: function(date, comparison) {
+
+        var pickadate = this
+        var attrs = pickadate.attrs
+        var compare = pickadate.compare
+
+        comparison = comparison || 'date'
+
+        if ( attrs.allowRange ) {
+            if ( !attrs.select ) {
+                return false
+            }
+            if ( attrs.select.length === 1 ) {
+                return compare(attrs.select[0], comparison, date)
+            }
+            var lowerRange = attrs.select[0]
+            var upperRange = attrs.select[1]
+            return compare(lowerRange, comparison + ' lesser equal', date) &&
+                compare(upperRange, comparison + ' greater equal', date)
+        }
+
+        return compare(attrs.select, comparison, date)
     },
 
 
@@ -474,7 +545,10 @@ shadow('pickadate', {
 
         var pickadate = this
 
-        var body = el({ klass: pickadate.classNames.body }, [
+        var body = el({
+            klass: pickadate.classNames.body,
+            attrs: { tabIndex: 0 }
+        }, [
             pickadate.createGrid(null, [
                 pickadate.createGridHeadDates(),
                 pickadate.createGridBodyDates()
@@ -630,8 +704,12 @@ shadow('pickadate', {
             attrs: { type: 'button' }
         }, pickadate.dict.today)
         $(todayNode).on('click', function() {
-            attrs.select = attrs.today
-            if ( !attrs.show ) {
+            var value = attrs.today
+            if ( attrs.allowRange ) {
+                value = [value]
+            }
+            attrs.select = value
+            if ( attrs.show ) {
                 attrs.show = null
             }
         })
@@ -648,7 +726,7 @@ shadow('pickadate', {
         }, pickadate.dict.clear)
         $(clearNode).on('click', function() {
             attrs.select = null
-            if ( !attrs.show ) {
+            if ( attrs.show ) {
                 attrs.show = null
             }
         })
@@ -665,14 +743,7 @@ shadow('pickadate', {
         var attrs = pickadate.attrs
         var classes = pickadate.classNames
         var updateHiddenState = function(value) {
-            if ( value === scope ) {
-                grid.hidden = false
-                grid.tabIndex = 0
-            }
-            else {
-                grid.hidden = true
-                grid.removeAttribute('tabindex')
-            }
+            grid.hidden = value !== scope
         }
 
         // Create the grid container holder.
@@ -798,7 +869,7 @@ shadow('pickadate', {
                 name: 'td',
                 klass: classes.gridCell +
                     ' ' + (compare(attrs.view, 'decade', date) ? classes.infocus : classes.outfocus) +
-                    (compare(attrs.select, 'year', dateTime) ? ' ' + classes.selected : '') +
+                    (pickadate.isSelected(dateTime, 'year') ? ' ' + classes.selected : '') +
                     (compare(attrs.highlight, 'year', dateTime) ? ' ' + classes.highlighted : '') +
                     (compare(attrs.today, 'year', dateTime) ? ' ' + classes.now : '') +
                     (isDisabled ? ' ' + classes.disabled : '')
@@ -853,7 +924,13 @@ shadow('pickadate', {
         var createGridCellMonth = function(month) {
 
             var months = dict.monthsShort
-            var date = new Date(attrs.view[0], month, attrs.highlight[2])
+            var targetDate = [attrs.view[0], month, attrs.highlight[2]]
+            var date = new Date(targetDate[0], targetDate[1], targetDate[2])
+
+            if ( date.getMonth() !== month ) {
+                date = pickadate.nextEnabledDate(targetDate)
+            }
+
             var dateTime = date.getTime()
 
             var isDisabled = compare(attrs.min, 'month greater', dateTime) ||
@@ -862,7 +939,7 @@ shadow('pickadate', {
             var monthNode = el({
                 name: 'td',
                 klass: classes.gridCell +
-                    (compare(attrs.select, 'month', dateTime) ? ' ' + classes.selected : '') +
+                    (pickadate.isSelected(dateTime, 'month') ? ' ' + classes.selected : '') +
                     (compare(attrs.highlight, 'month', dateTime) ? ' ' + classes.highlighted : '') +
                     (compare(attrs.today, 'month', dateTime) ? ' ' + classes.now : '') +
                     (isDisabled ? ' ' + classes.disabled : '')
@@ -923,7 +1000,7 @@ shadow('pickadate', {
                 name: 'td',
                 klass: classes.gridCell +
                     ' ' + (attrs.view[1] === date.getMonth() ? classes.infocus : classes.outfocus) +
-                    (compare(attrs.select, dateTime) ? ' ' + classes.selected : '') +
+                    (pickadate.isSelected(dateTime) ? ' ' + classes.selected : '') +
                     (compare(attrs.highlight, dateTime) ? ' ' + classes.highlighted : '') +
                     (compare(attrs.today, dateTime) ? ' ' + classes.now : '') +
                     (isDisabled ? ' ' + classes.disabled : '')

@@ -110,6 +110,67 @@ describe('shadow.DataField', function() {
             dataField.attrs.select = 'hi'
             expect(dataField.attrs.value).toBe('HI hi')
         })
+
+        it('updates the value when the format is set', function() {
+            var dataField = shadow.DataField.create({
+                $el: $('<div />'),
+                attrs: {
+                    format: 'y',
+                    value: 'hi'
+                },
+                formats: {
+                    Y: function(val, isParsing) {
+                        if ( isParsing ) {
+                            return val
+                        }
+                        val = val.y || val.Y
+                        return val.toUpperCase()
+                    },
+                    y: function(val, isParsing) {
+                        if ( isParsing ) {
+                            return val
+                        }
+                        val = val.Y || val.y
+                        return val
+                    }
+                }
+            })
+            expect(dataField.attrs.value).toBe('hi')
+            dataField.attrs.format = 'Y'
+            expect(dataField.attrs.value).toBe('HI')
+        })
+
+        it('updates the value when the range format is set', function() {
+            var dataField = shadow.DataField.create({
+                $el: $('<div />'),
+                attrs: {
+                    allowRange: true,
+                    format: 'y',
+                    select: [{ y: 'hi' }, { Y: 'THERE' }]
+                },
+                formats: {
+                    Y: function(val, isParsing) {
+                        if ( isParsing ) {
+                            // var match = val.match(/[A-Z]+/)
+                            return/* match && match[0] || ''*/
+                        }
+                        val = val.y ? val.y.toUpperCase() : val.Y
+                        return val.toUpperCase()
+                    },
+                    y: function(val, isParsing) {
+                        if ( isParsing ) {
+                            // var match = val.match(/[a-z]+/)
+                            return/* match && match[0] || ''*/
+                        }
+                        val = val.Y ? val.Y.toLowerCase() : val.y
+                        return val
+                    }
+                }
+            })
+            expect(dataField.attrs.value).toBe('hi - there')
+            dataField.attrs.formatRange = 'from { to }.'
+            expect(dataField.attrs.value).toBe('from hi to there.')
+        })
     })
 
 

@@ -232,7 +232,10 @@ function buildTemplate(element) {
         if ( typeof template == 'function' ) {
             template = element.template()
         }
-        if ( typeof template != 'string' ) try {
+        if ( typeof template != 'string' &&
+            !(template instanceof Node) &&
+            !(template instanceof jQuery)
+        ) try {
             template = JSON.stringify(template)
         }
         catch (e) {}

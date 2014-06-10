@@ -1,6 +1,6 @@
 
 /*!
- * Shadow UI v0.6.0, 2014/05/22
+ * Shadow UI v0.6.0, 2014/05/29
  * By Amsul, http://amsul.ca
  * Hosted on http://amsul.github.io/shadow-ui
  * Licensed under MIT
@@ -564,7 +564,7 @@ function buildTemplate(element) {
         if (typeof template == "function") {
             template = element.template();
         }
-        if (typeof template != "string") try {
+        if (typeof template != "string" && !(template instanceof Node) && !(template instanceof jQuery)) try {
             template = JSON.stringify(template);
         } catch (e) {}
         element.$host.empty().html(template);

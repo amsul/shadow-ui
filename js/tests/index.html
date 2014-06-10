@@ -8,6 +8,8 @@
   <style>
     body {
       padding: 2.5% 5% 40%;
+      font-family: sans-serif;
+      font-weight: 100;
     }
     .summary .disabled {
       display: none;
@@ -18,17 +20,29 @@
       box-sizing: border-box;
     }
     .picker {
-      background: pink;
+      border: 1px solid #ccc;
+      background: #fff;
+      border-radius: 4px;
       padding: 10px;
+      min-width: 256px;
+      max-width: 420px;
     }
-    .picker__holder {
-      display: none;
-      background: grey;
-      margin-top: 5px;
-    }
-    .picker--opened .picker__holder {
+      .picker__holder {
+        display: none;
+      }
+      .picker--opened .picker__holder {
+        display: block;
+      }
+
+    .picker__input {
       display: block;
+      width: 420px;
+      margin: 0;
+      border: 1px solid #ccc;
+      padding: 8px 10px;
     }
+
+    .picker__button {}
     .picker__button--prev:after {
       content: "<";
     }
@@ -36,13 +50,24 @@
       content: ">";
     }
     .picker__button--scope {
-      width: 110px;
+      width: 140px;
+    }
+    .picker__button--disabled {
+      color: #ccc;
+      opacity: .75;
+    }
+
+    .picker__box {}
+    .picker__box:focus {
+      background: #f8f8f8;
+      outline: none;
     }
     .picker__box--body {
       position: relative;
-      height: 160px;
+      height: 280px;
       overflow: hidden;
     }
+
     .picker__container {
       position: absolute;
       z-index: 10;
@@ -61,42 +86,55 @@
       opacity: 0;
       max-height: 0;
       transition: -webkit-transform .125s ease-out,
-                  opacity .125s ease-out,
-                  max-height 0 .125s;
+        opacity .125s ease-out,
+        max-height 0 .125s;
       -webkit-transform: scale(1.125);
     }
+
     .picker__grid {
       width: 100%;
       height: 100%;
       border-spacing: 0;
-      border-collapse: collapse;
+      table-layout: fixed;
     }
-      .picker__grid th {
-        border-bottom: 1px solid #000;
+      .picker__grid-title {
+        font-size: 13px;
+        color: #999;
+        padding-bottom: .5em;
       }
       .picker__grid-cell {
         text-align: center;
+        border: 1px solid transparent;
+        padding: .5em .25em;
+        line-height: 1;
       }
-      .picker__grid-cell:hover:not(.picker__grid-cell--disabled) {
-        background: #eee;
+      .picker__grid-cell:hover:not(.picker__grid-cell--disabled):not(.picker__grid-cell--selected) {
+        background: #b1dcfb;
         cursor: default;
       }
       .picker__grid-cell--highlighted {
-        box-shadow: 0 0 1px 2px white;
+        border-color: #0089ec;
+        background: #b1dcfb;
       }
       .picker__grid-cell--selected {
         font-weight: bold;
-        color: #0089ec;
+        color: #fff;
+        border-color: #0089ec;
+        background: #0089ec;
       }
-      .picker__grid-cell--now:before {
-        content: '^';
-        font-size: 8px;
-        vertical-align: top;
-        font-weight: bold;
-        position: absolute;
-        margin-left: -8px;
+      .picker__grid-cell--now {
+        position: relative;
       }
-      .picker__button--disabled,
+        .picker__grid-cell--now:before {
+          content: " ";
+          position: absolute;
+          top: 2px;
+          right: 2px;
+          width: 0;
+          height: 0;
+          border-top: 0.5em solid #0059bc;
+          border-left: .5em solid transparent;
+        }
       .picker__grid-cell--disabled {
         color: #ccc;
         opacity: .75;
@@ -104,6 +142,7 @@
       .picker__grid-cell--outfocus {
         opacity: .25;
       }
+
   </style>
 </head>
 <body>
@@ -127,16 +166,14 @@
   <script src="spec/ui-picker.js"></script>
   <script src="spec/ui-pickadate.js"></script>
 
-  <input id="pickadate" type="text" value="21 May, 2014"
-    data-ui="pickadate" data-ui-opened="always">
+  <input id="pickadate" type="text" valuee="21 May, 2014"
+    data-ui="pickadate" data-ui-opened="always"
+    data-ui-allow-range="true">
 
   <script>
-    var pickadate = shadow.Pickadate.create({
+    window.pickadate = shadow.Pickadate.create({
       $el: $('#pickadate')
     })
-    setTimeout(function() {
-      pickadate.open()
-    }, 600)
   </script>
 
 </body>

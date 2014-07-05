@@ -20,13 +20,13 @@ describe('shadow', function() {
         $dom.append('<input data-ui="input-component" data-ui-allow-multiple="true" data-ui-select="[4, 20, 316, 6969]">')
         expect(shadow.InputComponent).toBe(undefined)
         shadow('input-component', {
-            extend: 'data-field',
+            extend: 'data-element',
             attrs: {
                 something: true
             },
             anotherThing: false
         })
-        expect(shadow.DataField.is('classOf', shadow.InputComponent)).toBe(true)
+        expect(shadow.DataElement.is('classOf', shadow.InputComponent)).toBe(true)
         expect(shadow.InputComponent.attrs.something).toBe(true)
         expect(shadow.InputComponent.anotherThing).toBe(false)
     })

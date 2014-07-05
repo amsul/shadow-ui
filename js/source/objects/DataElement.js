@@ -1,19 +1,11 @@
-(function(factory) {
-
-    // Register as an anonymous module.
-    if ( typeof define == 'function' && define.amd )
-        define(['shadow', 'jquery'], factory)
-
-    // Or using browser globals.
-    else factory(shadow, jQuery)
-
-}(function(shadow, $) { 'use strict';
 
 
 /**
  * Construct a data field object.
  */
-shadow('data-field', {
+shadow.Element.extend({
+
+    name: 'DataElement',
 
     $input: null,
 
@@ -550,5 +542,3 @@ function sliceUnit(string, afterString) {
     return valueMatch && valueMatch[1]
 }
 
-
-}));

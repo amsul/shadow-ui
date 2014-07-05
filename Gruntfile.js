@@ -46,7 +46,8 @@ module.exports = function( grunt ) {
                         'js/source/build.js',
                         'js/source/helpers.js',
                         'js/source/objects/Object.js',
-                        'js/source/objects/Element.js'
+                        'js/source/objects/Element.js',
+                        'js/source/objects/DataElement.js'
                     ]
                 }
             }
@@ -67,10 +68,7 @@ module.exports = function( grunt ) {
         // Unit test the library.
         jasmine: {
             src: [
-                'js/shadow.js',
-                'js/ui-data-field.js',
-                'js/ui-picker.js',
-                'js/ui-pickadate.js'
+                'js/shadow.js'
             ],
             options: {
                 specs: 'js/tests/spec/**/*.js',

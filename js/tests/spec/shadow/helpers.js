@@ -93,7 +93,7 @@ describe('shadow._', function() {
 
     describe('.el()', function() {
 
-        var el = shadow._.el
+        var el = _.el
 
         it('creates dom nodes', function() {
             var element = el()
@@ -131,6 +131,46 @@ describe('shadow._', function() {
             var textNode = el('', 'some text here')
             expect(textNode.nodeName).toBe('#text')
             expect(textNode.nodeValue).toBe('some text here')
+        })
+    })
+
+
+    describe('.indexIn()', function() {
+        it('returns the index of a unit within a collection', function() {
+            expect(_.indexIn([1, 3, 4, 6], 3)).toBe(1)
+            expect(_.indexIn([1, 3, 4, 6], 6)).toBe(3)
+            expect(_.indexIn([1, 3, 4, 6], 5)).toBe(-1)
+            expect(_.indexIn([1, 3, 4, 6], 0)).toBe(-1)
+        })
+        it('can be passed a comparator function to perform the match', function() {
+            var collection = [{ v: 1 }, { v: 3 }, { v: 8 }, { v: 9 }]
+            var comparator = function(unit, loopedUnit) {
+                return unit.v === loopedUnit.v
+            }
+            expect(_.indexIn(collection, { v: 3 }, comparator)).toBe(1)
+            expect(_.indexIn(collection, { v: 8 }, comparator)).toBe(2)
+            expect(_.indexIn(collection, { v: 7 }, comparator)).toBe(-1)
+            expect(_.indexIn(collection, { v: 0 }, comparator)).toBe(-1)
+        })
+    })
+
+
+    describe('.isWithin()', function() {
+        it('returns if a unit is within a collection', function() {
+            expect(_.isWithin([1, 3, 4, 6], 3)).toBe(true)
+            expect(_.isWithin([1, 3, 4, 6], 6)).toBe(true)
+            expect(_.isWithin([1, 3, 4, 6], 5)).toBe(false)
+            expect(_.isWithin([1, 3, 4, 6], 0)).toBe(false)
+        })
+        it('can be passed a comparator function to perform the match', function() {
+            var collection = [{ v: 1 }, { v: 3 }, { v: 8 }, { v: 9 }]
+            var comparator = function(unit, loopedUnit) {
+                return unit.v === loopedUnit.v
+            }
+            expect(_.isWithin(collection, { v: 3 }, comparator)).toBe(true)
+            expect(_.isWithin(collection, { v: 8 }, comparator)).toBe(true)
+            expect(_.isWithin(collection, { v: 7 }, comparator)).toBe(false)
+            expect(_.isWithin(collection, { v: 0 }, comparator)).toBe(false)
         })
     })
 })

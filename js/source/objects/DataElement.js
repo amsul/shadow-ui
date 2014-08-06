@@ -1,7 +1,6 @@
 
-
 /**
- * Construct a data field object.
+ * Construct a data element object.
  */
 shadow.Element.extend({
 
@@ -32,11 +31,11 @@ shadow.Element.extend({
      */
     setup: function() {
 
-        var dataField = this
-        var attrs = dataField.attrs
+        var dataElement = this
+        var attrs = dataElement.attrs
 
-        // If a format is expected, there must be formatters available.
-        if ( attrs.format && !dataField.formats ) {
+        // If a format is expected, there must be formats available for parsing/formatting.
+        if ( attrs.format && !dataElement.formats ) {
             throw new TypeError('The `formats` hash map is required.')
         }
 
@@ -48,9 +47,113 @@ shadow.Element.extend({
             attrs.formatRange = '{ - }' // <before from>{<before to>}<after to>
         }
 
+        // Bind updating the formats when a range or multiple values are allowed.
+        dataElement.on('assign:allowMultiple.' + dataElement.id, function(event) {
+            if ( event.value ) {
+                if ( !attrs.formatMultiple ) {
+                    attrs.formatMultiple = '{, |, }'
+                }
+                if ( attrs.select && !attrs.allowRange ) {
+                    attrs.select = [attrs.select]
+                }
+            }
+            else {
+                if ( attrs.select && !attrs.allowRange ) {
+                    attrs.select = attrs.select[attrs.select.length - 1]
+                }
+            }
+        })
+        dataElement.on('assign:allowRange.' + dataElement.id, function(event) {
+            if ( event.value ) {
+                if ( !attrs.formatRange ) {
+                    attrs.formatRange = '{ - }'
+                }
+                if ( attrs.select && !attrs.allowMultiple ) {
+                    attrs.select = [attrs.select]
+                }
+            }
+            else {
+                if ( attrs.select && !attrs.allowMultiple ) {
+                    attrs.select = attrs.select[attrs.select.length - 1]
+                }
+            }
+        })
+
+        // Bind updating the value when select is set.
+        dataElement.on('set:select.' + dataElement.id, function(event) {
+            var value = event.value
+            attrs.value = value ? dataElement.format(value) : ''
+        })
+
+        // Bind updating the value when the format is updated.
+        dataElement.on('set:format.' + dataElement.id + ' set:formatRange.' + dataElement.id + ' set:formatMultiple.' + dataElement.id, function() {
+            if ( attrs.select ) {
+                attrs.value = dataElement.format(attrs.select)
+            }
+        })
+
+    },
+
+
+    /**
+     * Create a data element object.
+     */
+    create: function(options) {
+
+        // Create the shadow object.
+        var dataElement = this._super(options)
+        var attrs = dataElement.attrs
+
+        // When there are formats, make sure it is format-able.
+        if ( dataElement.formats ) {
+            if ( !attrs.format ) {
+                throw new TypeError('The `format` attribute is required.')
+            }
+            Object.seal(dataElement.formats)
+        }
+
+        // Set the data element input.
+        if ( !dataElement.$input ) {
+            if ( dataElement.$el[0].nodeName == 'INPUT' ) {
+                shadow._.define(dataElement, '$input', dataElement.$el)
+            }
+            else if ( attrs.hiddenInput ) {
+                shadow._.define(dataElement, '$input', $('<input type=hidden>'))
+                dataElement.$el.after(dataElement.$input)
+            }
+        }
+
+        if ( dataElement.$input ) {
+
+            // Make sure we have a valid input element.
+            if ( dataElement.$input[0].nodeName != 'INPUT' ) {
+                throw new TypeError('To create a shadow input, ' +
+                    'the `$el` must be an input element.')
+            }
+
+            dataElement.$input.addClass(dataElement.classNames.input)
+
+            // Set the starting element value.
+            if ( attrs.value ) {
+                dataElement.$input.val(attrs.value)
+            }
+
+            // Set the starting select.
+            var value = dataElement.$input.val()
+            if ( !attrs.value && value ) {
+                attrs.select = dataElement.parse(value)
+            }
+
+            // Bind updating the element’s value when value is set.
+            dataElement.on('set:value.' + dataElement.id, function(event) {
+                dataElement.$input[0].value = event.value
+            })
+
+        }
+
         // Set the starting select.
         if ( attrs.value ) {
-            var selection = dataField.parse(attrs.value)
+            var selection = dataElement.parse(attrs.value)
             if ( selection ) {
                 attrs.select = selection
             }
@@ -58,101 +161,30 @@ shadow.Element.extend({
 
         // Set the starting value.
         else if ( attrs.select ) {
-            attrs.value = dataField.format(attrs.select)
+            attrs.value = dataElement.format(attrs.select)
         }
 
-        // Bind updating the value when select is set.
-        dataField.on('set:select.' + dataField.id, function(event) {
-            var value = event.value
-            attrs.value = value ? dataField.format(value) : ''
-        })
-
-    },
-
-
-    /**
-     * Create a data field object.
-     */
-    create: function(options) {
-
-        // Create the shadow object.
-        var dataField = this._super(options)
-        var attrs = dataField.attrs
-
-        // When there are formats, make sure it is format-able.
-        if ( dataField.formats ) {
-            if ( !attrs.format ) {
-                throw new TypeError('The `format` attribute is required.')
-            }
-            Object.seal(dataField.formats)
-        }
-
-        // Set the data field input.
-        if ( !dataField.$input ) {
-            if ( dataField.$el[0].nodeName == 'INPUT' ) {
-                shadow._.define(dataField, '$input', dataField.$el)
-            }
-            else if ( attrs.hiddenInput ) {
-                shadow._.define(dataField, '$input', $('<input type=hidden>'))
-                dataField.$el.after(dataField.$input)
-            }
-        }
-
-        if ( dataField.$input ) {
-
-            // Make sure we have a valid input element.
-            if ( dataField.$input[0].nodeName != 'INPUT' ) {
-                throw new TypeError('To create a shadow input, ' +
-                    'the `$el` must be an input element.')
-            }
-
-            dataField.$input.addClass(dataField.classNames.input)
-
-            // Set the starting element value.
-            if ( attrs.value ) {
-                dataField.$input.val(attrs.value)
-            }
-
-            // Set the starting select.
-            var value = dataField.$input.val()
-            if ( !attrs.value && value ) {
-                attrs.select = dataField.parse(value)
-            }
-
-            // Bind updating the element’s value when value is set.
-            dataField.on('set:value.' + dataField.id, function(event) {
-                dataField.$input[0].value = event.value
-            })
-
-        }
-
-        // Whenever the format is updated, the value should be re-formatted.
-        dataField.on('set:format.' + dataField.id + ' set:formatRange.' + dataField.id, function() {
-            if ( attrs.select ) {
-                attrs.value = dataField.format(attrs.select)
-            }
-        })
-
-        // Return the new data field object.
-        return dataField
+        // Return the new data element object.
+        return dataElement
     }, //create
 
 
     /**
      * Convert a value into a formatted string.
      */
-    format: function(value) {
+    format: function(value, options) {
 
-        var dataField = this
-        var formatsHash = dataField.formats
+        var dataElement = this
+        var formatsHash = dataElement.formats
+        var attrs = dataElement.attrs
 
         var formatValueUnit = function(valueUnit) {
 
             if ( formatsHash ) {
-                return toFormattingArray(dataField.attrs.format, formatsHash).
+                return toFormattingArray(attrs.format, formatsHash).
                     map(function(chunk) {
                         return chunk.f ?
-                            formatsHash[chunk.f].call(dataField, valueUnit) :
+                            formatsHash[chunk.f].call(dataElement, valueUnit) :
                             chunk
                     }).
                     join('')
@@ -163,20 +195,20 @@ shadow.Element.extend({
         }
 
         // If multiple values are allowed, setup the combo formatter.
-        if ( dataField.attrs.allowMultiple === true ) {
+        if ( attrs.allowMultiple === true ) {
             return formatMultipleUnits(
                 formatValueUnit,
-                dataField.attrs.formatMultiple,
-                dataField.attrs.formatRange,
+                attrs.formatMultiple,
+                attrs.formatRange,
                 value
             )
         }
 
         // If range values are allowed, setup the range formatter.
-        if ( dataField.attrs.allowRange === true ) {
+        if ( attrs.allowRange === true ) {
             return formatRangeUnits(
                 formatValueUnit,
-                dataField.attrs.formatRange,
+                attrs.formatRange,
                 value
             )
         }
@@ -207,17 +239,18 @@ shadow.Element.extend({
             return null
         }
 
-        var dataField = this
+        var dataElement = this
+        var attrs = dataElement.attrs
         var parseValueUnit = function(valueUnit) {
 
             // If there are formats, decorate the unit as needed.
-            if ( dataField.formats ) {
+            if ( dataElement.formats ) {
 
                 // Create a parsed unit hash from the string.
-                var parsedHash = dataField.parseUnit(valueUnit)
+                var parsedHash = dataElement.parseUnit(valueUnit)
 
                 // Convert the unit hash into a value unit.
-                valueUnit = /*dataField.formatUnit(*/parsedHash/*)*/
+                valueUnit = /*dataElement.formatUnit(*/parsedHash/*)*/
             }
 
             // Try to evaluate it as JSON.
@@ -229,20 +262,20 @@ shadow.Element.extend({
         }
 
         // If multiple values are allowed, setup the combo parser.
-        if ( dataField.attrs.allowMultiple === true ) {
+        if ( attrs.allowMultiple === true ) {
             return parseMultipleUnits(
                 parseValueUnit,
-                dataField.attrs.formatMultiple,
-                dataField.attrs.formatRange,
+                attrs.formatMultiple,
+                attrs.formatRange,
                 string
             )
         }
 
         // If range values are allowed, setup the range parser.
-        if ( dataField.attrs.allowRange === true ) {
+        if ( attrs.allowRange === true ) {
             return parseRangeUnits(
                 parseValueUnit,
-                dataField.attrs.formatRange,
+                attrs.formatRange,
                 string
             )
         }
@@ -257,16 +290,16 @@ shadow.Element.extend({
      */
     parseUnit: function(stringUnit) {
 
-        var dataField = this
-        var formatsHash = dataField.formats
+        var dataElement = this
+        var formatsHash = dataElement.formats
         var parsedHash = {}
 
         // If there are formats, parse the unit.
         if ( formatsHash ) {
-            toFormattingArray(dataField.attrs.format, formatsHash).
+            toFormattingArray(dataElement.attrs.format, formatsHash).
                 forEach(function(chunk) {
                     if ( chunk.f ) {
-                        var chunkValue = formatsHash[chunk.f].call(dataField, stringUnit, true)
+                        var chunkValue = formatsHash[chunk.f].call(dataElement, stringUnit, true)
                         if ( !stringUnit.match(new RegExp('^' + chunkValue)) ) {
                             throw new SyntaxError('The value parsed by the ' +
                                 '`' + chunk.f + '` formatting rule did not ' +
@@ -278,7 +311,12 @@ shadow.Element.extend({
                         parsedHash[chunk.f] = chunkValue
                     }
                     else {
-                        stringUnit = stringUnit.replace(new RegExp('^' + chunk), '')
+                        var regex = new RegExp('^' + chunk)
+                        if ( !stringUnit.match(regex) ) {
+                            throw new SyntaxError('The formatting unit “' + chunk + '” ' +
+                                'did not match in the string “' + stringUnit + '”.')
+                        }
+                        stringUnit = stringUnit.replace(regex, '')
                     }
                 })
         }
@@ -288,23 +326,23 @@ shadow.Element.extend({
 
 
     /**
-     * Get a data field’s attribute with certain options.
+     * Get a data element’s attribute with certain options.
      */
     get: function(name, options) {
 
-        var dataField = this
-        var value = dataField._super(name)
+        var dataElement = this
+        var value = dataElement._super(name)
 
         options = options || {}
 
         if ( options.format ) {
-            value = dataField.format(value)
+            value = dataElement.format(value, options)
         }
 
         return value
     } //get
 
-}) //shadow('data-field')
+}) //shadow('data-element')
 
 
 /**
@@ -313,7 +351,7 @@ shadow.Element.extend({
 function formatMultipleUnits(formatter, formatMultiple, formatRange, value) {
 
     if ( !Array.isArray(value) ) {
-        throw new TypeError('An input with multiple values ' +
+        throw new TypeError('A data element with multiple values ' +
             'expects it’s attribute value to be a collection.')
     }
 
@@ -480,11 +518,11 @@ function parseRangeUnits(parser, format, value) {
     }
 
     var addToCollection = function(rangeUnit) {
-        var originalvalueUnit = rangeUnit
+        var originalValueUnit = rangeUnit
         rangeUnit = parser(rangeUnit)
         range.push(rangeUnit)
-        if ( typeof rangeUnit == 'string' ) originalvalueUnit = rangeUnit
-        value = value.replace(originalvalueUnit, '')
+        if ( typeof rangeUnit == 'string' ) originalValueUnit = rangeUnit
+        value = value.replace(originalValueUnit, '')
     }
 
     var matchRange = format.match(/(.*)\{(.*?)\}(.*)/)

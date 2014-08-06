@@ -1,8 +1,8 @@
 describe('shadow.DataElement', function() {
 
     it('is an instance of the shadow element', function() {
-        expect(shadow.Element.is('classOf', shadow.DataElement)).toBe(true)
-        expect(shadow.DataElement.is('instanceOf', shadow.Element)).toBe(true)
+        expect(shadow.Element.isClassOf(shadow.DataElement)).toBe(true)
+        expect(shadow.DataElement.isInstanceOf(shadow.Element)).toBe(true)
     })
 
 

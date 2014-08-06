@@ -3,6 +3,12 @@ var _ = shadow._ = {
 
 
     /**
+     * A no-nop.
+     */
+    noop: function() {},
+
+
+    /**
      * Define an enumerable property on an object.
      */
     define: function(object, item, value) {
@@ -155,6 +161,32 @@ var _ = shadow._ = {
         }
         return el
     },
+
+
+    /**
+     * Get the index of a unit within a collection.
+     */
+    indexIn: function(collection, unit, comparator) {
+        if ( !Array.isArray(collection) ) {
+            throw new TypeError('The collection to search in must be an array.')
+        }
+        comparator = comparator || function(unit, loopedUnit) { return loopedUnit === unit }
+        for ( var i = 0; i < collection.length; i++ ) {
+            var loopedUnit = collection[i]
+            if ( comparator(unit, loopedUnit) ) {
+                return i
+            }
+        }
+        return -1
+    },
+
+
+    /**
+     * Check if a unit is within a collection.
+     */
+    isWithin: function(collection, unit, comparator) {
+        return this.indexIn(collection, unit, comparator) > -1
+    }
 
 }
 

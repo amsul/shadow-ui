@@ -1,63 +1,12 @@
 
-var CHECKS = {
-
-    // Check if a shadow object inherits from the class of another.
-    // http://aaditmshah.github.io/why-prototypal-inheritance-matters/#fixing_the_instanceof_operator
-    classOf: function(Instance) {
-        var Base = this
-        do {
-            Instance = Object.getPrototypeOf(Instance)
-            if ( Base === Instance ) {
-                return true
-            }
-        } while (Instance)
-        return false
-    },
-
-
-    // Check if a shadow object is an instance of another.
-    // http://aaditmshah.github.io/why-prototypal-inheritance-matters/#fixing_the_instanceof_operator
-    instanceOf: function(Base) {
-        var Instance = this
-        do {
-            Instance = Object.getPrototypeOf(Instance)
-            if ( Instance === Base ) {
-                return true
-            }
-        } while (Instance)
-        return false
-    },
-
-
-    // Check if a shadow object is the prototype of another.
-    prototypeOf: function (object) {
-        var Base = this
-        var Prototype = Object.getPrototypeOf(object)
-        return Base === Prototype &&
-            object.name === _.caseCamel(Prototype.name) &&
-            object.create === undefined &&
-            object.extend === undefined
-    },
-
-
-    // Check if a shadow object has been constructed.
-    constructed: function() {
-        var object = this
-        var Base = Object.getPrototypeOf(object)
-        return object !== shadow.Object &&
-            Base.is('prototypeOf', object)
-    }
-
-} //CHECKS
-
-
+// Check if the super method was called within a wrapped method..
 var checkForSuperCall = function(prototype, property) {
     var methodString = '' + prototype[property]
     var variableNameMatch = methodString.match(/(\w+) *= *this/)
     var variableName = variableNameMatch && variableNameMatch[1] + '|' || ''
     var invoker = '(\\.(call|apply))?\\('
     var superRegex = new RegExp('(?:' + variableName + 'this)\\._super(' + invoker + ')')
-    if ( shadow.IS_DEBUGGING && !methodString.match(superRegex) ) {
+    if ( !methodString.match(superRegex) ) {
         console.warn('Overriding the base method `' + property + '` ' +
             'without calling `this._super()` within the method might cause ' +
             'unexpected results. Make sure this is the behavior you desire.\n',
@@ -101,13 +50,13 @@ shadow.Object = Object.create({}, {
             var object = Object.create(Base)
             Object.defineProperties(object, {
                 name: { value: _.caseCamel(Base.name), enumerable: true },
-                create: { value: undefined },
-                extend: { value: undefined }
+                create: { value: _.noop },
+                extend: { value: _.noop }
             })
             for ( var item in options ) {
                 if ( item in Base ) {
                     var isBasePropertyFn = typeof Base[item] == 'function'
-                    if ( isBasePropertyFn ) {
+                    if ( shadow.IS_DEBUGGING && isBasePropertyFn ) {
                         checkForSuperCall(options, item)
                     }
                     var value = options[item]
@@ -133,7 +82,7 @@ shadow.Object = Object.create({}, {
 
             var Base = this
 
-            if ( Base.is('constructed') && Base.is('constructed') ) {
+            if ( !Base.isClass() ) {
                 console.debug(Base)
                 throw new TypeError('Cannot extend a constructed object.')
             }
@@ -143,10 +92,11 @@ shadow.Object = Object.create({}, {
             for ( var property in prototype ) {
                 if ( prototype.hasOwnProperty(property) ) {
                     if ( property == '_super' ) {
-                        throw new TypeError('The `_super` property is reserved ' +
+                        throw new Error('The `_super` property is reserved ' +
                             'to allow object method inheritance.')
                     }
-                    var isBasePropertyFn = typeof Base[property] == 'function'
+                    var isBasePropertyFn = typeof Base[property] == 'function' &&
+                        Base[property] !== Object[property]
                     if ( isBasePropertyFn ) {
                         checkForSuperCall(prototype, property)
                     }
@@ -174,13 +124,54 @@ shadow.Object = Object.create({}, {
     }, //extend
 
 
-    // Check if a thing is a certain value.
-    is: {
+    // Check if the object is a class.
+    isClass: {
         enumerable: true,
-        value: function(thing, value) {
+        value: function() {
             var object = this
-            return typeof CHECKS[thing] == 'function' &&
-                CHECKS[thing].call(object, value)
+            var Base = Object.getPrototypeOf(object)
+            return object === shadow.Object || !Base.isPrototypeOf(object)
+        }
+    },
+
+
+    // Check if the object inherits from the class of another.
+    // http://aaditmshah.github.io/why-prototypal-inheritance-matters/#fixing_the_instanceof_operator
+    isClassOf: {
+        enumerable: true,
+        value: function(Instance) {
+            var Base = this
+            if ( _.isTypeOf(Instance, 'object') ) do {
+                Instance = Object.getPrototypeOf(Instance)
+                if ( Base === Instance ) {
+                    return true
+                }
+            } while (Instance)
+            return false
+        }
+    },
+
+
+    // Check if the object is an instance of another.
+    // http://aaditmshah.github.io/why-prototypal-inheritance-matters/#fixing_the_instanceof_operator
+    isInstanceOf: {
+        enumerable: true,
+        value: function(Base) {
+            return this.isClassOf.call(Base, this)
+        }
+    },
+
+
+    // Check if the object is the prototype another.
+    isPrototypeOf: {
+        enumerable: true,
+        value: function(object) {
+            var Base = this
+            var Prototype = Object.getPrototypeOf(object)
+            return Base === Prototype &&
+                object.name === _.caseCamel(Prototype.name)/* &&
+                object.create === undefined &&
+                object.extend === undefined*/
         }
     },
 
@@ -190,26 +181,24 @@ shadow.Object = Object.create({}, {
         enumerable: true,
         value: function() {
             if ( shadow.IS_DEBUGGING ) {
-                return this.toLocaleString()
+                return this.toFullString()
             }
             var object = this
-            var isConstructed = object.is('constructed')
-            var type = isConstructed ? 'object' : 'class'
-            var Base = isConstructed ?
-                Object.getPrototypeOf(object) :
-                object
+            var isClass = object.isClass()
+            var type = isClass ? 'class' : 'object'
+            var Base = isClass ? object : Object.getPrototypeOf(object)
             return '{' + type + ' ' + Base.name + '}'
         }
     },
 
-    toLocaleString: {
+    toFullString: {
         enumerable: true,
         value: function() {
             var object = this
-            var isConstructed = object.is('constructed')
-            var type = isConstructed ? 'object' : 'class'
+            var isClass = object.isClass()
+            var type = isClass ? 'class' : 'object'
             var names = []
-            if ( isConstructed ) {
+            if ( !isClass ) {
                 object = Object.getPrototypeOf(object)
             }
             do {

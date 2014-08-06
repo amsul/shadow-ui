@@ -6,18 +6,18 @@
  * Licensed under <%= pkg.licenses[0].type %>
  */
 
-(function (root, factory) {
+(function (global, factory) {
 
     // Setup the exports for Node module pattern...
     if ( typeof module == 'object' && typeof module.exports == 'object' )
-        module.exports = factory(root, root.jQuery)
+        module.exports = factory(global, global.jQuery)
 
     // ...AMD...
     else if ( typeof define == 'function' && define.amd )
-        define('shadow', [root, 'jquery'], factory)
+        define('shadow', [global, 'jquery'], factory)
 
     // ...and basic `script` includes.
-    else root.shadow = factory(root, root.jQuery)
+    else global.shadow = factory(global, global.jQuery)
 
 }(this, function(window, $, undefined) {
 

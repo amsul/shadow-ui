@@ -8,7 +8,7 @@ shadow.build = function($element, shadowName, shadowOptions) {
     shadowName = _.casePascal(shadowName)
     if (
         !(shadowName in shadow) ||
-        !shadow.Object.is('classOf', shadow[shadowName])
+        !shadow.Object.isClassOf(shadow[shadowName])
     ) {
         throw new ReferenceError('There is no shadow UI ' +
             'registered by the name of `' + shadowName + '`.')

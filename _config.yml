@@ -3,9 +3,9 @@ version: 0.6.0
 title: 'Shadow UI'
 description: 'Build “encapsulated” UI components mimicking web components (custom elements), such as dropdowns, popups, tooltips, etc.'
 author:
-    name: Amsul
-    email: reach@amsul.ca
-    url: 'http://amsul.ca'
+  name: Amsul
+  email: reach@amsul.ca
+  url: 'http://amsul.ca'
 homepage: 'http://amsul.github.io/shadow-ui'
 docs: 'http://amsul.github.io/shadow-ui'
 demo: 'http://amsul.github.io/shadow-ui'

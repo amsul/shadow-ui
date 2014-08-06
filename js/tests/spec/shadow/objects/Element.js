@@ -1,8 +1,8 @@
 describe('shadow.Element', function() {
 
     it('is an instance of the shadow object', function() {
-        expect(shadow.Object.is('classOf', shadow.Element)).toBe(true)
-        expect(shadow.Element.is('instanceOf', shadow.Object)).toBe(true)
+        expect(shadow.Object.isClassOf(shadow.Element)).toBe(true)
+        expect(shadow.Element.isInstanceOf(shadow.Object)).toBe(true)
     })
 
 
@@ -12,7 +12,7 @@ describe('shadow.Element', function() {
             var element = shadow.Element.create({
                 $el: '<div />'
             })
-            expect(element.is('constructed')).toBe(true)
+            expect(element.isClass()).toBe(false)
         })
 
         it('must have a source element as a jQuery object', function() {
@@ -130,6 +130,140 @@ describe('shadow.Element', function() {
             element.off('assign:id')
             element.attrs.id = 'hah'
             expect(triggered).toBe(false)
+        })
+    })
+
+
+    describe('.get()', function() {
+        it('returns the value of an attribute', function() {
+            var element = shadow.Element.create({
+                $el: '<div />',
+                attrs: {
+                    myAttr: 'some-value'
+                }
+            })
+            expect(element.get('myAttr')).toBe('some-value')
+        })
+    })
+
+
+    describe('.set()', function() {
+        it('assigns the value of an attribute', function() {
+            var element = shadow.Element.create({
+                $el: '<div />',
+                attrs: {
+                    myAttr: null
+                }
+            })
+            expect(element.get('myAttr')).not.toBe('some-value')
+            element.set('myAttr', 'some-value')
+            expect(element.get('myAttr')).toBe('some-value')
+        })
+    })
+
+
+    describe('.add()', function() {
+        var element = shadow.Element.create({
+            $el: '<div />',
+            attrs: {
+                myAttrs: [1, 3, 5],
+                myObjects: [{ v: 1 }, { v: 4 }, { v: 9 }],
+                collection: []
+            }
+        })
+        it('adds a unit to an attribute value', function() {
+            expect(element.attrs.myAttrs).toEqual([1, 3, 5])
+            element.add('myAttrs', 6)
+            expect(element.attrs.myAttrs).toEqual([1, 3, 5, 6])
+            element.add('myAttrs', 2)
+            expect(element.attrs.myAttrs).toEqual([1, 3, 5, 6, 2])
+            element.add('myAttrs', 2)
+            expect(element.attrs.myAttrs).toEqual([1, 3, 5, 6, 2])
+        })
+        it('can be passed a comparator function to ensure there aren’t duplicates', function() {
+            function comparator(unit, loopedUnit) {
+                return loopedUnit.v === unit.v
+            }
+            element.add('myObjects', { v: 1 }, comparator)
+            expect(element.attrs.myObjects).toEqual([{ v: 1 }, { v: 4 }, { v: 9 }])
+            element.add('myObjects', { v: 2 }, comparator)
+            expect(element.attrs.myObjects).toEqual([{ v: 1 }, { v: 4 }, { v: 9 }, { v: 2 }])
+        })
+        it('emits an event upon adding a unit', function() {
+
+            var count = 0
+            var value
+            var unit
+
+            element.on('add:collection', function(event) {
+                count++
+                value = event.value
+                unit = event.unit
+            })
+
+            element.add('collection', 'something')
+            expect(value).toEqual(['something'])
+            expect(unit).toEqual('something')
+
+            element.add('collection', 'another thing')
+            expect(value).toEqual(['something', 'another thing'])
+            expect(unit).toEqual('another thing')
+
+            element.add('collection', 'something')
+            expect(count).toBe(2)
+        })
+    })
+
+
+    describe('.remove()', function() {
+        var element = shadow.Element.create({
+            $el: '<div />',
+            attrs: {
+                myAttrs: [1, 3, 5, 7],
+                myObjects: [{ v: 1 }, { v: 2 }, { v: 7 }, { v: 9 }],
+                collection: ['something', 'another thing']
+            }
+        })
+        it('removes a unit from an attribute value', function() {
+            expect(element.attrs.myAttrs).toEqual([1, 3, 5, 7])
+            element.remove('myAttrs', 3)
+            expect(element.attrs.myAttrs).toEqual([1, 5, 7])
+            element.remove('myAttrs', 1)
+            expect(element.attrs.myAttrs).toEqual([5, 7])
+            element.remove('myAttrs', 1)
+            expect(element.attrs.myAttrs).toEqual([5, 7])
+        })
+        it('can be passed a comparator function to find the unit to remove', function() {
+            function comparator(unit, loopedUnit) {
+                return loopedUnit.v === unit.v
+            }
+            element.remove('myObjects', { v: 2 }, comparator)
+            expect(element.attrs.myObjects).toEqual([{ v: 1 }, { v: 7 }, { v: 9 }])
+            element.remove('myObjects', { v: 4 }, comparator)
+            expect(element.attrs.myObjects).toEqual([{ v: 1 }, { v: 7 }, { v: 9 }])
+        })
+        it('emits an event upon removing a unit', function() {
+
+            var count = 0
+            var value
+            var unit
+
+            element.on('remove:collection', function(event) {
+                count++
+                value = event.value
+                unit = event.unit
+            })
+
+            element.remove('collection', 'something')
+            expect(value).toEqual(['another thing'])
+            expect(unit).toEqual('something')
+
+            element.remove('collection', 'another thing')
+            expect(value).toEqual([])
+            expect(unit).toEqual('another thing')
+
+            element.remove('collection', 'something')
+            expect(count).toBe(2)
         })
     })
 
@@ -307,12 +441,12 @@ describe('shadow.Element', function() {
             var element = shadow.Element.create({
                 $el: $('<div />'),
                 classNames: {
-                    root: '',
+                    root: ' --state',
                     box: 'box',
                     sidebox: 'box--side'
                 }
             })
-            expect(element.classNames.root).toBe('')
+            expect(element.classNames.root).toBe(' --state')
             expect(element.classNames.box).toBe('box')
             expect(element.classNames.sidebox).toBe('box--side')
         })
@@ -325,13 +459,13 @@ describe('shadow.Element', function() {
             var element = shadow.Element.create({
                 $el: $('<div />'),
                 classNames: {
-                    root: '',
+                    root: ' --state',
                     box: 'box',
                     sidebox: 'box--side'
                 },
                 classNamesPrefix: 'shadow'
             })
-            expect(element.classNames.root).toBe('shadow')
+            expect(element.classNames.root).toBe('shadow shadow--state')
             expect(element.classNames.box).toBe('shadow__box')
             expect(element.classNames.sidebox).toBe('shadow__box--side')
         })

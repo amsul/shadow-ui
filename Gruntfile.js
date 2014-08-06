@@ -46,6 +46,7 @@ module.exports = function( grunt ) {
                         'js/source/build.js',
                         'js/source/helpers.js',
                         'js/source/objects/Object.js',
+                        'js/source/objects/Date.js',
                         'js/source/objects/Element.js',
                         'js/source/objects/DataElement.js'
                     ]

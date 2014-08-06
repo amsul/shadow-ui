@@ -37,7 +37,7 @@ shadow.Object.extend({
             $(options.$el)
 
         if ( !$element.length ) {
-            throw new TypeError('No `$el` element found for “' + this.name + '”.')
+            throw new ReferenceError('No `$el` element found for “' + this.name + '”.')
         }
 
         // Make sure the element hasn’t already been bound.
@@ -131,7 +131,7 @@ shadow.Object.extend({
      */
     on: function() {
         var element = this
-        if ( !element.is('constructed') ) {
+        if ( element.isClass() ) {
             throw new TypeError('To bind an event callback, ' +
                 'the element must first be constructed.')
         }
@@ -139,7 +139,7 @@ shadow.Object.extend({
     },
     off: function() {
         var element = this
-        if ( !element.is('constructed') ) {
+        if ( element.isClass() ) {
             throw new TypeError('To unbind an event callback, ' +
                 'the element must first be constructed.')
         }
@@ -158,10 +158,50 @@ shadow.Object.extend({
     /**
      * Set an attribute of the shadow element.
      */
-    set: function(name, value, options) {
+    set: function(name, value) {
         var element = this
         if ( !(name in element.attrs) ) return
         element.attrs[name] = value
+    },
+
+
+    /**
+     * Add a unit to an attribute of the shadow element.
+     */
+    add: function(name, unit, comparator) {
+        var element = this
+        var value = element.attrs[name]
+        if ( _.isWithin(value, unit, comparator) ) {
+            return
+        }
+        var insertAt = value.length
+        value.splice(insertAt, 0, unit)
+        var eventAdd = $.Event('add:' + name, {
+            value: value,
+            unit: unit,
+            name: name
+        })
+        element.$el.trigger(eventAdd)
+    },
+
+
+    /**
+     * Remove a unit from an attribute of the shadow element.
+     */
+    remove: function(name, unit, comparator) {
+        var element = this
+        var value = element.attrs[name]
+        var index = _.indexIn(value, unit, comparator)
+        if ( index < 0 ) {
+            return
+        }
+        value.splice(index, 1)
+        var eventRemove = $.Event('remove:' + name, {
+            value: value,
+            unit: unit,
+            name: name
+        })
+        element.$el.trigger(eventRemove)
     }
 
 
@@ -232,14 +272,7 @@ function buildTemplate(element) {
         if ( typeof template == 'function' ) {
             template = element.template()
         }
-        if ( typeof template != 'string' &&
-            !(template instanceof Node) &&
-            !(template instanceof jQuery)
-        ) try {
-            template = JSON.stringify(template)
-        }
-        catch (e) {}
-        element.$host.empty().html(template)
+        element.$host.html(template)
     }
 }
 
@@ -286,22 +319,22 @@ function decorateShadowAttribute($element, shadowAttrs, prop) {
         },
         set: function(value) {
             var previousValue = currValue
-            var eventSet = $.Event('assign:' + prop, {
+            var eventAssign = $.Event('assign:' + prop, {
                 value: value,
                 name: prop
             })
-            $element.trigger(eventSet)
-            var isPrevented = eventSet.isDefaultPrevented()
+            $element.trigger(eventAssign)
+            var isPrevented = eventAssign.isDefaultPrevented()
             if ( !isPrevented ) {
-                currValue = eventSet.value
+                currValue = eventAssign.value
                 updateShadowAttribute($element, prop, currValue)
             }
-            var eventUpdate = $.Event('set:' + prop, {
+            var eventSet = $.Event('set:' + prop, {
                 value: isPrevented ? value : currValue,
                 previousValue: previousValue,
                 name: prop
             })
-            $element.trigger(eventUpdate)
+            $element.trigger(eventSet)
         }
     })
 }
@@ -332,7 +365,7 @@ function prefixifyClassNames(classNames, prefix) {
     }
     prefix = prefix || ''
     if ( !classNames ) {
-        throw new TypeError('No `classNames` were given to prefix.')
+        throw new ReferenceError('No `classNames` were given to prefix.')
     }
     var prefixClassName = function(className) {
         var classNameDelimiter = !prefix || !className ||

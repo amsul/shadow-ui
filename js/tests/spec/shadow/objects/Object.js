@@ -77,16 +77,10 @@ describe('shadow.Object', function() {
             expect(object.name).toBe('object')
         })
         it('prevents the instance from being further constructed', function() {
-            function notAllowed() {
-                object.create()
-            }
-            expect(notAllowed).toThrowError()
+            expect(object.create()).toBeUndefined()
         })
         it('prevents the instance from being further extended', function() {
-            function notAllowed() {
-                object.extend()
-            }
-            expect(notAllowed).toThrowError()
+            expect(object.extend()).toBeUndefined()
         })
         it('prevents the instance’s name from being changed during creation', function() {
             function notAllowed() {
@@ -118,50 +112,52 @@ describe('shadow.Object', function() {
     })
 
 
-    describe('.is()', function() {
+    describe('.isClass()', function() {
 
-        describe('"classOf"', function() {
+        it('checks if a shadow object is a class', function() {
 
-            it('compares a shadow object’s prototype chain', function() {
+            expect(shadow.Object.isClass()).toBe(true)
+            expect(shadow.Extension.isClass()).toBe(true)
+            expect(shadow.OtherExtension.isClass()).toBe(true)
 
-                expect(shadow.Object.is('classOf', shadow.Object)).toBe(false)
-                expect(shadow.Object.is('classOf', shadow.Extension)).toBe(true)
-                expect(shadow.Object.is('classOf', shadow.OtherExtension)).toBe(true)
-
-                expect(shadow.Extension.is('classOf', shadow.Object)).toBe(false)
-                expect(shadow.Extension.is('classOf', shadow.Extension)).toBe(false)
-                expect(shadow.Extension.is('classOf', shadow.OtherExtension)).toBe(true)
-
-                expect(shadow.OtherExtension.is('classOf', shadow.Object)).toBe(false)
-                expect(shadow.OtherExtension.is('classOf', shadow.Extension)).toBe(false)
-                expect(shadow.OtherExtension.is('classOf', shadow.OtherExtension)).toBe(false)
-            })
+            expect(shadow.Object.create().isClass()).toBe(false)
+            expect(shadow.Extension.create().isClass()).toBe(false)
+            expect(shadow.OtherExtension.create().isClass()).toBe(false)
         })
+    })
 
-        describe('"instanceOf"', function() {
 
-            it('compares a shadow object’s instance chain', function() {
+    describe('.isClassOf()', function() {
 
-                expect(shadow.Extension.is('instanceOf', shadow.Object)).toBe(true)
-                expect(shadow.Extension.is('instanceOf', shadow.Extension)).toBe(false)
-                expect(shadow.Extension.is('instanceOf', shadow.OtherExtension)).toBe(false)
+        it('checks if a shadow object is the class on an object', function() {
 
-                expect(shadow.OtherExtension.is('instanceOf', shadow.Object)).toBe(true)
-                expect(shadow.OtherExtension.is('instanceOf', shadow.Extension)).toBe(true)
-                expect(shadow.OtherExtension.is('instanceOf', shadow.OtherExtension)).toBe(false)
-            })
+            expect(shadow.Object.isClassOf(shadow.Object)).toBe(false)
+            expect(shadow.Object.isClassOf(shadow.Extension)).toBe(true)
+            expect(shadow.Object.isClassOf(shadow.OtherExtension)).toBe(true)
+
+            expect(shadow.Extension.isClassOf(shadow.Object)).toBe(false)
+            expect(shadow.Extension.isClassOf(shadow.Extension)).toBe(false)
+            expect(shadow.Extension.isClassOf(shadow.OtherExtension)).toBe(true)
+
+            expect(shadow.OtherExtension.isClassOf(shadow.Object)).toBe(false)
+            expect(shadow.OtherExtension.isClassOf(shadow.Extension)).toBe(false)
+            expect(shadow.OtherExtension.isClassOf(shadow.OtherExtension)).toBe(false)
         })
+    })
 
-        describe('"constructed"', function() {
 
-            it('compares a shadow object’s constructor', function() {
+    describe('.isInstanceOf()', function() {
 
-                expect(shadow.Object.is('constructed')).toBe(false)
-                expect(shadow.Extension.is('constructed')).toBe(false)
-                expect(shadow.OtherExtension.is('constructed')).toBe(false)
-            })
+        it('checks if a shadow object is the instance of an object', function() {
+
+            expect(shadow.Extension.isInstanceOf(shadow.Object)).toBe(true)
+            expect(shadow.Extension.isInstanceOf(shadow.Extension)).toBe(false)
+            expect(shadow.Extension.isInstanceOf(shadow.OtherExtension)).toBe(false)
+
+            expect(shadow.OtherExtension.isInstanceOf(shadow.Object)).toBe(true)
+            expect(shadow.OtherExtension.isInstanceOf(shadow.Extension)).toBe(true)
+            expect(shadow.OtherExtension.isInstanceOf(shadow.OtherExtension)).toBe(false)
         })
-
     })
 
 

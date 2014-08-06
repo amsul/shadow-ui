@@ -2,31 +2,32 @@ describe('shadow', function() {
 
     var $dom = $('<div id="dom" />').appendTo('html')
 
+    $dom.append('<div data-ui="component" data-ui-long-attribute-name="true">hi there :)</div>')
+    $dom.append('<input data-ui="input-component" data-ui-allow-multiple="true" data-ui-select="[4, 20, 316, 6969]">')
+
+    shadow('input-component', {
+        extend: 'data-element',
+        attrs: {
+            something: true
+        },
+        anotherThing: false
+    })
+
+    shadow('component', {
+        attrs: {
+            something: true
+        },
+        anotherThing: false
+    })
+
     it('is the main method for registering a ui interface', function() {
-        $dom.append('<div data-ui="component" data-ui-long-attribute-name="true">hi there :)</div>')
-        expect(shadow.Component).toBe(undefined)
-        shadow('component', {
-            attrs: {
-                something: true
-            },
-            anotherThing: false
-        })
-        expect(shadow.Element.is('classOf', shadow.Component)).toBe(true)
+        expect(shadow.DataElement.isClassOf(shadow.InputComponent)).toBe(true)
         expect(shadow.Component.attrs.something).toBe(true)
         expect(shadow.Component.anotherThing).toBe(false)
     })
 
     it('extends any of the registered ui interfaces', function() {
-        $dom.append('<input data-ui="input-component" data-ui-allow-multiple="true" data-ui-select="[4, 20, 316, 6969]">')
-        expect(shadow.InputComponent).toBe(undefined)
-        shadow('input-component', {
-            extend: 'data-element',
-            attrs: {
-                something: true
-            },
-            anotherThing: false
-        })
-        expect(shadow.DataElement.is('classOf', shadow.InputComponent)).toBe(true)
+        expect(shadow.Element.isClassOf(shadow.Component)).toBe(true)
         expect(shadow.InputComponent.attrs.something).toBe(true)
         expect(shadow.InputComponent.anotherThing).toBe(false)
     })

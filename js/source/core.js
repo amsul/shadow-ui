@@ -11,7 +11,7 @@ function shadow(shadowName, shadowOptions) {
     }
     extendingName = _.casePascal(extendingName)
     if ( !_.isTypeOf(shadow[extendingName], 'object') ||
-        extendingName != 'Element' && !shadow.Element.is('classOf', shadow[extendingName])
+        extendingName != 'Element' && !shadow.Element.isClassOf(shadow[extendingName])
     ) {
         throw new ReferenceError('There is no shadow element named “' + _.caseDash(extendingName) + '”.')
     }

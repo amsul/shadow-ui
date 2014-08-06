@@ -1,23 +1,23 @@
 
 /*!
- * Shadow UI v0.6.0, 2014/07/05
+ * Shadow UI v0.6.0, 2014/08/06
  * By Amsul, http://amsul.ca
  * Hosted on http://amsul.github.io/shadow-ui
  * Licensed under MIT
  */
 
-(function (root, factory) {
+(function (global, factory) {
 
     // Setup the exports for Node module pattern...
     if ( typeof module == 'object' && typeof module.exports == 'object' )
-        module.exports = factory(root, root.jQuery)
+        module.exports = factory(global, global.jQuery)
 
     // ...AMD...
     else if ( typeof define == 'function' && define.amd )
-        define('shadow', [root, 'jquery'], factory)
+        define('shadow', [global, 'jquery'], factory)
 
     // ...and basic `script` includes.
-    else root.shadow = factory(root, root.jQuery)
+    else global.shadow = factory(global, global.jQuery)
 
 }(this, function(window, $, undefined) {
 
@@ -34,7 +34,7 @@ function shadow(shadowName, shadowOptions) {
         delete shadowOptions.extend;
     }
     extendingName = _.casePascal(extendingName);
-    if (!_.isTypeOf(shadow[extendingName], "object") || extendingName != "Element" && !shadow.Element.is("classOf", shadow[extendingName])) {
+    if (!_.isTypeOf(shadow[extendingName], "object") || extendingName != "Element" && !shadow.Element.isClassOf(shadow[extendingName])) {
         throw new ReferenceError("There is no shadow element named “" + _.caseDash(extendingName) + "”.");
     }
     if (shadowOptions.name) {
@@ -56,7 +56,7 @@ shadow.build = function($element, shadowName, shadowOptions) {
     shadowOptions = shadowOptions || {};
     shadowOptions.$el = $element;
     shadowName = _.casePascal(shadowName);
-    if (!(shadowName in shadow) || !shadow.Object.is("classOf", shadow[shadowName])) {
+    if (!(shadowName in shadow) || !shadow.Object.isClassOf(shadow[shadowName])) {
         throw new ReferenceError("There is no shadow UI " + "registered by the name of `" + shadowName + "`.");
     }
     return shadow[shadowName].create(shadowOptions);
@@ -73,6 +73,10 @@ shadow.buildAll = function(shadowName, shadowOptions) {
 };
 
 var _ = shadow._ = {
+    /**
+     * A no-nop.
+     */
+    noop: function() {},
     /**
      * Define an enumerable property on an object.
      */
@@ -207,6 +211,30 @@ var _ = shadow._ = {
             });
         }
         return el;
+    },
+    /**
+     * Get the index of a unit within a collection.
+     */
+    indexIn: function(collection, unit, comparator) {
+        if (!Array.isArray(collection)) {
+            throw new TypeError("The collection to search in must be an array.");
+        }
+        comparator = comparator || function(unit, loopedUnit) {
+            return loopedUnit === unit;
+        };
+        for (var i = 0; i < collection.length; i++) {
+            var loopedUnit = collection[i];
+            if (comparator(unit, loopedUnit)) {
+                return i;
+            }
+        }
+        return -1;
+    },
+    /**
+     * Check if a unit is within a collection.
+     */
+    isWithin: function(collection, unit, comparator) {
+        return this.indexIn(collection, unit, comparator) > -1;
     }
 };
 
@@ -214,53 +242,14 @@ function ariaSet(element, attribute, value) {
     element.setAttribute((attribute == "role" ? "" : "aria-") + attribute, value);
 }
 
-var CHECKS = {
-    // Check if a shadow object inherits from the class of another.
-    // http://aaditmshah.github.io/why-prototypal-inheritance-matters/#fixing_the_instanceof_operator
-    classOf: function(Instance) {
-        var Base = this;
-        do {
-            Instance = Object.getPrototypeOf(Instance);
-            if (Base === Instance) {
-                return true;
-            }
-        } while (Instance);
-        return false;
-    },
-    // Check if a shadow object is an instance of another.
-    // http://aaditmshah.github.io/why-prototypal-inheritance-matters/#fixing_the_instanceof_operator
-    instanceOf: function(Base) {
-        var Instance = this;
-        do {
-            Instance = Object.getPrototypeOf(Instance);
-            if (Instance === Base) {
-                return true;
-            }
-        } while (Instance);
-        return false;
-    },
-    // Check if a shadow object is the prototype of another.
-    prototypeOf: function(object) {
-        var Base = this;
-        var Prototype = Object.getPrototypeOf(object);
-        return Base === Prototype && object.name === _.caseCamel(Prototype.name) && object.create === undefined && object.extend === undefined;
-    },
-    // Check if a shadow object has been constructed.
-    constructed: function() {
-        var object = this;
-        var Base = Object.getPrototypeOf(object);
-        return object !== shadow.Object && Base.is("prototypeOf", object);
-    }
-};
-
-//CHECKS
+// Check if the super method was called within a wrapped method..
 var checkForSuperCall = function(prototype, property) {
     var methodString = "" + prototype[property];
     var variableNameMatch = methodString.match(/(\w+) *= *this/);
     var variableName = variableNameMatch && variableNameMatch[1] + "|" || "";
     var invoker = "(\\.(call|apply))?\\(";
     var superRegex = new RegExp("(?:" + variableName + "this)\\._super(" + invoker + ")");
-    if (shadow.IS_DEBUGGING && !methodString.match(superRegex)) {
+    if (!methodString.match(superRegex)) {
         console.warn("Overriding the base method `" + property + "` " + "without calling `this._super()` within the method might cause " + "unexpected results. Make sure this is the behavior you desire.\n", prototype);
     }
 };
@@ -298,16 +287,16 @@ shadow.Object = Object.create({}, {
                     enumerable: true
                 },
                 create: {
-                    value: undefined
+                    value: _.noop
                 },
                 extend: {
-                    value: undefined
+                    value: _.noop
                 }
             });
             for (var item in options) {
                 if (item in Base) {
                     var isBasePropertyFn = typeof Base[item] == "function";
-                    if (isBasePropertyFn) {
+                    if (shadow.IS_DEBUGGING && isBasePropertyFn) {
                         checkForSuperCall(options, item);
                     }
                     var value = options[item];
@@ -328,7 +317,7 @@ shadow.Object = Object.create({}, {
         enumerable: true,
         value: function(prototype) {
             var Base = this;
-            if (Base.is("constructed") && Base.is("constructed")) {
+            if (!Base.isClass()) {
                 console.debug(Base);
                 throw new TypeError("Cannot extend a constructed object.");
             }
@@ -336,9 +325,9 @@ shadow.Object = Object.create({}, {
             for (var property in prototype) {
                 if (prototype.hasOwnProperty(property)) {
                     if (property == "_super") {
-                        throw new TypeError("The `_super` property is reserved " + "to allow object method inheritance.");
+                        throw new Error("The `_super` property is reserved " + "to allow object method inheritance.");
                     }
-                    var isBasePropertyFn = typeof Base[property] == "function";
+                    var isBasePropertyFn = typeof Base[property] == "function" && Base[property] !== Object[property];
                     if (isBasePropertyFn) {
                         checkForSuperCall(prototype, property);
                     }
@@ -357,12 +346,45 @@ shadow.Object = Object.create({}, {
         }
     },
     //extend
-    // Check if a thing is a certain value.
-    is: {
+    // Check if the object is a class.
+    isClass: {
         enumerable: true,
-        value: function(thing, value) {
+        value: function() {
             var object = this;
-            return typeof CHECKS[thing] == "function" && CHECKS[thing].call(object, value);
+            var Base = Object.getPrototypeOf(object);
+            return object === shadow.Object || !Base.isPrototypeOf(object);
+        }
+    },
+    // Check if the object inherits from the class of another.
+    // http://aaditmshah.github.io/why-prototypal-inheritance-matters/#fixing_the_instanceof_operator
+    isClassOf: {
+        enumerable: true,
+        value: function(Instance) {
+            var Base = this;
+            if (_.isTypeOf(Instance, "object")) do {
+                Instance = Object.getPrototypeOf(Instance);
+                if (Base === Instance) {
+                    return true;
+                }
+            } while (Instance);
+            return false;
+        }
+    },
+    // Check if the object is an instance of another.
+    // http://aaditmshah.github.io/why-prototypal-inheritance-matters/#fixing_the_instanceof_operator
+    isInstanceOf: {
+        enumerable: true,
+        value: function(Base) {
+            return this.isClassOf.call(Base, this);
+        }
+    },
+    // Check if the object is the prototype another.
+    isPrototypeOf: {
+        enumerable: true,
+        value: function(object) {
+            var Base = this;
+            var Prototype = Object.getPrototypeOf(object);
+            return Base === Prototype && object.name === _.caseCamel(Prototype.name);
         }
     },
     // Cast the object into a string representation.
@@ -370,23 +392,23 @@ shadow.Object = Object.create({}, {
         enumerable: true,
         value: function() {
             if (shadow.IS_DEBUGGING) {
-                return this.toLocaleString();
+                return this.toFullString();
             }
             var object = this;
-            var isConstructed = object.is("constructed");
-            var type = isConstructed ? "object" : "class";
-            var Base = isConstructed ? Object.getPrototypeOf(object) : object;
+            var isClass = object.isClass();
+            var type = isClass ? "class" : "object";
+            var Base = isClass ? object : Object.getPrototypeOf(object);
             return "{" + type + " " + Base.name + "}";
         }
     },
-    toLocaleString: {
+    toFullString: {
         enumerable: true,
         value: function() {
             var object = this;
-            var isConstructed = object.is("constructed");
-            var type = isConstructed ? "object" : "class";
+            var isClass = object.isClass();
+            var type = isClass ? "class" : "object";
             var names = [];
-            if (isConstructed) {
+            if (!isClass) {
                 object = Object.getPrototypeOf(object);
             }
             do {
@@ -397,6 +419,158 @@ shadow.Object = Object.create({}, {
         }
     }
 });
+
+/**
+ * Construct a date object.
+ */
+shadow.Object.extend({
+    name: "Date",
+    value: null,
+    year: null,
+    month: null,
+    date: null,
+    setToTheFirst: false,
+    /**
+     * Create a date object.
+     */
+    create: function(value, options) {
+        if (!value) {
+            return this._super(options);
+        }
+        if (value === true) {
+            value = new Date();
+        } else if (_.isTypeOf(value, "object") && this.isPrototypeOf(value)) {
+            value = value.value;
+        }
+        var shadowDate = this._super(options);
+        value = toDate(value, shadowDate.setToTheFirst);
+        var year = value.getFullYear();
+        var month = value.getMonth();
+        var date = value.getDate();
+        var time = value.getTime();
+        _.define(shadowDate, "value", [ year, month, date ]);
+        _.define(shadowDate, "decade", getDecade(year));
+        _.define(shadowDate, "year", year);
+        _.define(shadowDate, "month", month);
+        _.define(shadowDate, "date", date);
+        _.define(shadowDate, "time", time);
+        return shadowDate;
+    },
+    /**
+     * Compare the date’s value in various ways.
+     */
+    compare: function(comparison, date) {
+        if (arguments.length < 2) {
+            date = comparison;
+            comparison = "";
+        }
+        comparison = comparison || "time";
+        if (!this.value || !date) {
+            return false;
+        }
+        if (!shadow.Date.isClassOf(date)) {
+            date = shadow.Date.create(date);
+        }
+        var one = this;
+        var two = date;
+        if (comparison.match(/^decade ?/)) {
+            one = one.decade.start;
+            two = two.decade.start;
+        } else if (comparison.match(/^year ?/)) {
+            one = one.year;
+            two = two.year;
+        } else if (comparison.match(/^month ?/)) {
+            one = new Date(one.year, one.month, 1).getTime();
+            two = new Date(two.year, two.month, 1).getTime();
+        } else if (comparison.match(/^date ?/)) {
+            one = new Date(one.year, one.month, one.date).getTime();
+            two = new Date(two.year, two.month, two.date).getTime();
+        } else {
+            one = one.time;
+            two = two.time;
+        }
+        if (comparison.match(/ ?greater equal$/)) {
+            return one >= two;
+        }
+        if (comparison.match(/ ?lesser equal$/)) {
+            return one <= two;
+        }
+        if (comparison.match(/ ?greater$/)) {
+            return one > two;
+        }
+        if (comparison.match(/ ?lesser$/)) {
+            return one < two;
+        }
+        return one === two;
+    },
+    /**
+     * Compare a date with a range in various ways.
+     */
+    compareRange: function(comparison, range) {
+        if (arguments.length < 2) {
+            range = comparison;
+            comparison = "";
+        }
+        var shadowDate = this;
+        if (!range.length || !shadowDate.value) {
+            return false;
+        }
+        comparison = comparison || "date";
+        if (range.length === 1) {
+            return shadowDate.compare(comparison, range[0]);
+        }
+        if (range.length > 2) {
+            throw new Error("A range cannot have more than 2 dates.");
+        }
+        var lowerBound = range[0];
+        var upperBound = range[1];
+        return shadowDate.compare(comparison + " greater equal", lowerBound) && shadowDate.compare(comparison + " lesser equal", upperBound);
+    },
+    /**
+     * Simplify comparison.
+     */
+    valueOf: function() {
+        return this.time;
+    },
+    /**
+     * Simplify stringification.
+     */
+    toJSON: function() {
+        return this.value;
+    }
+});
+
+/**
+ * Convert a date representation into a date.
+ */
+function toDate(val, setToTheFirst) {
+    if (Array.isArray(val)) {
+        val = new Date(val[0], val[1], val[2]);
+    }
+    if (!_.isTypeOf(val, "date")) {
+        val = new Date(val);
+    }
+    if (setToTheFirst) {
+        val.setDate(1);
+    }
+    val.setHours(0, 0, 0, 0);
+    return val;
+}
+
+/**
+ * Get the decade a year belongs to.
+ */
+function getDecade(year) {
+    var offset = year % 10;
+    year -= offset;
+    return Object.freeze({
+        start: year,
+        end: year + (10 - 1),
+        toString: function() {
+            return this.start + " - " + this.end;
+        }
+    });
+}
 
 // var docEl = document.documentElement,
 //     HAS_SHADOW_ROOT = docEl.webkitCreateShadowRoot || docEl.createShadowRoot
@@ -424,7 +598,7 @@ shadow.Object.extend({
         // Make sure the $el is a jQuery DOM element.
         var $element = options.$el = options.$el instanceof jQuery ? options.$el : $(options.$el);
         if (!$element.length) {
-            throw new TypeError("No `$el` element found for “" + this.name + "”.");
+            throw new ReferenceError("No `$el` element found for “" + this.name + "”.");
         }
         // Make sure the element hasn’t already been bound.
         if ($element.data("shadow.isBound")) {
@@ -492,14 +666,14 @@ shadow.Object.extend({
      */
     on: function() {
         var element = this;
-        if (!element.is("constructed")) {
+        if (element.isClass()) {
             throw new TypeError("To bind an event callback, " + "the element must first be constructed.");
         }
         $.fn.on.apply(element.$el, arguments);
     },
     off: function() {
         var element = this;
-        if (!element.is("constructed")) {
+        if (element.isClass()) {
             throw new TypeError("To unbind an event callback, " + "the element must first be constructed.");
         }
         $.fn.off.apply(element.$el, arguments);
@@ -513,10 +687,46 @@ shadow.Object.extend({
     /**
      * Set an attribute of the shadow element.
      */
-    set: function(name, value, options) {
+    set: function(name, value) {
         var element = this;
         if (!(name in element.attrs)) return;
         element.attrs[name] = value;
+    },
+    /**
+     * Add a unit to an attribute of the shadow element.
+     */
+    add: function(name, unit, comparator) {
+        var element = this;
+        var value = element.attrs[name];
+        if (_.isWithin(value, unit, comparator)) {
+            return;
+        }
+        var insertAt = value.length;
+        value.splice(insertAt, 0, unit);
+        var eventAdd = $.Event("add:" + name, {
+            value: value,
+            unit: unit,
+            name: name
+        });
+        element.$el.trigger(eventAdd);
+    },
+    /**
+     * Remove a unit from an attribute of the shadow element.
+     */
+    remove: function(name, unit, comparator) {
+        var element = this;
+        var value = element.attrs[name];
+        var index = _.indexIn(value, unit, comparator);
+        if (index < 0) {
+            return;
+        }
+        value.splice(index, 1);
+        var eventRemove = $.Event("remove:" + name, {
+            value: value,
+            unit: unit,
+            name: name
+        });
+        element.$el.trigger(eventRemove);
     }
 });
 
@@ -564,10 +774,7 @@ function buildTemplate(element) {
         if (typeof template == "function") {
             template = element.template();
         }
-        if (typeof template != "string" && !(template instanceof Node) && !(template instanceof jQuery)) try {
-            template = JSON.stringify(template);
-        } catch (e) {}
-        element.$host.empty().html(template);
+        element.$host.html(template);
     }
 }
 
@@ -611,22 +818,22 @@ function decorateShadowAttribute($element, shadowAttrs, prop) {
         },
         set: function(value) {
             var previousValue = currValue;
-            var eventSet = $.Event("assign:" + prop, {
+            var eventAssign = $.Event("assign:" + prop, {
                 value: value,
                 name: prop
             });
-            $element.trigger(eventSet);
-            var isPrevented = eventSet.isDefaultPrevented();
+            $element.trigger(eventAssign);
+            var isPrevented = eventAssign.isDefaultPrevented();
             if (!isPrevented) {
-                currValue = eventSet.value;
+                currValue = eventAssign.value;
                 updateShadowAttribute($element, prop, currValue);
             }
-            var eventUpdate = $.Event("set:" + prop, {
+            var eventSet = $.Event("set:" + prop, {
                 value: isPrevented ? value : currValue,
                 previousValue: previousValue,
                 name: prop
             });
-            $element.trigger(eventUpdate);
+            $element.trigger(eventSet);
         }
     });
 }
@@ -652,7 +859,7 @@ function prefixifyClassNames(classNames, prefix) {
     }
     prefix = prefix || "";
     if (!classNames) {
-        throw new TypeError("No `classNames` were given to prefix.");
+        throw new ReferenceError("No `classNames` were given to prefix.");
     }
     var prefixClassName = function(className) {
         var classNameDelimiter = !prefix || !className || className.match(/^-/) ? "" : "__";
@@ -668,7 +875,7 @@ function prefixifyClassNames(classNames, prefix) {
 }
 
 /**
- * Construct a data field object.
+ * Construct a data element object.
  */
 shadow.Element.extend({
     name: "DataElement",
@@ -692,10 +899,10 @@ shadow.Element.extend({
      * and before getters and setters are made.
      */
     setup: function() {
-        var dataField = this;
-        var attrs = dataField.attrs;
-        // If a format is expected, there must be formatters available.
-        if (attrs.format && !dataField.formats) {
+        var dataElement = this;
+        var attrs = dataElement.attrs;
+        // If a format is expected, there must be formats available for parsing/formatting.
+        if (attrs.format && !dataElement.formats) {
             throw new TypeError("The `formats` hash map is required.");
         }
         if (attrs.allowMultiple && !attrs.formatMultiple) {
@@ -704,95 +911,125 @@ shadow.Element.extend({
         if (attrs.allowRange && !attrs.formatRange) {
             attrs.formatRange = "{ - }";
         }
+        // Bind updating the formats when a range or multiple values are allowed.
+        dataElement.on("assign:allowMultiple." + dataElement.id, function(event) {
+            if (event.value) {
+                if (!attrs.formatMultiple) {
+                    attrs.formatMultiple = "{, |, }";
+                }
+                if (attrs.select && !attrs.allowRange) {
+                    attrs.select = [ attrs.select ];
+                }
+            } else {
+                if (attrs.select && !attrs.allowRange) {
+                    attrs.select = attrs.select[attrs.select.length - 1];
+                }
+            }
+        });
+        dataElement.on("assign:allowRange." + dataElement.id, function(event) {
+            if (event.value) {
+                if (!attrs.formatRange) {
+                    attrs.formatRange = "{ - }";
+                }
+                if (attrs.select && !attrs.allowMultiple) {
+                    attrs.select = [ attrs.select ];
+                }
+            } else {
+                if (attrs.select && !attrs.allowMultiple) {
+                    attrs.select = attrs.select[attrs.select.length - 1];
+                }
+            }
+        });
+        // Bind updating the value when select is set.
+        dataElement.on("set:select." + dataElement.id, function(event) {
+            var value = event.value;
+            attrs.value = value ? dataElement.format(value) : "";
+        });
+        // Bind updating the value when the format is updated.
+        dataElement.on("set:format." + dataElement.id + " set:formatRange." + dataElement.id + " set:formatMultiple." + dataElement.id, function() {
+            if (attrs.select) {
+                attrs.value = dataElement.format(attrs.select);
+            }
+        });
+    },
+    /**
+     * Create a data element object.
+     */
+    create: function(options) {
+        // Create the shadow object.
+        var dataElement = this._super(options);
+        var attrs = dataElement.attrs;
+        // When there are formats, make sure it is format-able.
+        if (dataElement.formats) {
+            if (!attrs.format) {
+                throw new TypeError("The `format` attribute is required.");
+            }
+            Object.seal(dataElement.formats);
+        }
+        // Set the data element input.
+        if (!dataElement.$input) {
+            if (dataElement.$el[0].nodeName == "INPUT") {
+                shadow._.define(dataElement, "$input", dataElement.$el);
+            } else if (attrs.hiddenInput) {
+                shadow._.define(dataElement, "$input", $("<input type=hidden>"));
+                dataElement.$el.after(dataElement.$input);
+            }
+        }
+        if (dataElement.$input) {
+            // Make sure we have a valid input element.
+            if (dataElement.$input[0].nodeName != "INPUT") {
+                throw new TypeError("To create a shadow input, " + "the `$el` must be an input element.");
+            }
+            dataElement.$input.addClass(dataElement.classNames.input);
+            // Set the starting element value.
+            if (attrs.value) {
+                dataElement.$input.val(attrs.value);
+            }
+            // Set the starting select.
+            var value = dataElement.$input.val();
+            if (!attrs.value && value) {
+                attrs.select = dataElement.parse(value);
+            }
+            // Bind updating the element’s value when value is set.
+            dataElement.on("set:value." + dataElement.id, function(event) {
+                dataElement.$input[0].value = event.value;
+            });
+        }
         // Set the starting select.
         if (attrs.value) {
-            var selection = dataField.parse(attrs.value);
+            var selection = dataElement.parse(attrs.value);
             if (selection) {
                 attrs.select = selection;
             }
         } else if (attrs.select) {
-            attrs.value = dataField.format(attrs.select);
+            attrs.value = dataElement.format(attrs.select);
         }
-        // Bind updating the value when select is set.
-        dataField.on("set:select." + dataField.id, function(event) {
-            var value = event.value;
-            attrs.value = value ? dataField.format(value) : "";
-        });
-    },
-    /**
-     * Create a data field object.
-     */
-    create: function(options) {
-        // Create the shadow object.
-        var dataField = this._super(options);
-        var attrs = dataField.attrs;
-        // When there are formats, make sure it is format-able.
-        if (dataField.formats) {
-            if (!attrs.format) {
-                throw new TypeError("The `format` attribute is required.");
-            }
-            Object.seal(dataField.formats);
-        }
-        // Set the data field input.
-        if (!dataField.$input) {
-            if (dataField.$el[0].nodeName == "INPUT") {
-                shadow._.define(dataField, "$input", dataField.$el);
-            } else if (attrs.hiddenInput) {
-                shadow._.define(dataField, "$input", $("<input type=hidden>"));
-                dataField.$el.after(dataField.$input);
-            }
-        }
-        if (dataField.$input) {
-            // Make sure we have a valid input element.
-            if (dataField.$input[0].nodeName != "INPUT") {
-                throw new TypeError("To create a shadow input, " + "the `$el` must be an input element.");
-            }
-            dataField.$input.addClass(dataField.classNames.input);
-            // Set the starting element value.
-            if (attrs.value) {
-                dataField.$input.val(attrs.value);
-            }
-            // Set the starting select.
-            var value = dataField.$input.val();
-            if (!attrs.value && value) {
-                attrs.select = dataField.parse(value);
-            }
-            // Bind updating the element’s value when value is set.
-            dataField.on("set:value." + dataField.id, function(event) {
-                dataField.$input[0].value = event.value;
-            });
-        }
-        // Whenever the format is updated, the value should be re-formatted.
-        dataField.on("set:format." + dataField.id + " set:formatRange." + dataField.id, function() {
-            if (attrs.select) {
-                attrs.value = dataField.format(attrs.select);
-            }
-        });
-        // Return the new data field object.
-        return dataField;
+        // Return the new data element object.
+        return dataElement;
     },
     //create
     /**
      * Convert a value into a formatted string.
      */
-    format: function(value) {
-        var dataField = this;
-        var formatsHash = dataField.formats;
+    format: function(value, options) {
+        var dataElement = this;
+        var formatsHash = dataElement.formats;
+        var attrs = dataElement.attrs;
         var formatValueUnit = function(valueUnit) {
             if (formatsHash) {
-                return toFormattingArray(dataField.attrs.format, formatsHash).map(function(chunk) {
-                    return chunk.f ? formatsHash[chunk.f].call(dataField, valueUnit) : chunk;
+                return toFormattingArray(attrs.format, formatsHash).map(function(chunk) {
+                    return chunk.f ? formatsHash[chunk.f].call(dataElement, valueUnit) : chunk;
                 }).join("");
             }
             return typeof valueUnit == "object" ? JSON.stringify(valueUnit) : "" + valueUnit;
         };
         // If multiple values are allowed, setup the combo formatter.
-        if (dataField.attrs.allowMultiple === true) {
-            return formatMultipleUnits(formatValueUnit, dataField.attrs.formatMultiple, dataField.attrs.formatRange, value);
+        if (attrs.allowMultiple === true) {
+            return formatMultipleUnits(formatValueUnit, attrs.formatMultiple, attrs.formatRange, value);
         }
         // If range values are allowed, setup the range formatter.
-        if (dataField.attrs.allowRange === true) {
-            return formatRangeUnits(formatValueUnit, dataField.attrs.formatRange, value);
+        if (attrs.allowRange === true) {
+            return formatRangeUnits(formatValueUnit, attrs.formatRange, value);
         }
         // Otherwise just format it as a single unit.
         return formatValueUnit(value);
@@ -814,14 +1051,15 @@ shadow.Element.extend({
         if (!string) {
             return null;
         }
-        var dataField = this;
+        var dataElement = this;
+        var attrs = dataElement.attrs;
         var parseValueUnit = function(valueUnit) {
             // If there are formats, decorate the unit as needed.
-            if (dataField.formats) {
+            if (dataElement.formats) {
                 // Create a parsed unit hash from the string.
-                var parsedHash = dataField.parseUnit(valueUnit);
+                var parsedHash = dataElement.parseUnit(valueUnit);
                 // Convert the unit hash into a value unit.
-                valueUnit = /*dataField.formatUnit(*/ parsedHash;
+                valueUnit = /*dataElement.formatUnit(*/ parsedHash;
             }
             // Try to evaluate it as JSON.
             try {
@@ -830,12 +1068,12 @@ shadow.Element.extend({
             return valueUnit;
         };
         // If multiple values are allowed, setup the combo parser.
-        if (dataField.attrs.allowMultiple === true) {
-            return parseMultipleUnits(parseValueUnit, dataField.attrs.formatMultiple, dataField.attrs.formatRange, string);
+        if (attrs.allowMultiple === true) {
+            return parseMultipleUnits(parseValueUnit, attrs.formatMultiple, attrs.formatRange, string);
         }
         // If range values are allowed, setup the range parser.
-        if (dataField.attrs.allowRange === true) {
-            return parseRangeUnits(parseValueUnit, dataField.attrs.formatRange, string);
+        if (attrs.allowRange === true) {
+            return parseRangeUnits(parseValueUnit, attrs.formatRange, string);
         }
         // Otherwise just parse it as a single unit.
         return parseValueUnit(string);
@@ -845,21 +1083,25 @@ shadow.Element.extend({
      * Convert a formatted unit string into a parsed unit hash.
      */
     parseUnit: function(stringUnit) {
-        var dataField = this;
-        var formatsHash = dataField.formats;
+        var dataElement = this;
+        var formatsHash = dataElement.formats;
         var parsedHash = {};
         // If there are formats, parse the unit.
         if (formatsHash) {
-            toFormattingArray(dataField.attrs.format, formatsHash).forEach(function(chunk) {
+            toFormattingArray(dataElement.attrs.format, formatsHash).forEach(function(chunk) {
                 if (chunk.f) {
-                    var chunkValue = formatsHash[chunk.f].call(dataField, stringUnit, true);
+                    var chunkValue = formatsHash[chunk.f].call(dataElement, stringUnit, true);
                     if (!stringUnit.match(new RegExp("^" + chunkValue))) {
                         throw new SyntaxError("The value parsed by the " + "`" + chunk.f + "` formatting rule did not " + "match the value being parsed.\n" + "Value being parsed: “" + stringUnit + "”.\n" + "Value parsed by rule: “" + chunkValue + "”.");
                     }
                     stringUnit = stringUnit.slice(chunkValue.length);
                     parsedHash[chunk.f] = chunkValue;
                 } else {
-                    stringUnit = stringUnit.replace(new RegExp("^" + chunk), "");
+                    var regex = new RegExp("^" + chunk);
+                    if (!stringUnit.match(regex)) {
+                        throw new SyntaxError("The formatting unit “" + chunk + "” " + "did not match in the string “" + stringUnit + "”.");
+                    }
+                    stringUnit = stringUnit.replace(regex, "");
                 }
             });
         }
@@ -867,26 +1109,26 @@ shadow.Element.extend({
     },
     //parseUnit
     /**
-     * Get a data field’s attribute with certain options.
+     * Get a data element’s attribute with certain options.
      */
     get: function(name, options) {
-        var dataField = this;
-        var value = dataField._super(name);
+        var dataElement = this;
+        var value = dataElement._super(name);
         options = options || {};
         if (options.format) {
-            value = dataField.format(value);
+            value = dataElement.format(value, options);
         }
         return value;
     }
 });
 
-//shadow('data-field')
+//shadow('data-element')
 /**
  * Format multiple units of value.
  */
 function formatMultipleUnits(formatter, formatMultiple, formatRange, value) {
     if (!Array.isArray(value)) {
-        throw new TypeError("An input with multiple values " + "expects it’s attribute value to be a collection.");
+        throw new TypeError("A data element with multiple values " + "expects it’s attribute value to be a collection.");
     }
     var matchCombo = formatMultiple.match(/(.*)\{(.*?)\|(.*?)\}(.*)/);
     var beforeFirst = matchCombo[1];
@@ -1015,11 +1257,11 @@ function parseRangeUnits(parser, format, value) {
         return range;
     }
     var addToCollection = function(rangeUnit) {
-        var originalvalueUnit = rangeUnit;
+        var originalValueUnit = rangeUnit;
         rangeUnit = parser(rangeUnit);
         range.push(rangeUnit);
-        if (typeof rangeUnit == "string") originalvalueUnit = rangeUnit;
-        value = value.replace(originalvalueUnit, "");
+        if (typeof rangeUnit == "string") originalValueUnit = rangeUnit;
+        value = value.replace(originalValueUnit, "");
     };
     var matchRange = format.match(/(.*)\{(.*?)\}(.*)/);
     var regStrBeforeStart = matchRange[1];

@@ -6,7 +6,15 @@ module.exports = {
     options: {
         jshintrc: '.jshintrc'
     },
-    gruntfile: 'Gruntfile.js',
-    main: ['js/shadow.js'],
-    tests: ['js/tests/spec/**/*.js']
+    configuration: [
+        'Gruntfile.js',
+        'node_configs',
+        'node_tasks'
+    ],
+    library: [
+        'js/**/*.js'
+    ],
+    specs: [
+        'js/tests/spec/**/*.js'
+    ]
 }

@@ -5,7 +5,7 @@
 var grunt = require('grunt')
 
 module.exports = {
-    main: {
+    develop: {
         options: {
             sourceMap: true,
             mangle: false,
@@ -25,6 +25,15 @@ module.exports = {
                 'js/source/objects/Element.js',
                 'js/source/objects/DataElement.js'
             ]
+        }
+    },
+    build: {
+        options: {
+            sourceMap: true,
+            preserveComments: 'some'
+        },
+        files: {
+            'js/shadow.min.js': 'js/shadow.js'
         }
     }
 }

@@ -4,8 +4,8 @@
 
 module.exports = function(grunt) {
 
-    grunt.registerTask('default', ['uglify', 'less'])
-    grunt.registerTask('strict', ['uglify', 'less', 'jshint', 'jasmine'])
-    grunt.registerTask('travis', ['jshint', 'jasmine'])
+    grunt.registerTask('develop', ['uglify:develop', 'jekyll:develop', 'connect:develop', 'watch:develop'])
+    grunt.registerTask('test', ['jshint', 'jasmine'])
+    grunt.registerTask('build', ['uglify:build'])
 
 }

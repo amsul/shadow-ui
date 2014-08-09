@@ -7,9 +7,9 @@ module.exports = {
         'js/shadow.js'
     ],
     options: {
-        specs: 'js/tests/spec/**/*.js',
+        specs: 'tests/spec/**/*.js',
         vendor: [
-            'js/tests/jquery/jquery.1.7.0.js'
+            'tests/jquery/jquery.1.7.0.js'
         ]
     }
 }

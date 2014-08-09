@@ -12,9 +12,9 @@ module.exports = {
         'node_tasks'
     ],
     library: [
-        'js/**/*.js'
+        'js/shadow.js'
     ],
     specs: [
-        'js/tests/spec/**/*.js'
+        'tests/spec/**/*.js'
     ]
 }

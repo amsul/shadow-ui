@@ -1,6 +1,6 @@
 
 /*!
- * Shadow UI v0.6.1-0, 2014/08/08
+ * Shadow UI v0.6.1-0, 2014/08/09
  * By Amsul, http://amsul.ca
  * Hosted on http://amsul.github.io/shadow-ui
  * Licensed under MIT
@@ -1130,6 +1130,10 @@ function formatMultipleUnits(formatter, formatMultiple, formatRange, value) {
     if (!Array.isArray(value)) {
         throw new TypeError("A data element with multiple values " + "expects it’s attribute value to be a collection.");
     }
+    var matchPlaceholders = formatMultiple.match(/.*(\{).*?(\|).*?(\}).*/);
+    if (!matchPlaceholders || matchPlaceholders.length < 3) {
+        throw new SyntaxError("The `formatMultiple` option is invalid.");
+    }
     var matchCombo = formatMultiple.match(/(.*)\{(.*?)\|(.*?)\}(.*)/);
     var beforeFirst = matchCombo[1];
     var beforeMiddle = matchCombo[2];
@@ -1152,6 +1156,10 @@ function formatMultipleUnits(formatter, formatMultiple, formatRange, value) {
  * Format a range’s units.
  */
 function formatRangeUnits(formatter, format, rangeUnit) {
+    var matchPlaceholders = formatMultiple.match(/.*(\{).*?(\}).*/);
+    if (!matchPlaceholders || matchPlaceholders.length < 2) {
+        throw new SyntaxError("The `formatMultiple` option is invalid.");
+    }
     var matchRange = format.match(/(.*)\{(.*?)\}(.*)/);
     var beforeLower = matchRange[1];
     var beforeUpper = matchRange[2];

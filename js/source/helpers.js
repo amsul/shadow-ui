@@ -3,7 +3,7 @@ var _ = shadow._ = {
 
 
     /**
-     * A no-nop.
+     * A no-op.
      */
     noop: function() {},
 

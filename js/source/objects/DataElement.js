@@ -355,6 +355,11 @@ function formatMultipleUnits(formatter, formatMultiple, formatRange, value) {
             'expects it’s attribute value to be a collection.')
     }
 
+    var matchPlaceholders = formatMultiple.match(/.*(\{).*?(\|).*?(\}).*/)
+    if ( !matchPlaceholders || matchPlaceholders.length < 3 ) {
+        throw new SyntaxError('The `formatMultiple` option is invalid.')
+    }
+
     var matchCombo = formatMultiple.match(/(.*)\{(.*?)\|(.*?)\}(.*)/)
     var beforeFirst = matchCombo[1]
     var beforeMiddle = matchCombo[2]
@@ -383,6 +388,11 @@ function formatMultipleUnits(formatter, formatMultiple, formatRange, value) {
  * Format a range’s units.
  */
 function formatRangeUnits(formatter, format, rangeUnit) {
+
+    var matchPlaceholders = formatMultiple.match(/.*(\{).*?(\}).*/)
+    if ( !matchPlaceholders || matchPlaceholders.length < 2 ) {
+        throw new SyntaxError('The `formatMultiple` option is invalid.')
+    }
 
     var matchRange = format.match(/(.*)\{(.*?)\}(.*)/)
     var beforeLower = matchRange[1]

@@ -1,48 +1,36 @@
 
-// Check if the super method was called within a wrapped method..
-var checkForSuperCall = function(prototype, property) {
-    var methodString = '' + prototype[property]
-    var variableNameMatch = methodString.match(/(\w+) *= *this/)
-    var variableName = variableNameMatch && variableNameMatch[1] + '|' || ''
-    var invoker = '(\\.(call|apply))?\\('
-    var superRegex = new RegExp('(?:' + variableName + 'this)\\._super(' + invoker + ')')
-    if ( !methodString.match(superRegex) ) {
-        console.warn('Overriding the base method `' + property + '` ' +
-            'without calling `this._super()` within the method might cause ' +
-            'unexpected results. Make sure this is the behavior you desire.\n',
-            prototype)
-    }
-}
-
-
-// Allow inheritence of super methods. Based on:
-// http://ejohn.org/blog/simple-javascript-inheritance/
-var superFun = function(Base, property, fn) {
-    return function superWrapper() {
-        var object = this
-        object._super = Base[property]
-        var ret = fn.apply(object, arguments)
-        delete object._super
-        return ret
-    }
-}
-
-
-
 /**
  * The core shadow object prototype.
+ *
+ * @class shadow.Object
+ * @static
  */
 shadow.Object = Object.create({}, {
 
 
-    // A name for the object (to help with debugging).
+    /**
+     * The name of the object.
+     *
+     * Classes are `PascalCased` and objects are `camelCased`.
+     *
+     * @attribute name
+     * @type String
+     * @readOnly
+     */
     name: {
         enumerable: true,
         value: 'Object'
     },
 
 
-    // Create an instance of the shadow object.
+    /**
+     * Create an instance of the shadow object.
+     *
+     * @method create
+     * @param {Object} options Options to extend the object’s prototype.
+     * @return {shadow.Object} An instance of the shadow object.
+     * @static
+     */
     create: {
         enumerable: true,
         value: function(options) {
@@ -74,8 +62,15 @@ shadow.Object = Object.create({}, {
     },
 
 
-    // Extend the object using prototypes. Based on:
-    // http://aaditmshah.github.io/why-prototypal-inheritance-matters/#inheriting_from_multiple_prototypes
+    /**
+     * Extend the object using prototypes. Based on:
+     * http://aaditmshah.github.io/why-prototypal-inheritance-matters/#inheriting_from_multiple_prototypes
+     *
+     * @method extend
+     * @param {Object} options Options to extend the object’s prototype.
+     * @return {shadow.Object} An extension of the shadow object class.
+     * @static
+     */
     extend: {
         enumerable: true,
         value: function(prototype) {
@@ -124,7 +119,12 @@ shadow.Object = Object.create({}, {
     }, //extend
 
 
-    // Check if the object is a class.
+    /**
+     * Check if the object is a class.
+     *
+     * @method isClass
+     * @return {Boolean}
+     */
     isClass: {
         enumerable: true,
         value: function() {
@@ -135,8 +135,14 @@ shadow.Object = Object.create({}, {
     },
 
 
-    // Check if the object inherits from the class of another.
-    // http://aaditmshah.github.io/why-prototypal-inheritance-matters/#fixing_the_instanceof_operator
+    /**
+     * Check if the object inherits from the class of another. Inspiration from:
+     * http://aaditmshah.github.io/why-prototypal-inheritance-matters/#fixing_the_instanceof_operator
+     *
+     * @method isClassOf
+     * @param {shadow.Object} Instance The instance of a shadow object.
+     * @return {Boolean}
+     */
     isClassOf: {
         enumerable: true,
         value: function(Instance) {
@@ -152,8 +158,14 @@ shadow.Object = Object.create({}, {
     },
 
 
-    // Check if the object is an instance of another.
-    // http://aaditmshah.github.io/why-prototypal-inheritance-matters/#fixing_the_instanceof_operator
+    /**
+     * Check if the object is an instance of another. Inspiration from:
+     * http://aaditmshah.github.io/why-prototypal-inheritance-matters/#fixing_the_instanceof_operator
+     *
+     * @method isInstanceOf
+     * @param {shadow.Object} Base The class of a shadow object.
+     * @return {Boolean}
+     */
     isInstanceOf: {
         enumerable: true,
         value: function(Base) {
@@ -162,21 +174,30 @@ shadow.Object = Object.create({}, {
     },
 
 
-    // Check if the object is the prototype another.
+    /**
+     * Check if the object is the prototype of another.
+     *
+     * @method isPrototypeOf
+     * @param {shadow.Object} object A shadow object.
+     * @return {Boolean}
+     */
     isPrototypeOf: {
         enumerable: true,
         value: function(object) {
             var Base = this
             var Prototype = Object.getPrototypeOf(object)
             return Base === Prototype &&
-                object.name === _.caseCamel(Prototype.name)/* &&
-                object.create === undefined &&
-                object.extend === undefined*/
+                object.name === _.caseCamel(Prototype.name)
         }
     },
 
 
-    // Cast the object into a string representation.
+    /**
+     * Cast the object into a string representation.
+     *
+     * @method toString
+     * @return {String} A string representation of the shadow object.
+     */
     toString: {
         enumerable: true,
         value: function() {
@@ -191,6 +212,14 @@ shadow.Object = Object.create({}, {
         }
     },
 
+
+    /**
+     * Cast the object into a full string representation.
+     *
+     * @method toFullString
+     * @return {String} A full trace string representation of the shadow object.
+     * @private
+     */
     toFullString: {
         enumerable: true,
         value: function() {
@@ -210,3 +239,32 @@ shadow.Object = Object.create({}, {
     }
 
 }) //shadow.Object
+
+
+// Check if the super method was called within a wrapped method..
+function checkForSuperCall(prototype, property) {
+    var methodString = '' + prototype[property]
+    var variableNameMatch = methodString.match(/(\w+) *= *this/)
+    var variableName = variableNameMatch && variableNameMatch[1] + '|' || ''
+    var invoker = '(\\.(call|apply))?\\('
+    var superRegex = new RegExp('(?:' + variableName + 'this)\\._super(' + invoker + ')')
+    if ( !methodString.match(superRegex) ) {
+        console.warn('Overriding the base method `' + property + '` ' +
+            'without calling `this._super()` within the method might cause ' +
+            'unexpected results. Make sure this is the behavior you desire.\n',
+            prototype)
+    }
+}
+
+
+// Allow inheritence of super methods. Based on:
+// http://ejohn.org/blog/simple-javascript-inheritance/
+function superFun(Base, property, fn) {
+    return function superWrapper() {
+        var object = this
+        object._super = Base[property]
+        var ret = fn.apply(object, arguments)
+        delete object._super
+        return ret
+    }
+}

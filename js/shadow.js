@@ -1,6 +1,6 @@
 
 /*!
- * Shadow UI v0.6.1-0, 2014/08/09
+ * Shadow UI v0.6.1-0, 2014/08/13
  * By Amsul, http://amsul.ca
  * Hosted on http://amsul.github.io/shadow-ui
  * Licensed under MIT
@@ -23,6 +23,12 @@
 
 'use strict';
 
+/**
+ * @module shadow
+ */
+/**
+ * The main interface to register a shadow component.
+ */
 function shadow(shadowName, shadowOptions) {
     if (!shadowName) {
         throw new ReferenceError("The `shadowName` is required to register a UI interface.");
@@ -72,22 +78,48 @@ shadow.buildAll = function(shadowName, shadowOptions) {
     });
 };
 
+/**
+ * @class shadow._
+ * @static
+ */
 var _ = shadow._ = {
     /**
-     * A no-nop.
+     * A no-op.
+     *
+     * @method noop
+     * @static
      */
     noop: function() {},
     /**
      * Define an enumerable property on an object.
+     *
+     * @method define
+     * @param {Object} object The object to receive the property definition.
+     * @param {String} prop The property to define.
+     * @param {String|Boolean|Number|Array|Object|Function} value The value of the definition.
+     * @static
      */
-    define: function(object, item, value) {
-        Object.defineProperty(object, item, {
+    define: function(object, prop, value) {
+        Object.defineProperty(object, prop, {
             enumerable: true,
             value: value
         });
     },
     /**
      * Convert to camel-cased text.
+     *
+     * @example
+     *
+     *     shadow._.caseCamel('howdy-there stranger')
+     *     // returns 'howdyThere stranger'
+     *
+     *     shadow._.caseCamel('HowdyThere-stranger')
+     *     // returns 'howdyThereStranger'
+     *
+     * @method caseCamel
+     * @param {String} words A string of words delimited by dashes, underscores, and case changes.
+     * @return {String} The camelized string of words.
+     * @static
      */
     caseCamel: function(words) {
         var newWord = true;
@@ -109,6 +141,17 @@ var _ = shadow._ = {
     },
     /**
      * Convert to pascal-cased text.
+     *
+     *     shadow._.casePascal('howdy-there stranger')
+     *     // returns 'HowdyThere stranger'
+     *
+     *     shadow._.casePascal('HowdyThere-stranger')
+     *     // returns 'HowdyThereStranger'
+     *
+     * @method casePascal
+     * @param {String} words A string of words delimited by dashes, underscores, and case changes.
+     * @return {String} The pascalized string of words.
+     * @static
      */
     casePascal: function(words) {
         var newWord = true;
@@ -130,6 +173,17 @@ var _ = shadow._ = {
     },
     /**
      * Convert to dash-cased text.
+     *
+     *     shadow._.caseDash('howdy-there stranger')
+     *     // returns 'howdy-there stranger'
+     *
+     *     shadow._.caseDash('HowdyThere-stranger')
+     *     // returns 'howdy-there-stranger'
+     *
+     * @method caseDash
+     * @param {String} words A string of words delimited by dashes, underscores, and case changes.
+     * @return {String} The dasherized string of words.
+     * @static
      */
     caseDash: function(words) {
         var newWord = true;
@@ -150,14 +204,76 @@ var _ = shadow._ = {
         return wordChunks.join("");
     },
     /**
-     * Check what the type of a thing is.
+     * Check what the internal type of a value is.
+     *
+     * @example
+     *
+     *     shadow._.isTypeOf(new Date)
+     *     // returns 'date'
+     *
+     *     shadow._.isTypeof(new Date, 'date')
+     *     // returns true
+     *
+     * @method isTypeOf
+     * @param value The value whose type is being checked.
+     * @param {String} [type] A type to compare against.
+     * @return {String|Boolean} If a `type` is passed, a boolean is returned. Otherwise the type is returned.
+     * @static
      */
-    isTypeOf: function(thing, type) {
-        var thingType = {}.toString.call(thing).slice(8, -1).toLowerCase();
-        return type ? type === thingType : thingType;
+    isTypeOf: function(value, type) {
+        var valueType = {}.toString.call(value).slice(8, -1).toLowerCase();
+        return type ? type === valueType : valueType;
     },
     /**
      * Define aria attributes on an element.
+     *
+     * @example
+     *
+     * Given the following element:
+     *
+     *     <div id="elem"></div>
+     *
+     * And applying the following snippet:
+     *
+     *     var el = document.getElementById('elem')
+     *     shadow._.aria(el, 'role', 'button')
+     *     shadow._.aria(el, 'controls', 'widget')
+     *
+     * The element becomes:
+     *
+     *     <div id="elem" role="button" aria-controls="widget"></div>
+     *
+     * @method aria
+     * @param {HTMLElement} element The HTML element whose attribute should be set.
+     * @param {String} attribute The name of the aria attribute to set (minus the `aria-` part of the name).
+     * @param {String|Boolean} value The value to set the attribute to.
+     * @static
+     */
+    /**
+     * An alternate way to set multiple aria attributes on an element.
+     *
+     * @example
+     *
+     * Given the following element:
+     *
+     *     <div id="elem"></div>
+     *
+     * And applying the following snippet:
+     *
+     *     var el = document.getElementById('elem')
+     *     shadow._.aria(el, {
+     *         role: 'button',
+     *         controls: 'widget'
+     *     })
+     *
+     * The element becomes:
+     *
+     *     <div id="elem" role="button" aria-controls="widget"></div>
+     *
+     * @method aria
+     * @param {HTMLElement} element The HTML element whose attribute should be set.
+     * @param {Hash} attributes A hash mapping of attribute names (minus the `aria-` part) to values.
+     * @static
      */
     aria: function(element, attribute, value) {
         if ($.isPlainObject(attribute)) {
@@ -170,6 +286,15 @@ var _ = shadow._ = {
     },
     /**
      * Create an element node with optional children.
+     *
+     * @method el
+     * @param {String|Hash} [options] Options to customize the creation. If it’s a string, the value is used as the class name.
+     * @param {String} options.name The tag name for the element.
+     * @param {String} options.klass The class name for the element.
+     * @param {Hash} options.attrs A hash mapping of attributes for the element.
+     * @param {Node|HTMLElement|DocumentFragment|Array} [childEls] The children to append to the element.
+     * @return {HTMLElement} The newly created element.
+     * @static
      */
     el: function(options, childEls) {
         var className;
@@ -214,6 +339,13 @@ var _ = shadow._ = {
     },
     /**
      * Get the index of a unit within a collection.
+     *
+     * @method indexIn
+     * @param {Array} collection A collection of values with the same type.
+     * @param {String|Boolean|Number|Array|Object} unit The unit to find.
+     * @param {Function} [comparator] A function to use for the comparison of units.
+     * @return {Number} The index the unit was found at. `-1` if it wasn’t found.
+     * @static
      */
     indexIn: function(collection, unit, comparator) {
         if (!Array.isArray(collection)) {
@@ -232,6 +364,13 @@ var _ = shadow._ = {
     },
     /**
      * Check if a unit is within a collection.
+     *
+     * @method isWithin
+     * @param {Array} collection A collection of values with the same type.
+     * @param {String|Boolean|Number|Array|Object} unit The unit to find.
+     * @param {Function} [comparator] A function to use for the comparison of units.
+     * @return {Boolean}
+     * @static
      */
     isWithin: function(collection, unit, comparator) {
         return this.indexIn(collection, unit, comparator) > -1;
@@ -242,40 +381,34 @@ function ariaSet(element, attribute, value) {
     element.setAttribute((attribute == "role" ? "" : "aria-") + attribute, value);
 }
 
-// Check if the super method was called within a wrapped method..
-var checkForSuperCall = function(prototype, property) {
-    var methodString = "" + prototype[property];
-    var variableNameMatch = methodString.match(/(\w+) *= *this/);
-    var variableName = variableNameMatch && variableNameMatch[1] + "|" || "";
-    var invoker = "(\\.(call|apply))?\\(";
-    var superRegex = new RegExp("(?:" + variableName + "this)\\._super(" + invoker + ")");
-    if (!methodString.match(superRegex)) {
-        console.warn("Overriding the base method `" + property + "` " + "without calling `this._super()` within the method might cause " + "unexpected results. Make sure this is the behavior you desire.\n", prototype);
-    }
-};
-
-// Allow inheritence of super methods. Based on:
-// http://ejohn.org/blog/simple-javascript-inheritance/
-var superFun = function(Base, property, fn) {
-    return function superWrapper() {
-        var object = this;
-        object._super = Base[property];
-        var ret = fn.apply(object, arguments);
-        delete object._super;
-        return ret;
-    };
-};
-
 /**
  * The core shadow object prototype.
+ *
+ * @class shadow.Object
+ * @static
  */
 shadow.Object = Object.create({}, {
-    // A name for the object (to help with debugging).
+    /**
+     * The name of the object.
+     *
+     * Classes are `PascalCased` and objects are `camelCased`.
+     *
+     * @attribute name
+     * @type String
+     * @readOnly
+     */
     name: {
         enumerable: true,
         value: "Object"
     },
-    // Create an instance of the shadow object.
+    /**
+     * Create an instance of the shadow object.
+     *
+     * @method create
+     * @param {Object} options Options to extend the object’s prototype.
+     * @return {shadow.Object} An instance of the shadow object.
+     * @static
+     */
     create: {
         enumerable: true,
         value: function(options) {
@@ -311,8 +444,15 @@ shadow.Object = Object.create({}, {
             return object;
         }
     },
-    // Extend the object using prototypes. Based on:
-    // http://aaditmshah.github.io/why-prototypal-inheritance-matters/#inheriting_from_multiple_prototypes
+    /**
+     * Extend the object using prototypes. Based on:
+     * http://aaditmshah.github.io/why-prototypal-inheritance-matters/#inheriting_from_multiple_prototypes
+     *
+     * @method extend
+     * @param {Object} options Options to extend the object’s prototype.
+     * @return {shadow.Object} An extension of the shadow object class.
+     * @static
+     */
     extend: {
         enumerable: true,
         value: function(prototype) {
@@ -346,7 +486,12 @@ shadow.Object = Object.create({}, {
         }
     },
     //extend
-    // Check if the object is a class.
+    /**
+     * Check if the object is a class.
+     *
+     * @method isClass
+     * @return {Boolean}
+     */
     isClass: {
         enumerable: true,
         value: function() {
@@ -355,8 +500,14 @@ shadow.Object = Object.create({}, {
             return object === shadow.Object || !Base.isPrototypeOf(object);
         }
     },
-    // Check if the object inherits from the class of another.
-    // http://aaditmshah.github.io/why-prototypal-inheritance-matters/#fixing_the_instanceof_operator
+    /**
+     * Check if the object inherits from the class of another. Inspiration from:
+     * http://aaditmshah.github.io/why-prototypal-inheritance-matters/#fixing_the_instanceof_operator
+     *
+     * @method isClassOf
+     * @param {shadow.Object} Instance The instance of a shadow object.
+     * @return {Boolean}
+     */
     isClassOf: {
         enumerable: true,
         value: function(Instance) {
@@ -370,15 +521,27 @@ shadow.Object = Object.create({}, {
             return false;
         }
     },
-    // Check if the object is an instance of another.
-    // http://aaditmshah.github.io/why-prototypal-inheritance-matters/#fixing_the_instanceof_operator
+    /**
+     * Check if the object is an instance of another. Inspiration from:
+     * http://aaditmshah.github.io/why-prototypal-inheritance-matters/#fixing_the_instanceof_operator
+     *
+     * @method isInstanceOf
+     * @param {shadow.Object} Base The class of a shadow object.
+     * @return {Boolean}
+     */
     isInstanceOf: {
         enumerable: true,
         value: function(Base) {
             return this.isClassOf.call(Base, this);
         }
     },
-    // Check if the object is the prototype another.
+    /**
+     * Check if the object is the prototype of another.
+     *
+     * @method isPrototypeOf
+     * @param {shadow.Object} object A shadow object.
+     * @return {Boolean}
+     */
     isPrototypeOf: {
         enumerable: true,
         value: function(object) {
@@ -387,7 +550,12 @@ shadow.Object = Object.create({}, {
             return Base === Prototype && object.name === _.caseCamel(Prototype.name);
         }
     },
-    // Cast the object into a string representation.
+    /**
+     * Cast the object into a string representation.
+     *
+     * @method toString
+     * @return {String} A string representation of the shadow object.
+     */
     toString: {
         enumerable: true,
         value: function() {
@@ -401,6 +569,13 @@ shadow.Object = Object.create({}, {
             return "{" + type + " " + Base.name + "}";
         }
     },
+    /**
+     * Cast the object into a full string representation.
+     *
+     * @method toFullString
+     * @return {String} A full trace string representation of the shadow object.
+     * @private
+     */
     toFullString: {
         enumerable: true,
         value: function() {
@@ -420,18 +595,106 @@ shadow.Object = Object.create({}, {
     }
 });
 
+//shadow.Object
+// Check if the super method was called within a wrapped method..
+function checkForSuperCall(prototype, property) {
+    var methodString = "" + prototype[property];
+    var variableNameMatch = methodString.match(/(\w+) *= *this/);
+    var variableName = variableNameMatch && variableNameMatch[1] + "|" || "";
+    var invoker = "(\\.(call|apply))?\\(";
+    var superRegex = new RegExp("(?:" + variableName + "this)\\._super(" + invoker + ")");
+    if (!methodString.match(superRegex)) {
+        console.warn("Overriding the base method `" + property + "` " + "without calling `this._super()` within the method might cause " + "unexpected results. Make sure this is the behavior you desire.\n", prototype);
+    }
+}
+
+// Allow inheritence of super methods. Based on:
+// http://ejohn.org/blog/simple-javascript-inheritance/
+function superFun(Base, property, fn) {
+    return function superWrapper() {
+        var object = this;
+        object._super = Base[property];
+        var ret = fn.apply(object, arguments);
+        delete object._super;
+        return ret;
+    };
+}
+
 /**
- * Construct a date object.
+ * Construct a shadow date object.
+ *
+ * @class shadow.Date
+ * @extends shadow.Object
+ * @static
  */
 shadow.Object.extend({
     name: "Date",
+    /**
+     * The value of the date represented as an array.
+     *
+     * @example
+     *
+     *     var date = shadow.Date.create(new Date(2013, 3, 20))
+     *     date.value
+     *     // returns [2013, 3, 20]
+     *
+     * @attribute value
+     * @type {Array}
+     * @default null
+     * @readOnly
+     */
     value: null,
+    /**
+     * The year of the shadow date object.
+     *
+     * @attribute year
+     * @type {Number}
+     * @default null
+     * @readOnly
+     */
     year: null,
+    /**
+     * The month of the shadow date object.
+     *
+     * @attribute month
+     * @type {Number}
+     * @default null
+     * @readOnly
+     */
     month: null,
+    /**
+     * The date of the shadow date object.
+     *
+     * @attribute date
+     * @type {Number}
+     * @default null
+     * @readOnly
+     */
     date: null,
+    /**
+     * A flag to set the date to the first of the month upon creation.
+     *
+     * @example
+     *
+     *     var date = shadow.Date.create([2013, 3, 20], {
+     *         setToTheFirst: true
+     *     })
+     *     date.value
+     *     // returns [2013, 3, 1]
+     *
+     * @attribute setToTheFirst
+     * @type {Boolean}
+     * @default false
+     */
     setToTheFirst: false,
     /**
-     * Create a date object.
+     * Create an instance of a shadow date.
+     *
+     * @method create
+     * @param {Array|String|Number|Date|shadow.Date} value The value of the date to create.
+     * @param {Object} options Options for the date’s prototype.
+     * @return {shadow.Date} An instance of the shadow date.
+     * @static
      */
     create: function(value, options) {
         if (!value) {
@@ -457,7 +720,20 @@ shadow.Object.extend({
         return shadowDate;
     },
     /**
-     * Compare the date’s value in various ways.
+     * Extend the shadow date.
+     *
+     * @method extend
+     * @param {Object} options Options to extend the date’s prototype.
+     * @return {shadow.Date} An extension of the shadow date class.
+     * @static
+     */
+    /**
+     * Compare the shadow date’s value with another date.
+     *
+     * @method compare
+     * @param {String} [comparison] A “scope” to compare within.
+     * @param {Array|String|Number|Date|shadow.Date} date The value of the date to compare against.
+     * @return {Boolean}
      */
     compare: function(comparison, date) {
         if (arguments.length < 2) {
@@ -505,6 +781,11 @@ shadow.Object.extend({
     },
     /**
      * Compare a date with a range in various ways.
+     *
+     * @method compareRange
+     * @param {String} [comparison] A “scope” to compare within.
+     * @param {Array} range The range to compare against.
+     * @return {Boolean}
      */
     compareRange: function(comparison, range) {
         if (arguments.length < 2) {
@@ -527,13 +808,33 @@ shadow.Object.extend({
         return shadowDate.compare(comparison + " greater equal", lowerBound) && shadowDate.compare(comparison + " lesser equal", upperBound);
     },
     /**
-     * Simplify comparison.
+     * Simplify comparison of dates.
+     *
+     * @example
+     *
+     *     shadow.Date.create([2013, 3, 20]) > shadow.Date.create([2014, 8, 14])
+     *     // returns false
+     *
+     *     shadow.Date.create([2013, 3, 20]) < shadow.Date.create([2014, 8, 14])
+     *     // returns true
+     *
+     * @method valueOf
+     * @return {Number} The time of the date to make comparisons easier.
      */
     valueOf: function() {
         return this.time;
     },
     /**
-     * Simplify stringification.
+     * Simplify stringification of the shadow date.
+     *
+     * @example
+     *
+     *     var date = shadow.Date.create([2013, 3, 20])
+     *     JSON.stringify(date)
+     *     // returns "[2013,3,20]"
+     *
+     * @method toJSON
+     * @return {Array} The value of the date.
      */
     toJSON: function() {
         return this.value;
@@ -572,27 +873,140 @@ function getDecade(year) {
     });
 }
 
-// var docEl = document.documentElement,
-//     HAS_SHADOW_ROOT = docEl.webkitCreateShadowRoot || docEl.createShadowRoot
 /**
- * Construct an element object.
+ * Construct a shadow element object.
+ *
+ * @class shadow.Element
+ * @extends shadow.Object
+ * @static
  */
 shadow.Object.extend({
     name: "Element",
+    /**
+     * The source element to bind the shadow data to.
+     *
+     * @attribute $el
+     * @type jQuery
+     * @default null
+     */
     $el: null,
+    /**
+     * The host element that contains the shadow element within.
+     *
+     * This is usually the same as the `$el` - unless if it’s an element
+     * that cannot contain elements, such as an `input`.
+     *
+     * @attribute $host
+     * @type jQuery
+     * @default null
+     */
     $host: null,
     // $root: null,
     // root: null,
+    /**
+     * A unique ID for the element; constructed when the element is created.
+     *
+     * @attribute id
+     * @type String
+     * @default null
+     * @readOnly
+     */
     id: null,
+    /**
+     * An hash mapping of an element’s attributes.
+     *
+     * This object also gets populated with any `data-ui-*` attributes
+     * on the source element.
+     *
+     * @example
+     *
+     *     <div data-ui-prop="false" data-ui-another-prop="[1,3,4]"></div>
+     *
+     * Becomes
+     *
+     *     attrs: { prop: false, anotherProp: [1,3,4] }
+     *
+     * @attribute attrs
+     * @type Hash
+     * @default null
+     */
     attrs: null,
+    /**
+     * An hash mapping of an element’s dictionary to be used in templating.
+     *
+     * @attribute dict
+     * @type Hash
+     * @default null
+     */
     dict: null,
+    /**
+     * An hash mapping of an element’s class names to be used in templating.
+     *
+     * @attribute classNames
+     * @type Hash
+     * @default null
+     */
     classNames: null,
+    /**
+     * A prefix to use on all the class names of an element.
+     *
+     * @example
+     *
+     *     classNames: {
+     *         root: ' --root',
+     *         box: 'box',
+     *         button: 'button'
+     *     },
+     *     classNamesPrefix: 'my-prefix'
+     *
+     * Becomes
+     *
+     *     classNames: {
+     *         root: 'my-prefix my-prefix--root',
+     *         box: 'my-prefix__box',
+     *         button: 'my-prefix__button'
+     *     }
+     *
+     * @attribute classNamesPrefix
+     * @type String
+     * @default null
+     */
     classNamesPrefix: null,
+    /**
+     * The contents to put within the shadow element during templating.
+     *
+     * This default to using anything within the source element as the `content`.
+     *
+     * @attribute content
+     * @type Node|DocumentFragment
+     * @default null
+     */
     content: null,
+    /**
+     * Set up any listeners, configurations, attributes, etc. before
+     * they all are sealed and frozen.
+     *
+     * @attribute setup
+     * @type Function
+     * @default null
+     */
     setup: null,
+    /**
+     * Create a template for the shadow element.
+     *
+     * @attribute template
+     * @type Function|String|Node|jQuery
+     * @default null
+     */
     template: null,
     /**
-     * Create an element object.
+     * Create an instance of a shadow element.
+     *
+     * @method create
+     * @param {Object} options Options for the element’s prototype.
+     * @param {HTMLElement|jQuery} options.$el The source element of the shadow element.
+     * @return {shadow.Element} An instance of the shadow element.
+     * @static
      */
     create: function(options) {
         // Make sure the $el is a jQuery DOM element.
@@ -654,7 +1068,13 @@ shadow.Object.extend({
     },
     //create
     /**
-     * After extending the element, build all in the DOM.
+     * After extending the shadow element class, build all the occurrences
+     * of the element in the DOM.
+     *
+     * @method extend
+     * @param {Object} options Options to extend the element’s prototype.
+     * @return {shadow.Object} An extension of the shadow element class.
+     * @static
      */
     extend: function() {
         var ElementInstance = this._super.apply(this, arguments);
@@ -662,7 +1082,18 @@ shadow.Object.extend({
         return ElementInstance;
     },
     /**
-     * Bind/unbind events to fire.
+     * Bind events to fire during the element’s lifecycle.
+     *
+     * This method is basically a wrapper for jQuery’s `$.fn.on` method
+     * and uses the source element (`$el`) as the target.
+     *
+     * Check out the [documentation here](http://api.jquery.com/on/#on-events-selector-data).
+     *
+     * @method on
+     * @param {String|Object} events Unlike with jQuery, each event’s namespace is **required**.
+     * @param {String} [selector]
+     * @param {Object} [data]
+     * @param {Function} handler
      */
     on: function() {
         var element = this;
@@ -671,6 +1102,19 @@ shadow.Object.extend({
         }
         $.fn.on.apply(element.$el, arguments);
     },
+    /**
+     * Unbind events from firing during the element’s lifecycle.
+     *
+     * This method is basically a wrapper for jQuery’s `$.fn.off` method
+     * and uses the source element (`$el`) as the target.
+     *
+     * Check out the [documentation here](http://api.jquery.com/on/#on-events-selector-data).
+     *
+     * @method off
+     * @param {String|Object} events Unlike with jQuery, each event’s namespace is **required**.
+     * @param {String} [selector]
+     * @param {Function} [handler]
+     */
     off: function() {
         var element = this;
         if (element.isClass()) {
@@ -679,13 +1123,47 @@ shadow.Object.extend({
         $.fn.off.apply(element.$el, arguments);
     },
     /**
-     * Get an attribute of the shadow element.
+     * Get the value of an attribute of the shadow element.
+     *
+     * @example
+     *
+     *     var element = shadow.Element.create({
+     *         //...
+     *         attrs: {
+     *             myAttr: true,
+     *             myOtherAttr: { niceness: 10 }
+     *         }
+     *     })
+     *
+     * We can use the `get` method:
+     *
+     *     element.get('myAttr')
+     *     // returns true
+     *
+     *     element.get('myOtherAttr')
+     *     // returns { niceness: 10 }
+     *
+     * Or, we can directly access the `attrs` object:
+     *
+     *     element.attrs.myAttr
+     *     // returns true
+     *
+     *     element.attrs.myOtherAttr
+     *     // returns { niceness: 10 }
+     *
+     * @method get
+     * @param {String} name The name of the attribute to get.
+     * @return {String|Boolean|Number|Array|Hash} The value of the attribute.
      */
     get: function(name) {
         return this.attrs[name];
     },
     /**
-     * Set an attribute of the shadow element.
+     * Set the value of an attribute of the shadow element.
+     *
+     * @method set
+     * @param {String} name The name of the attribute to set.
+     * @param {String|Boolean|Number|Array|Hash} value The value of the attribute to set.
      */
     set: function(name, value) {
         var element = this;
@@ -694,6 +1172,34 @@ shadow.Object.extend({
     },
     /**
      * Add a unit to an attribute of the shadow element.
+     *
+     * The attribute **must** be an array containing the same types of units.
+     *
+     * @example
+     *
+     *     var element = shadow.Element.create({
+     *         //...
+     *         attrs: {
+     *             myCollection: [{ value: 6 }, { value: 14 }, { value: 19 }]
+     *         }
+     *     })
+     *
+     * To add a value, we’d do something like this:
+     *
+     *     element.get('myCollection')
+     *     // returns [{ value: 6 }, { value: 14 }, { value: 19 }]
+     *
+     *     element.add('myCollection', { value: 24 }, function(unit, loopedUnit) {
+     *         return unit.value === loopedUnit.value
+     *     })
+     *
+     *     element.get('myCollection')
+     *     // returns [{ value: 6 }, { value: 14 }, { value: 19 }, { value: 24 }]
+     *
+     * @method add
+     * @param {String} name The name of the attribute to add to.
+     * @param {String|Boolean|Number|Array|Hash} unit The unit of the value to add.
+     * @param {Function} [comparator] A function to use to compare the units to avoid duplicates.
      */
     add: function(name, unit, comparator) {
         var element = this;
@@ -712,6 +1218,13 @@ shadow.Object.extend({
     },
     /**
      * Remove a unit from an attribute of the shadow element.
+     *
+     * The attribute **must** be an array containing the same types of units.
+     *
+     * @method remove
+     * @param {String} name The name of the attribute to remove from.
+     * @param {String|Boolean|Number|Array|Hash} unit The unit of the value to remove.
+     * @param {Function} [comparator] A function to use to find the unit to remove.
      */
     remove: function(name, unit, comparator) {
         var element = this;
@@ -875,7 +1388,11 @@ function prefixifyClassNames(classNames, prefix) {
 }
 
 /**
- * Construct a data element object.
+ * Construct a shadow data element object.
+ *
+ * @class shadow.DataElement
+ * @extends shadow.Element
+ * @static
  */
 shadow.Element.extend({
     name: "DataElement",
@@ -895,8 +1412,10 @@ shadow.Element.extend({
         input: "input"
     },
     /**
-     * Setup the attrs before everything gets sealed
+     * Setup the data element’s attributes before everything gets sealed
      * and before getters and setters are made.
+     *
+     * @method setup
      */
     setup: function() {
         var dataElement = this;
@@ -953,7 +1472,12 @@ shadow.Element.extend({
         });
     },
     /**
-     * Create a data element object.
+     * Create an instance of a data element object.
+     *
+     * @method create
+     * @param {Object} options Options for the data element’s prototype.
+     * @return {shadow.DataElement} An instance of the shadow element.
+     * @static
      */
     create: function(options) {
         // Create the shadow object.
@@ -1010,6 +1534,12 @@ shadow.Element.extend({
     //create
     /**
      * Convert a value into a formatted string.
+     *
+     * @method format
+     * @param {String|Boolean|Number|Array|Hash} value The value to format.
+     * @param {Hash} options *TODO*: Options to customize the formatting.
+     * @return {String} The formatted string.
+     * @todo
      */
     format: function(value, options) {
         var dataElement = this;
@@ -1043,6 +1573,10 @@ shadow.Element.extend({
     // },
     /**
      * Convert a formatted string into a parsed value.
+     *
+     * @method parse
+     * @param {String} string The string value to parse.
+     * @return {Hash} The parsed formatting-value hash.
      */
     parse: function(string) {
         if (typeof string != "string") {
@@ -1081,6 +1615,11 @@ shadow.Element.extend({
     //parse
     /**
      * Convert a formatted unit string into a parsed unit hash.
+     *
+     * @method parseUnit
+     * @param {String} stringUnit The string value’s unit to parse.
+     * @return {Hash} The parsed formatting-unit hash.
+     * @private
      */
     parseUnit: function(stringUnit) {
         var dataElement = this;
@@ -1110,6 +1649,10 @@ shadow.Element.extend({
     //parseUnit
     /**
      * Get a data element’s attribute with certain options.
+     *
+     * @method get
+     * @param {String} name The name of the attribute to get.
+     * @param {Hash} options Options to customize the return value, such as with formatting.
      */
     get: function(name, options) {
         var dataElement = this;
@@ -1155,12 +1698,12 @@ function formatMultipleUnits(formatter, formatMultiple, formatRange, value) {
 /**
  * Format a range’s units.
  */
-function formatRangeUnits(formatter, format, rangeUnit) {
-    var matchPlaceholders = formatMultiple.match(/.*(\{).*?(\}).*/);
+function formatRangeUnits(formatter, formatRange, rangeUnit) {
+    var matchPlaceholders = formatRange.match(/.*(\{).*?(\}).*/);
     if (!matchPlaceholders || matchPlaceholders.length < 2) {
-        throw new SyntaxError("The `formatMultiple` option is invalid.");
+        throw new SyntaxError("The `formatRange` option is invalid.");
     }
-    var matchRange = format.match(/(.*)\{(.*?)\}(.*)/);
+    var matchRange = formatRange.match(/(.*)\{(.*?)\}(.*)/);
     var beforeLower = matchRange[1];
     var beforeUpper = matchRange[2];
     var afterUpper = matchRange[3];

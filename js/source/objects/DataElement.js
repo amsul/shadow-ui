@@ -1,6 +1,10 @@
 
 /**
- * Construct a data element object.
+ * Construct a shadow data element object.
+ *
+ * @class shadow.DataElement
+ * @extends shadow.Element
+ * @static
  */
 shadow.Element.extend({
 
@@ -26,8 +30,10 @@ shadow.Element.extend({
 
 
     /**
-     * Setup the attrs before everything gets sealed
+     * Setup the data element’s attributes before everything gets sealed
      * and before getters and setters are made.
+     *
+     * @method setup
      */
     setup: function() {
 
@@ -96,7 +102,12 @@ shadow.Element.extend({
 
 
     /**
-     * Create a data element object.
+     * Create an instance of a data element object.
+     *
+     * @method create
+     * @param {Object} options Options for the data element’s prototype.
+     * @return {shadow.DataElement} An instance of the shadow element.
+     * @static
      */
     create: function(options) {
 
@@ -171,6 +182,12 @@ shadow.Element.extend({
 
     /**
      * Convert a value into a formatted string.
+     *
+     * @method format
+     * @param {String|Boolean|Number|Array|Hash} value The value to format.
+     * @param {Hash} options *TODO*: Options to customize the formatting.
+     * @return {String} The formatted string.
+     * @todo
      */
     format: function(value, options) {
 
@@ -228,6 +245,10 @@ shadow.Element.extend({
 
     /**
      * Convert a formatted string into a parsed value.
+     *
+     * @method parse
+     * @param {String} string The string value to parse.
+     * @return {Hash} The parsed formatting-value hash.
      */
     parse: function(string) {
 
@@ -287,6 +308,11 @@ shadow.Element.extend({
 
     /**
      * Convert a formatted unit string into a parsed unit hash.
+     *
+     * @method parseUnit
+     * @param {String} stringUnit The string value’s unit to parse.
+     * @return {Hash} The parsed formatting-unit hash.
+     * @private
      */
     parseUnit: function(stringUnit) {
 
@@ -327,6 +353,10 @@ shadow.Element.extend({
 
     /**
      * Get a data element’s attribute with certain options.
+     *
+     * @method get
+     * @param {String} name The name of the attribute to get.
+     * @param {Hash} options Options to customize the return value, such as with formatting.
      */
     get: function(name, options) {
 
@@ -387,14 +417,14 @@ function formatMultipleUnits(formatter, formatMultiple, formatRange, value) {
 /**
  * Format a range’s units.
  */
-function formatRangeUnits(formatter, format, rangeUnit) {
+function formatRangeUnits(formatter, formatRange, rangeUnit) {
 
-    var matchPlaceholders = formatMultiple.match(/.*(\{).*?(\}).*/)
+    var matchPlaceholders = formatRange.match(/.*(\{).*?(\}).*/)
     if ( !matchPlaceholders || matchPlaceholders.length < 2 ) {
-        throw new SyntaxError('The `formatMultiple` option is invalid.')
+        throw new SyntaxError('The `formatRange` option is invalid.')
     }
 
-    var matchRange = format.match(/(.*)\{(.*?)\}(.*)/)
+    var matchRange = formatRange.match(/(.*)\{(.*?)\}(.*)/)
     var beforeLower = matchRange[1]
     var beforeUpper = matchRange[2]
     var afterUpper = matchRange[3]

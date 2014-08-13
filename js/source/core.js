@@ -1,4 +1,11 @@
 
+/**
+ * @module shadow
+ */
+
+/**
+ * The main interface to register a shadow component.
+ */
 function shadow(shadowName, shadowOptions) {
     if ( !shadowName ) {
         throw new ReferenceError('The `shadowName` is required to register a UI interface.')

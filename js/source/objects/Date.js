@@ -1,21 +1,92 @@
 
 /**
- * Construct a date object.
+ * Construct a shadow date object.
+ *
+ * @class shadow.Date
+ * @extends shadow.Object
+ * @static
  */
 shadow.Object.extend({
 
     name: 'Date',
 
+
+    /**
+     * The value of the date represented as an array.
+     *
+     * @example
+     *
+     *     var date = shadow.Date.create(new Date(2013, 3, 20))
+     *     date.value
+     *     // returns [2013, 3, 20]
+     *
+     * @attribute value
+     * @type {Array}
+     * @default null
+     * @readOnly
+     */
     value: null,
+
+
+    /**
+     * The year of the shadow date object.
+     *
+     * @attribute year
+     * @type {Number}
+     * @default null
+     * @readOnly
+     */
     year: null,
+
+
+    /**
+     * The month of the shadow date object.
+     *
+     * @attribute month
+     * @type {Number}
+     * @default null
+     * @readOnly
+     */
     month: null,
+
+
+    /**
+     * The date of the shadow date object.
+     *
+     * @attribute date
+     * @type {Number}
+     * @default null
+     * @readOnly
+     */
     date: null,
 
+
+    /**
+     * A flag to set the date to the first of the month upon creation.
+     *
+     * @example
+     *
+     *     var date = shadow.Date.create([2013, 3, 20], {
+     *         setToTheFirst: true
+     *     })
+     *     date.value
+     *     // returns [2013, 3, 1]
+     *
+     * @attribute setToTheFirst
+     * @type {Boolean}
+     * @default false
+     */
     setToTheFirst: false,
 
 
     /**
-     * Create a date object.
+     * Create an instance of a shadow date.
+     *
+     * @method create
+     * @param {Array|String|Number|Date|shadow.Date} value The value of the date to create.
+     * @param {Object} options Options for the date’s prototype.
+     * @return {shadow.Date} An instance of the shadow date.
+     * @static
      */
     create: function(value, options) {
 
@@ -51,7 +122,22 @@ shadow.Object.extend({
 
 
     /**
-     * Compare the date’s value in various ways.
+     * Extend the shadow date.
+     *
+     * @method extend
+     * @param {Object} options Options to extend the date’s prototype.
+     * @return {shadow.Date} An extension of the shadow date class.
+     * @static
+     */
+
+
+    /**
+     * Compare the shadow date’s value with another date.
+     *
+     * @method compare
+     * @param {String} [comparison] A “scope” to compare within.
+     * @param {Array|String|Number|Date|shadow.Date} date The value of the date to compare against.
+     * @return {Boolean}
      */
     compare: function(comparison, date) {
 
@@ -113,6 +199,11 @@ shadow.Object.extend({
 
     /**
      * Compare a date with a range in various ways.
+     *
+     * @method compareRange
+     * @param {String} [comparison] A “scope” to compare within.
+     * @param {Array} range The range to compare against.
+     * @return {Boolean}
      */
     compareRange: function(comparison, range) {
 
@@ -147,7 +238,18 @@ shadow.Object.extend({
 
 
     /**
-     * Simplify comparison.
+     * Simplify comparison of dates.
+     *
+     * @example
+     *
+     *     shadow.Date.create([2013, 3, 20]) > shadow.Date.create([2014, 8, 14])
+     *     // returns false
+     *
+     *     shadow.Date.create([2013, 3, 20]) < shadow.Date.create([2014, 8, 14])
+     *     // returns true
+     *
+     * @method valueOf
+     * @return {Number} The time of the date to make comparisons easier.
      */
     valueOf: function() {
         return this.time
@@ -155,7 +257,16 @@ shadow.Object.extend({
 
 
     /**
-     * Simplify stringification.
+     * Simplify stringification of the shadow date.
+     *
+     * @example
+     *
+     *     var date = shadow.Date.create([2013, 3, 20])
+     *     JSON.stringify(date)
+     *     // returns "[2013,3,20]"
+     *
+     * @method toJSON
+     * @return {Array} The value of the date.
      */
     toJSON: function() {
         return this.value

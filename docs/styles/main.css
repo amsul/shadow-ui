@@ -80,7 +80,7 @@ a:hover {
  * Container component.
  */
 .container {
-    padding: 0 1.75rem;
+    padding: 0 2rem;
     max-width: 50rem;
     margin: 0 auto;
 }
@@ -91,11 +91,28 @@ a:hover {
     margin-bottom: 4rem;
 }
     .container__box {
+        padding-top: 2rem;
+        margin-top: -2rem;
         margin-bottom: 3.25rem;
     }
     .container__box--bordered {
         padding-bottom: 2rem;
         border-bottom: 1px solid #ddd;
+    }
+    .container__link-hook {
+        position: absolute;
+        margin-left: -1em;
+        margin-top: 0.0625em;
+        font-weight: 100;
+        color: #eee;
+    }
+    .container__box:hover .container__link-hook {
+        color: #999;
+    }
+    .container__link-hook:hover,
+    .container__box .container__link-hook:hover {
+        color: #0089ec;
+        text-decoration: none;
     }
 
 
@@ -173,15 +190,20 @@ a:hover {
 }
     .tabs__body {}
     .tabs__button {
+        color: inherit;
         display: block;
         width: 100%;
+        text-align: center;
         border: 0;
         border-bottom: 3px solid transparent;
         padding: 0.5em;
         background: none;
         font-weight: 600;
     }
-    .tabs__button.is-active {
+    .tabs__button:hover {
+        text-decoration: none;
+    }
+    .is-active .tabs__button {
         border-color: #0089ec;
     }
 

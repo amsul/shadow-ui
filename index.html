@@ -36,10 +36,12 @@
     <script type="text/x-handlebars" data-template-name="module">
         <main>
 
-            <div class="container  container--padded  container--section">
-                <h2 class="heading  heading--three  heading--flat"><code>{{name}}</code> <span class="is-thin">module</span></h2>
-                <h6 class="heading  is-thin  is-dimmed">Defined in {{#link-to "file" name}}<code>{{file}}:{{line}}</code>{{/link-to}}</h6>
-                {{md description}}
+            <div class="container  container--padded">
+                <div class="container__box">
+                    <h2 class="heading  heading--three  heading--flat"><code>{{name}}</code> <span class="is-thin">module</span></h2>
+                    <h6 class="heading  is-thin  is-dimmed">Defined in {{#link-to "file" name}}<code>{{file}}:{{line}}</code>{{/link-to}}</h6>
+                    {{md description}}
+                </div>
             </div>
 
             <hr>
@@ -60,7 +62,7 @@
     <script type="text/x-handlebars" data-template-name="class">
         <main>
 
-            <div class="container  container--padded  container--section">
+            <div class="container  container--padded">
                 <div class="container__box">
                     <h2 class="heading  heading--three  heading--flat">
                         <code>{{class.name}}</code> <span class="is-thin">class</span>{{#if class.static}} &nbsp; <span class="capsule  capsule--static">Static</span>{{/if}}
@@ -78,13 +80,16 @@
 
             <hr>
 
-            {{#toggle-tabs tabs=controller.tabsSortedClass class="tabs"}}
+            {{#toggle-tabs tabs=controller.tabsSortedClass class="tabs" id="classitem-tabs"}}
                 <div class="container  container--padded  container--section">
                     <ul class="list--plain  list--inline-spaced">
                         {{#each tab in controller.tabsSortedClass~}}
                             <li>
-                                {{#toggle-tabs-button tab=tab class="tabs__button is-size-three"}}
-                                    {{tab.title}}
+                                {{#toggle-tabs-button tab=tab}}
+                                    {{#link-to "class" class.name (query-params itemtype=tab.name name="")
+                                        class="tabs__button is-size-three"}}
+                                        {{tab.title}}
+                                    {{/link-to}}
                                 {{/toggle-tabs-button}}
                             </li>
                         {{~/each}}
@@ -98,7 +103,7 @@
                                     <h3>{{category.title}}</h3>
                                     <ul>
                                         {{#each unit in category.data}}
-                                            <li>{{#link-to "class" unit.class}}{{unit.name}}{{/link-to}}</li>
+                                            <li>{{#link-to "class" unit.class (query-params itemtype=unit.itemtype name=unit.name)}}{{unit.name}}{{/link-to}}</li>
                                         {{/each}}
                                     </ul>
                                 {{/each}}
@@ -117,8 +122,10 @@
         </main>
     </script>
     <script type="text/x-handlebars" data-template-name="classitem">
-        <div class="container__box  container__box--bordered">
+        <div class="container__box  container__box--bordered" {{bind-attr data-query-name=name}}>
             <h3 class="heading  heading--flat">
+                {{#link-to "class" class (query-params itemtype=itemtype name=name)
+                    class="container__link-hook"}}&sect;{{/link-to}}
                 {{#if isMethod}}
                     <code>{{name}}{{#if params}} <small>({{list-params data=params}})</small>{{/if}}</code>{{#if static}} &nbsp; <span class="capsule capsule--static">Static</span>{{/if}}{{#if access}} &nbsp; <span class="capsule capsule--access">{{access}}</span>{{/if}}
                 {{else}}

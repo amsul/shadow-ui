@@ -108,6 +108,9 @@
     })
 
     App.ClassController = Em.ObjectController.extend({
+        queryParams: ['itemtype', 'name'],
+        itemtype: 'index',
+        name: '',
         tabsSortedClass: function() {
             var model = this.get('model')
             var ClassItemObject = Em.Object.extend({
@@ -171,31 +174,51 @@
         }.on('willInsertElement').observes('data')
     })
 
-    App.ToggleTabsComponent = Em.Component.extend({
-        showFirstTab: function() {
+    App.ToggleTabsComponent = Em.Component.extend(Ember.ControllerMixin, {
+        needs: ['class'],
+        showStartingTab: function() {
+            var itemtype = this.get('controllers.class.itemtype')
+            var name = this.get('controllers.class.name')
+            if ( itemtype || name ) {
+                this.queryItemIntoView(itemtype, name)
+                return
+            }
             var tab = this.get('tabs')[0]
             this.showTab(tab.name)
-        }.on('init').observes('tabs'),
+        }.on('init').observes('tabs', 'controllers.class.itemtype', 'controllers.class.name'),
+        queryItemIntoView: function(itemtype, name) {
+            if ( !itemtype ) {
+                return
+            }
+            itemtype = itemtype == 'attribute' ? 'attributes' :
+                itemtype == 'method' ? 'methods' : itemtype
+            this.showTab(itemtype)
+            if ( name ) {
+                this.scrollIntoView(name)
+            }
+        },
         showTab: function(tabName) {
+            if ( !tabName ) {
+                return
+            }
             var tabs = this.get('tabs')
             var otherTabs = tabs.rejectBy('name', tabName)
-            var activeTab = tabs.findBy('name', tabName)
             otherTabs.forEach(function(tab) {
                 tab.set('isActive', false)
             })
+            var activeTab = tabs.findBy('name', tabName)
             activeTab.set('isActive', true)
+        },
+        scrollIntoView: function(name) {
+            Em.run.next(this, function() {
+                var $el = $('[data-query-name="' + name + '"]')
+                $el[0].scrollIntoView()
+            })
         }
     })
 
     App.ToggleTabsButtonComponent = Em.Component.extend({
-        tagName: 'button',
-        classNameBindings: ['tab.isActive:is-active'],
-        attributeBindings: ['type'],
-        type: 'button',
-        action: 'switchTab',
-        click: function() {
-            this.get('parentView').showTab(this.get('tab.name'))
-        }
+        classNameBindings: ['tab.isActive:is-active']
     })
 
     App.ToggleTabsBodyComponent = Em.Component.extend({

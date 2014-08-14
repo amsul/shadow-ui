@@ -110,8 +110,6 @@ var _ = shadow._ = {
     /**
      * Convert to camel-cased text.
      *
-     * @example
-     *
      * ```javascript
      * shadow._.caseCamel('howdy-there stranger')
      * // returns 'howdyThere stranger'
@@ -214,8 +212,6 @@ var _ = shadow._ = {
     /**
      * Check what the internal type of a value is.
      *
-     * @example
-     *
      * ```javascript
      * shadow._.isTypeOf(new Date)
      * // returns 'date'
@@ -237,15 +233,13 @@ var _ = shadow._ = {
     /**
      * Define aria attributes on an element.
      *
-     * @example
-     *
      * Given the following element:
      *
      * ```html
      * <div id="elem"></div>
      * ```
      *
-     * And applying the following snippet:
+     * ...and applying the following snippet:
      *
      * ```javascript
      * var el = document.getElementById('elem')
@@ -253,7 +247,7 @@ var _ = shadow._ = {
      * shadow._.aria(el, 'controls', 'widget')
      * ```
      *
-     * The element becomes:
+     * ...the element becomes:
      *
      * ```html
      * <div id="elem" role="button" aria-controls="widget"></div>
@@ -267,8 +261,6 @@ var _ = shadow._ = {
      */
     /**
      * An alternate way to set multiple aria attributes on an element.
-     *
-     * @example
      *
      * Given the following element:
      *
@@ -501,7 +493,7 @@ shadow.Object = Object.create({}, {
                 throw new TypeError("An object’s name must be PascalCased.");
             }
             if (hasOwnProperty.call(shadow, Instance.name)) {
-                throw new TypeError('An object by the name of "' + Instance.name + '" already exists.');
+                throw new TypeError("An object by the name of “" + Instance.name + "” already exists.");
             }
             shadow[Instance.name] = Instance;
             return Instance;
@@ -654,8 +646,6 @@ shadow.Object.extend({
     /**
      * The value of the date represented as an array.
      *
-     * @example
-     *
      * ```javascript
      * var date = shadow.Date.create(new Date(2013, 3, 20))
      * date.value
@@ -697,8 +687,6 @@ shadow.Object.extend({
     date: null,
     /**
      * A flag to set the date to the first of the month upon creation.
-     *
-     * @example
      *
      * ```javascript
      * var date = shadow.Date.create([2013, 3, 20], {
@@ -828,8 +816,6 @@ shadow.Object.extend({
     /**
      * Simplify comparison of dates.
      *
-     * @example
-     *
      * ```javascript
      * shadow.Date.create([2013, 3, 20]) > shadow.Date.create([2014, 8, 14])
      * // returns false
@@ -846,8 +832,6 @@ shadow.Object.extend({
     },
     /**
      * Simplify stringification of the shadow date.
-     *
-     * @example
      *
      * ```javascript
      * var date = shadow.Date.create([2013, 3, 20])
@@ -907,8 +891,10 @@ shadow.Object.extend({
     /**
      * The source element to bind the shadow data to.
      *
+     * If it is a string, the value will be used as a jQuery selector.
+     *
      * @attribute $el
-     * @type jQuery
+     * @type jQuery|HTMLElement|String
      * @default null
      */
     $el: null,
@@ -918,8 +904,10 @@ shadow.Object.extend({
      * This is usually the same as the `$el` - unless if it’s an element
      * that cannot contain elements, such as an `input`.
      *
+     * If it is a string, the value will be used as a jQuery selector.
+     *
      * @attribute $host
-     * @type jQuery
+     * @type jQuery|HTMLElement|String
      * @default null
      */
     $host: null,
@@ -939,8 +927,6 @@ shadow.Object.extend({
      *
      * This object also gets populated with any `data-ui-*` attributes
      * on the source element.
-     *
-     * @example
      *
      * ```html
      * <div data-ui-prop="false" data-ui-another-prop="[1,3,4]"></div>
@@ -975,8 +961,6 @@ shadow.Object.extend({
     classNames: null,
     /**
      * A prefix to use on all the class names of an element.
-     *
-     * @example
      *
      * ```javascript
      * classNames: {
@@ -1016,9 +1000,7 @@ shadow.Object.extend({
      * Set up any listeners, configurations, attributes, etc. before
      * they all are sealed and frozen.
      *
-     * @attribute setup
-     * @type Function
-     * @default null
+     * @method setup
      */
     setup: null,
     /**
@@ -1155,8 +1137,6 @@ shadow.Object.extend({
     /**
      * Get the value of an attribute of the shadow element.
      *
-     * @example
-     *
      * ```javascript
      * var element = shadow.Element.create({
      *     //...
@@ -1210,8 +1190,6 @@ shadow.Object.extend({
      * Add a unit to an attribute of the shadow element.
      *
      * The attribute **must** be an array containing the same types of units.
-     *
-     * @example
      *
      * ```js
      * var element = shadow.Element.create({
@@ -1436,24 +1414,125 @@ function prefixifyClassNames(classNames, prefix) {
  */
 shadow.Element.extend({
     name: "DataElement",
+    /**
+     * An optional `input` element that holds the `attrs.value` as it's `value`
+     *
+     * If it is a string, the value will be used as a jQuery selector.
+     *
+     * @attribute $input
+     * @type jQuery|HTMLInputElement|HTMLTextAreaElement|String
+     * @default null
+     */
     $input: null,
     attrs: {
+        /**
+         * The raw active “selection” of the data element's `attrs.value`.
+         *
+         * @attribute attrs.select
+         * @type Array|Date|String|Number
+         * @default null
+         */
         select: null,
+        /**
+         * The stringified “selection” of the data element's `attrs.select`.
+         *
+         * @attribute attrs.value
+         * @type String
+         * @default null
+         * @readonly
+         */
         value: null,
+        /**
+         * A flag to automatically generate a hidden `input` if one is missing.
+         *
+         * @attribute attrs.hiddenInput
+         * @type Boolean
+         * @default null
+         */
         hiddenInput: null,
+        /**
+         * A flag to allow multiple selections in `attrs.select`.
+         *
+         * @attribute attrs.allowMultiple
+         * @type Boolean
+         * @default null
+         */
         allowMultiple: null,
+        /**
+         * A flag to allow range selections in `attrs.select`.
+         *
+         * @attribute attrs.allowRange
+         * @type Boolean
+         * @default null
+         */
         allowRange: null,
+        /**
+         * Formatting to use when stringifying `attrs.select` into `attrs.value`.
+         *
+         * This has to be used in conjunction with the data element's
+         * {{#link-to "class" "shadow.DataElement" (query-params itemtype="attribute" name="formats")}}`formats`{{/link-to}}
+         * hash.
+         *
+         * @attribute attrs.format
+         * @type String
+         * @default null
+         */
         format: null,
+        /**
+         * Formatting to use when stringifying `attrs.select` into `attrs.value`
+         * with `attrs.allowMultiple` set to `true`.
+         *
+         * If `attrs.allowMultiple` is `false`, this defaults to `null`.
+         *
+         * @attribute attrs.formatMultiple
+         * @type String
+         * @default '{, |, }'
+         */
         formatMultiple: null,
+        /**
+         * Formatting to use when stringifying `attrs.select` into `attrs.value`
+         * with `attrs.allowRange` set to `true`.
+         *
+         * If `attrs.allowRange` is `false`, this defaults to `null`.
+         *
+         * @attribute attrs.formatRange
+         * @type String
+         * @default '{ - }'
+         */
         formatRange: null
     },
+    /**
+     * A formatting is used to stringify and parse values. It is used in conjunction with the
+     * {{#link-to "class" "shadow.DataElement" (query-params itemtype="attribute" name="attrs.format")}}`attrs.format`{{/link-to}}
+     * attribute.
+     *
+     * @attribute formats
+     * @type Hash
+     * @default null
+     */
     formats: null,
     classNames: {
+        /**
+         * @attribute classNames.input
+         * @type {String}
+         * @default 'input'
+         */
         input: "input"
     },
     /**
      * Setup the data element’s attributes before everything gets sealed
-     * and before getters and setters are made.
+     * and before getters and setters are bound onto the attributes.
+     *
+     * For an instance-specific setup, safely override the method:
+     *
+     * ```javascript
+     * var dataEl = shadow.DataElement.create({
+     *     setup: function() {
+     *         this._super()
+     *         // carry on with any setup here
+     *     }
+     * })
+     * ```
      *
      * @method setup
      */

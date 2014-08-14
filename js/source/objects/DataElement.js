@@ -10,28 +10,152 @@ shadow.Element.extend({
 
     name: 'DataElement',
 
+
+    /**
+     * An optional `input` element that holds the `attrs.value` as it's `value`
+     *
+     * If it is a string, the value will be used as a jQuery selector.
+     *
+     * @attribute $input
+     * @type jQuery|HTMLInputElement|HTMLTextAreaElement|String
+     * @default null
+     */
     $input: null,
 
+
     attrs: {
+
+        /**
+         * The raw active “selection” of the data element's `attrs.value`.
+         *
+         * @attribute attrs.select
+         * @type Array|Date|String|Number
+         * @default null
+         */
         select: null,
+
+
+        /**
+         * The stringified “selection” of the data element's `attrs.select`.
+         *
+         * @attribute attrs.value
+         * @type String
+         * @default null
+         * @readonly
+         */
         value: null,
+
+
+        /**
+         * A flag to automatically generate a hidden `input` if one is missing.
+         *
+         * @attribute attrs.hiddenInput
+         * @type Boolean
+         * @default null
+         */
         hiddenInput: null,
+
+
+        /**
+         * A flag to allow multiple selections in `attrs.select`.
+         *
+         * @attribute attrs.allowMultiple
+         * @type Boolean
+         * @default null
+         */
         allowMultiple: null,
+
+
+        /**
+         * A flag to allow range selections in `attrs.select`.
+         *
+         * @attribute attrs.allowRange
+         * @type Boolean
+         * @default null
+         */
         allowRange: null,
+
+
+        /**
+         * Formatting to use when stringifying `attrs.select` into `attrs.value`.
+         *
+         * This has to be used in conjunction with the data element's
+         * {{#link-to "class" "shadow.DataElement" (query-params itemtype="attribute" name="formats")}}`formats`{{/link-to}}
+         * hash.
+         *
+         * @attribute attrs.format
+         * @type String
+         * @default null
+         */
         format: null,
+
+
+        /**
+         * Formatting to use when stringifying `attrs.select` into `attrs.value`
+         * with `attrs.allowMultiple` set to `true`.
+         *
+         * If `attrs.allowMultiple` is `false`, this defaults to `null`.
+         *
+         * @attribute attrs.formatMultiple
+         * @type String
+         * @default '{, |, }'
+         */
         formatMultiple: null,
+
+
+        /**
+         * Formatting to use when stringifying `attrs.select` into `attrs.value`
+         * with `attrs.allowRange` set to `true`.
+         *
+         * If `attrs.allowRange` is `false`, this defaults to `null`.
+         *
+         * @attribute attrs.formatRange
+         * @type String
+         * @default '{ - }'
+         */
         formatRange: null
+
     },
+
+
+    /**
+     * A formatting is used to stringify and parse values. It is used in conjunction with the
+     * {{#link-to "class" "shadow.DataElement" (query-params itemtype="attribute" name="attrs.format")}}`attrs.format`{{/link-to}}
+     * attribute.
+     *
+     * @attribute formats
+     * @type Hash
+     * @default null
+     */
     formats: null,
 
+
     classNames: {
+
+        /**
+         * @attribute classNames.input
+         * @type {String}
+         * @default 'input'
+         */
         input: 'input',
+
     },
 
 
     /**
      * Setup the data element’s attributes before everything gets sealed
-     * and before getters and setters are made.
+     * and before getters and setters are bound onto the attributes.
+     *
+     * For an instance-specific setup, safely override the method:
+     *
+     * ```javascript
+     * var dataEl = shadow.DataElement.create({
+     *     setup: function() {
+     *         this._super()
+     *         // carry on with any setup here
+     *     }
+     * })
+     * ```
      *
      * @method setup
      */

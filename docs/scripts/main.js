@@ -4,10 +4,6 @@
 
     Em.LOG_VERSION = false
 
-    var markedOptions = {
-        smartypants: true
-    }
-
     Em.View.reopen({
         didInsertElement: function() {
             this._super()
@@ -28,10 +24,6 @@
                 })
             }
         }
-    })
-
-    Em.Handlebars.registerBoundHelper('md', function(content) {
-        return content ? new Em.Handlebars.SafeString(marked(content, markedOptions)) : ''
     })
 
     var App = window.App = Em.Application.create()
@@ -84,6 +76,14 @@
         isStatic: Em.computed.equal('static', 1),
         isInherited: Em.computed.any('inherits'),
         isExtended: false,
+        queryName: function() {
+            var queryName = this.get('name')
+            var params = this.get('params')
+            if ( params ) {
+                queryName += '(' + params.mapProperty('name').join('-') + ')'
+            }
+            return queryName
+        }.property('name', 'params[]')
     })
 
     App.ClassRoute = Em.Route.extend({
@@ -125,7 +125,7 @@
             var tabs = [index]
             if ( model.attributes.length ) {
                 var attributes = ClassItemsObject.create({
-                    name: 'attributes',
+                    name: 'attribute',
                     title: 'Attributes',
                     data: model.attributes.sortBy('name')
                 })
@@ -134,7 +134,7 @@
             }
             if ( model.methods.length ) {
                 var methods = ClassItemsObject.create({
-                    name: 'methods',
+                    name: 'method',
                     title: 'Methods',
                     data: model.methods.sortBy('name')
                 })
@@ -182,8 +182,7 @@
         }.on('init').observes('tabs', 'controllers.class.itemtype'),
         queryItemIntoView: function() {
             var itemtype = this.get('controllers.class.itemtype')
-            itemtype = itemtype == 'attribute' ? 'attributes' :
-                itemtype == 'method' ? 'methods' : itemtype || 'index'
+            itemtype = itemtype || 'index'
             this.showTab(itemtype)
             Em.run.next(this, function() {
                 var name = this.get('controllers.class.name')
@@ -219,6 +218,26 @@
         attributeBindings: ['isNotActive:hidden'],
         isNotActive: Em.computed.not('tab.isActive')
     })
+
+    App.MarkdownView = Em.View.extend({
+        init: function() {
+            this._super()
+            var content = this.get('content')
+            if ( content ) {
+                content = marked(content)
+                var div = document.createElement('div')
+                div.innerHTML = content + '<span></span>'
+                content = div.innerHTML
+            }
+            else {
+                content = ''
+            }
+            var template = Em.Handlebars.compile(content)
+            this.set('template', template)
+        }
+    })
+
+    Em.Handlebars.helper('md', App.MarkdownView)
 
     App.LinkToGithubView = Em.View.extend({
         tagName: 'a',

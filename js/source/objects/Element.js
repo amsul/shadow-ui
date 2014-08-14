@@ -14,8 +14,10 @@ shadow.Object.extend({
     /**
      * The source element to bind the shadow data to.
      *
+     * If it is a string, the value will be used as a jQuery selector.
+     *
      * @attribute $el
-     * @type jQuery
+     * @type jQuery|HTMLElement|String
      * @default null
      */
     $el: null,
@@ -27,8 +29,10 @@ shadow.Object.extend({
      * This is usually the same as the `$el` - unless if it’s an element
      * that cannot contain elements, such as an `input`.
      *
+     * If it is a string, the value will be used as a jQuery selector.
+     *
      * @attribute $host
-     * @type jQuery
+     * @type jQuery|HTMLElement|String
      * @default null
      */
     $host: null,
@@ -54,8 +58,6 @@ shadow.Object.extend({
      *
      * This object also gets populated with any `data-ui-*` attributes
      * on the source element.
-     *
-     * @example
      *
      * ```html
      * <div data-ui-prop="false" data-ui-another-prop="[1,3,4]"></div>
@@ -96,8 +98,6 @@ shadow.Object.extend({
 
     /**
      * A prefix to use on all the class names of an element.
-     *
-     * @example
      *
      * ```javascript
      * classNames: {
@@ -141,9 +141,7 @@ shadow.Object.extend({
      * Set up any listeners, configurations, attributes, etc. before
      * they all are sealed and frozen.
      *
-     * @attribute setup
-     * @type Function
-     * @default null
+     * @method setup
      */
     setup: null,
 
@@ -320,8 +318,6 @@ shadow.Object.extend({
     /**
      * Get the value of an attribute of the shadow element.
      *
-     * @example
-     *
      * ```javascript
      * var element = shadow.Element.create({
      *     //...
@@ -379,8 +375,6 @@ shadow.Object.extend({
      * Add a unit to an attribute of the shadow element.
      *
      * The attribute **must** be an array containing the same types of units.
-     *
-     * @example
      *
      * ```js
      * var element = shadow.Element.create({

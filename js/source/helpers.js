@@ -37,8 +37,6 @@ var _ = shadow._ = {
     /**
      * Convert to camel-cased text.
      *
-     * @example
-     *
      * ```javascript
      * shadow._.caseCamel('howdy-there stranger')
      * // returns 'howdyThere stranger'
@@ -148,8 +146,6 @@ var _ = shadow._ = {
     /**
      * Check what the internal type of a value is.
      *
-     * @example
-     *
      * ```javascript
      * shadow._.isTypeOf(new Date)
      * // returns 'date'
@@ -175,15 +171,13 @@ var _ = shadow._ = {
     /**
      * Define aria attributes on an element.
      *
-     * @example
-     *
      * Given the following element:
      *
      * ```html
      * <div id="elem"></div>
      * ```
      *
-     * And applying the following snippet:
+     * ...and applying the following snippet:
      *
      * ```javascript
      * var el = document.getElementById('elem')
@@ -191,7 +185,7 @@ var _ = shadow._ = {
      * shadow._.aria(el, 'controls', 'widget')
      * ```
      *
-     * The element becomes:
+     * ...the element becomes:
      *
      * ```html
      * <div id="elem" role="button" aria-controls="widget"></div>
@@ -205,8 +199,6 @@ var _ = shadow._ = {
      */
     /**
      * An alternate way to set multiple aria attributes on an element.
-     *
-     * @example
      *
      * Given the following element:
      *

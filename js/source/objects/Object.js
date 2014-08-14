@@ -109,8 +109,8 @@ shadow.Object = Object.create({}, {
                 throw new TypeError('An object’s name must be PascalCased.');
             }
             if ( hasOwnProperty.call(shadow, Instance.name) ) {
-                throw new TypeError('An object by the name of "' +
-                    Instance.name + '" already exists.')
+                throw new TypeError('An object by the name of “' +
+                    Instance.name + '” already exists.')
             }
             shadow[Instance.name] = Instance
 

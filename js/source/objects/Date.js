@@ -14,8 +14,6 @@ shadow.Object.extend({
     /**
      * The value of the date represented as an array.
      *
-     * @example
-     *
      * ```javascript
      * var date = shadow.Date.create(new Date(2013, 3, 20))
      * date.value
@@ -65,8 +63,6 @@ shadow.Object.extend({
 
     /**
      * A flag to set the date to the first of the month upon creation.
-     *
-     * @example
      *
      * ```javascript
      * var date = shadow.Date.create([2013, 3, 20], {
@@ -234,8 +230,6 @@ shadow.Object.extend({
     /**
      * Simplify comparison of dates.
      *
-     * @example
-     *
      * ```javascript
      * shadow.Date.create([2013, 3, 20]) > shadow.Date.create([2014, 8, 14])
      * // returns false
@@ -254,8 +248,6 @@ shadow.Object.extend({
 
     /**
      * Simplify stringification of the shadow date.
-     *
-     * @example
      *
      * ```javascript
      * var date = shadow.Date.create([2013, 3, 20])

@@ -10,8 +10,8 @@ module.exports = {
         url: '<%= pkg.homepage %>',
         options: {
             paths: 'js/source/',
-            themedir: 'docs-theme/',
-            outdir: 'docs/'
+            outdir: 'js/docs/',
+            parseOnly: true
         }
     }
 }

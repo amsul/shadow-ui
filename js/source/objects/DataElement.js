@@ -185,9 +185,9 @@ shadow.Element.extend({
      *
      * @method format
      * @param {String|Boolean|Number|Array|Hash} value The value to format.
-     * @param {Hash} options *TODO*: Options to customize the formatting.
+     * @param {Hash} options Options to customize the formatting.
      * @return {String} The formatted string.
-     * @todo
+     * @todo Implement the `options` argument.
      */
     format: function(value, options) {
 

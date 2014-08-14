@@ -8,7 +8,7 @@ module.exports = {
         tasks: ['uglify:develop']
     },
     library: {
-        files: ['js/source/**/*.js', 'docs-theme/**/*.css', 'docs-theme/**/*.handlebars'],
+        files: ['js/source/**/*.js'],
         tasks: ['yuidoc:library']
     }
 }

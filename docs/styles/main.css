@@ -1,0 +1,233 @@
+
+/**
+ * Restart.
+ */
+* {
+    box-sizing: border-box;
+}
+
+html {
+    font-family: 'Open Sans', sans-serif;
+    line-height: 1.25;
+}
+
+b, strong,
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+}
+b,
+strong {
+    line-height: 0;
+}
+
+h1, h2, h3, h4, h5, h6,
+p, blockquote, pre, address,
+dl, dd, ol, ul,
+form, fieldset, legend, figure,
+table, th, td, caption,
+hr {
+    margin: 0 0 1.25rem;
+}
+h1:last-child, h2:last-child, h3:last-child, h4:last-child, h5:last-child, h6:last-child,
+p:last-child, blockquote:last-child, pre:last-child, address:last-child,
+dl:last-child, dd:last-child, ol:last-child, ul:last-child,
+form:last-child, fieldset:last-child, legend:last-child, figure:last-child,
+table:last-child, th:last-child, td:last-child, caption:last-child,
+hr:last-child {
+    margin-bottom: 0;
+}
+
+ul, ol, dd {
+    padding-left: 2.5rem;
+}
+
+code, kbd, pre, samp {
+    font-family: 'Ubuntu mono', monospace;
+}
+
+pre,
+pre.hljs {
+    border-radius: 3px;
+    padding: 0.5rem 0.75rem;
+}
+
+pre {
+    background: #1d1f21;
+}
+
+img {
+    font-style: italic;
+    max-width: 100%;
+    height: auto;
+}
+
+hr {
+    border: 0;
+    border-bottom: 1px solid #ddd;
+}
+
+a {
+    color: #0089ec;
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
+
+
+
+/**
+ * Container component.
+ */
+.container {
+    padding: 0 1.75rem;
+    max-width: 50rem;
+    margin: 0 auto;
+}
+.container--padded {
+    padding-top: 1.25rem;
+}
+.container--section {
+    margin-bottom: 4rem;
+}
+    .container__box {
+        margin-bottom: 3.25rem;
+    }
+    .container__box--bordered {
+        padding-bottom: 2rem;
+        border-bottom: 1px solid #ddd;
+    }
+
+
+/**
+ * Heading component.
+ */
+.heading {
+    font-weight: 600;
+}
+.heading--one {
+    font-size: 3rem;
+}
+.heading--two {
+    font-size: 1.75rem;
+}
+.heading--three {
+    font-size: 1.5rem;
+}
+.heading--flat {
+    margin-bottom: 0.25rem;
+}
+    .heading__subtext {
+        font-size: 0.875rem;
+        color: #999;
+    }
+
+
+/**
+ * List component.
+ */
+.list {}
+.list--plain {
+    list-style: none;
+}
+.list--unindent,
+.list--inline-spaced {
+    padding: 0;
+}
+.list--inline-spaced {
+    margin-left: -1rem;
+    display: flex;
+}
+    .list--inline-spaced > li {
+        display: inline-block;
+        flex: 1;
+        margin-left: 1rem;
+    }
+
+
+/**
+ * Capsule component.
+ */
+.capsule {
+    background: #ccc;
+    color: #fff;
+    font-weight: 100;
+    font-size: 0.75em;
+    text-transform: lowercase;
+    padding: 0 0.25em 1px;
+    border-radius: 4px;
+}
+.capsule--access {
+    background: orange;
+}
+.capsule--optional {
+    background: yellowgreen;
+}
+
+
+/**
+ * Tabs component.
+ */
+.tabs {
+    margin-bottom: 1.25rem;
+}
+    .tabs__body {}
+    .tabs__button {
+        display: block;
+        width: 100%;
+        border: 0;
+        border-bottom: 3px solid transparent;
+        padding: 0.5em;
+        background: none;
+        font-weight: 600;
+    }
+    .tabs__button.is-active {
+        border-color: #0089ec;
+    }
+
+
+
+
+
+/**
+ * Style trumps.
+ */
+.is-thin {
+    font-weight: 100;
+}
+.is-dimmed {
+    color: #999;
+}
+.is-dimmed a {
+    color: #666;
+}
+.is-dimmed a:hover {
+    color: #333;
+}
+.is-color-inherited {
+    color: inherit;
+}
+h1,
+.is-size-one {
+    font-size: 1.5rem;
+}
+h2,
+.is-size-two {
+    font-size: 1.25rem;
+}
+h3,
+.is-size-three {
+    font-size: 1.125rem;
+}
+h4,
+.is-size-four {
+    font-size: 1rem;
+}
+h5,
+.is-size-five {
+    font-size: 0.875rem;
+}
+h6,
+.is-size-six {
+    font-size: 0.75rem;
+}

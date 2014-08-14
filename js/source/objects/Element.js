@@ -57,11 +57,15 @@ shadow.Object.extend({
      *
      * @example
      *
-     *     <div data-ui-prop="false" data-ui-another-prop="[1,3,4]"></div>
+     * ```html
+     * <div data-ui-prop="false" data-ui-another-prop="[1,3,4]"></div>
+     * ```
      *
      * Becomes
      *
-     *     attrs: { prop: false, anotherProp: [1,3,4] }
+     * ```javascript
+     * attrs: { prop: false, anotherProp: [1,3,4] }
+     * ```
      *
      * @attribute attrs
      * @type Hash
@@ -95,20 +99,24 @@ shadow.Object.extend({
      *
      * @example
      *
-     *     classNames: {
-     *         root: ' --root',
-     *         box: 'box',
-     *         button: 'button'
-     *     },
-     *     classNamesPrefix: 'my-prefix'
+     * ```javascript
+     * classNames: {
+     *     root: ' --root',
+     *     box: 'box',
+     *     button: 'button'
+     * },
+     * classNamesPrefix: 'my-prefix'
+     * ```
      *
      * Becomes
      *
-     *     classNames: {
-     *         root: 'my-prefix my-prefix--root',
-     *         box: 'my-prefix__box',
-     *         button: 'my-prefix__button'
-     *     }
+     * ```javascript
+     * classNames: {
+     *     root: 'my-prefix my-prefix--root',
+     *     box: 'my-prefix__box',
+     *     button: 'my-prefix__button'
+     * }
+     * ```
      *
      * @attribute classNamesPrefix
      * @type String
@@ -314,29 +322,35 @@ shadow.Object.extend({
      *
      * @example
      *
-     *     var element = shadow.Element.create({
-     *         //...
-     *         attrs: {
-     *             myAttr: true,
-     *             myOtherAttr: { niceness: 10 }
-     *         }
-     *     })
+     * ```javascript
+     * var element = shadow.Element.create({
+     *     //...
+     *     attrs: {
+     *         myAttr: true,
+     *         myOtherAttr: { niceness: 10 }
+     *     }
+     * })
+     * ```
      *
      * We can use the `get` method:
      *
-     *     element.get('myAttr')
-     *     // returns true
+     * ```javascript
+     * element.get('myAttr')
+     * // returns true
      *
-     *     element.get('myOtherAttr')
-     *     // returns { niceness: 10 }
+     * element.get('myOtherAttr')
+     * // returns { niceness: 10 }
+     * ```
      *
      * Or, we can directly access the `attrs` object:
      *
-     *     element.attrs.myAttr
-     *     // returns true
+     * ```javascript
+     * element.attrs.myAttr
+     * // returns true
      *
-     *     element.attrs.myOtherAttr
-     *     // returns { niceness: 10 }
+     * element.attrs.myOtherAttr
+     * // returns { niceness: 10 }
+     * ```
      *
      * @method get
      * @param {String} name The name of the attribute to get.
@@ -368,24 +382,28 @@ shadow.Object.extend({
      *
      * @example
      *
-     *     var element = shadow.Element.create({
-     *         //...
-     *         attrs: {
-     *             myCollection: [{ value: 6 }, { value: 14 }, { value: 19 }]
-     *         }
-     *     })
+     * ```js
+     * var element = shadow.Element.create({
+     *     //...
+     *     attrs: {
+     *         myCollection: [{ value: 6 }, { value: 14 }, { value: 19 }]
+     *     }
+     * })
+     * ```
      *
      * To add a value, we’d do something like this:
      *
-     *     element.get('myCollection')
-     *     // returns [{ value: 6 }, { value: 14 }, { value: 19 }]
+     * ```js
+     * element.get('myCollection')
+     * // returns [{ value: 6 }, { value: 14 }, { value: 19 }]
      *
-     *     element.add('myCollection', { value: 24 }, function(unit, loopedUnit) {
-     *         return unit.value === loopedUnit.value
-     *     })
+     * element.add('myCollection', { value: 24 }, function(unit, loopedUnit) {
+     *     return unit.value === loopedUnit.value
+     * })
      *
-     *     element.get('myCollection')
-     *     // returns [{ value: 6 }, { value: 14 }, { value: 19 }, { value: 24 }]
+     * element.get('myCollection')
+     * // returns [{ value: 6 }, { value: 14 }, { value: 19 }, { value: 24 }]
+     * ```
      *
      * @method add
      * @param {String} name The name of the attribute to add to.

@@ -1,5 +1,7 @@
 
 /**
+ * Utility methods to simplify and share common functionality.
+ *
  * @class shadow._
  * @static
  */
@@ -37,11 +39,13 @@ var _ = shadow._ = {
      *
      * @example
      *
-     *     shadow._.caseCamel('howdy-there stranger')
-     *     // returns 'howdyThere stranger'
+     * ```javascript
+     * shadow._.caseCamel('howdy-there stranger')
+     * // returns 'howdyThere stranger'
      *
-     *     shadow._.caseCamel('HowdyThere-stranger')
-     *     // returns 'howdyThereStranger'
+     * shadow._.caseCamel('HowdyThere-stranger')
+     * // returns 'howdyThereStranger'
+     * ```
      *
      * @method caseCamel
      * @param {String} words A string of words delimited by dashes, underscores, and case changes.
@@ -72,11 +76,13 @@ var _ = shadow._ = {
     /**
      * Convert to pascal-cased text.
      *
-     *     shadow._.casePascal('howdy-there stranger')
-     *     // returns 'HowdyThere stranger'
+     * ```javascript
+     * shadow._.casePascal('howdy-there stranger')
+     * // returns 'HowdyThere stranger'
      *
-     *     shadow._.casePascal('HowdyThere-stranger')
-     *     // returns 'HowdyThereStranger'
+     * shadow._.casePascal('HowdyThere-stranger')
+     * // returns 'HowdyThereStranger'
+     * ```
      *
      * @method casePascal
      * @param {String} words A string of words delimited by dashes, underscores, and case changes.
@@ -106,11 +112,13 @@ var _ = shadow._ = {
     /**
      * Convert to dash-cased text.
      *
-     *     shadow._.caseDash('howdy-there stranger')
-     *     // returns 'howdy-there stranger'
+     * ```javascript
+     * shadow._.caseDash('howdy-there stranger')
+     * // returns 'howdy-there stranger'
      *
-     *     shadow._.caseDash('HowdyThere-stranger')
-     *     // returns 'howdy-there-stranger'
+     * shadow._.caseDash('HowdyThere-stranger')
+     * // returns 'howdy-there-stranger'
+     * ```
      *
      * @method caseDash
      * @param {String} words A string of words delimited by dashes, underscores, and case changes.
@@ -142,11 +150,13 @@ var _ = shadow._ = {
      *
      * @example
      *
-     *     shadow._.isTypeOf(new Date)
-     *     // returns 'date'
+     * ```javascript
+     * shadow._.isTypeOf(new Date)
+     * // returns 'date'
      *
-     *     shadow._.isTypeof(new Date, 'date')
-     *     // returns true
+     * shadow._.isTypeof(new Date, 'date')
+     * // returns true
+     * ```
      *
      * @method isTypeOf
      * @param value The value whose type is being checked.
@@ -169,17 +179,23 @@ var _ = shadow._ = {
      *
      * Given the following element:
      *
-     *     <div id="elem"></div>
+     * ```html
+     * <div id="elem"></div>
+     * ```
      *
      * And applying the following snippet:
      *
-     *     var el = document.getElementById('elem')
-     *     shadow._.aria(el, 'role', 'button')
-     *     shadow._.aria(el, 'controls', 'widget')
+     * ```javascript
+     * var el = document.getElementById('elem')
+     * shadow._.aria(el, 'role', 'button')
+     * shadow._.aria(el, 'controls', 'widget')
+     * ```
      *
      * The element becomes:
      *
-     *     <div id="elem" role="button" aria-controls="widget"></div>
+     * ```html
+     * <div id="elem" role="button" aria-controls="widget"></div>
+     * ```
      *
      * @method aria
      * @param {HTMLElement} element The HTML element whose attribute should be set.
@@ -194,19 +210,25 @@ var _ = shadow._ = {
      *
      * Given the following element:
      *
-     *     <div id="elem"></div>
+     * ```html
+     * <div id="elem"></div>
+     * ```
      *
      * And applying the following snippet:
      *
-     *     var el = document.getElementById('elem')
-     *     shadow._.aria(el, {
-     *         role: 'button',
-     *         controls: 'widget'
-     *     })
+     * ```javascript
+     * var el = document.getElementById('elem')
+     * shadow._.aria(el, {
+     *     role: 'button',
+     *     controls: 'widget'
+     * })
+     * ```
      *
      * The element becomes:
      *
-     *     <div id="elem" role="button" aria-controls="widget"></div>
+     * ```html
+     * <div id="elem" role="button" aria-controls="widget"></div>
+     * ```
      *
      * @method aria
      * @param {HTMLElement} element The HTML element whose attribute should be set.

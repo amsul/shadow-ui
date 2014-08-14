@@ -79,6 +79,8 @@ shadow.buildAll = function(shadowName, shadowOptions) {
 };
 
 /**
+ * Utility methods to simplify and share common functionality.
+ *
  * @class shadow._
  * @static
  */
@@ -110,11 +112,13 @@ var _ = shadow._ = {
      *
      * @example
      *
-     *     shadow._.caseCamel('howdy-there stranger')
-     *     // returns 'howdyThere stranger'
+     * ```javascript
+     * shadow._.caseCamel('howdy-there stranger')
+     * // returns 'howdyThere stranger'
      *
-     *     shadow._.caseCamel('HowdyThere-stranger')
-     *     // returns 'howdyThereStranger'
+     * shadow._.caseCamel('HowdyThere-stranger')
+     * // returns 'howdyThereStranger'
+     * ```
      *
      * @method caseCamel
      * @param {String} words A string of words delimited by dashes, underscores, and case changes.
@@ -142,11 +146,13 @@ var _ = shadow._ = {
     /**
      * Convert to pascal-cased text.
      *
-     *     shadow._.casePascal('howdy-there stranger')
-     *     // returns 'HowdyThere stranger'
+     * ```javascript
+     * shadow._.casePascal('howdy-there stranger')
+     * // returns 'HowdyThere stranger'
      *
-     *     shadow._.casePascal('HowdyThere-stranger')
-     *     // returns 'HowdyThereStranger'
+     * shadow._.casePascal('HowdyThere-stranger')
+     * // returns 'HowdyThereStranger'
+     * ```
      *
      * @method casePascal
      * @param {String} words A string of words delimited by dashes, underscores, and case changes.
@@ -174,11 +180,13 @@ var _ = shadow._ = {
     /**
      * Convert to dash-cased text.
      *
-     *     shadow._.caseDash('howdy-there stranger')
-     *     // returns 'howdy-there stranger'
+     * ```javascript
+     * shadow._.caseDash('howdy-there stranger')
+     * // returns 'howdy-there stranger'
      *
-     *     shadow._.caseDash('HowdyThere-stranger')
-     *     // returns 'howdy-there-stranger'
+     * shadow._.caseDash('HowdyThere-stranger')
+     * // returns 'howdy-there-stranger'
+     * ```
      *
      * @method caseDash
      * @param {String} words A string of words delimited by dashes, underscores, and case changes.
@@ -208,11 +216,13 @@ var _ = shadow._ = {
      *
      * @example
      *
-     *     shadow._.isTypeOf(new Date)
-     *     // returns 'date'
+     * ```javascript
+     * shadow._.isTypeOf(new Date)
+     * // returns 'date'
      *
-     *     shadow._.isTypeof(new Date, 'date')
-     *     // returns true
+     * shadow._.isTypeof(new Date, 'date')
+     * // returns true
+     * ```
      *
      * @method isTypeOf
      * @param value The value whose type is being checked.
@@ -231,17 +241,23 @@ var _ = shadow._ = {
      *
      * Given the following element:
      *
-     *     <div id="elem"></div>
+     * ```html
+     * <div id="elem"></div>
+     * ```
      *
      * And applying the following snippet:
      *
-     *     var el = document.getElementById('elem')
-     *     shadow._.aria(el, 'role', 'button')
-     *     shadow._.aria(el, 'controls', 'widget')
+     * ```javascript
+     * var el = document.getElementById('elem')
+     * shadow._.aria(el, 'role', 'button')
+     * shadow._.aria(el, 'controls', 'widget')
+     * ```
      *
      * The element becomes:
      *
-     *     <div id="elem" role="button" aria-controls="widget"></div>
+     * ```html
+     * <div id="elem" role="button" aria-controls="widget"></div>
+     * ```
      *
      * @method aria
      * @param {HTMLElement} element The HTML element whose attribute should be set.
@@ -256,19 +272,25 @@ var _ = shadow._ = {
      *
      * Given the following element:
      *
-     *     <div id="elem"></div>
+     * ```html
+     * <div id="elem"></div>
+     * ```
      *
      * And applying the following snippet:
      *
-     *     var el = document.getElementById('elem')
-     *     shadow._.aria(el, {
-     *         role: 'button',
-     *         controls: 'widget'
-     *     })
+     * ```javascript
+     * var el = document.getElementById('elem')
+     * shadow._.aria(el, {
+     *     role: 'button',
+     *     controls: 'widget'
+     * })
+     * ```
      *
      * The element becomes:
      *
-     *     <div id="elem" role="button" aria-controls="widget"></div>
+     * ```html
+     * <div id="elem" role="button" aria-controls="widget"></div>
+     * ```
      *
      * @method aria
      * @param {HTMLElement} element The HTML element whose attribute should be set.
@@ -634,9 +656,11 @@ shadow.Object.extend({
      *
      * @example
      *
-     *     var date = shadow.Date.create(new Date(2013, 3, 20))
-     *     date.value
-     *     // returns [2013, 3, 20]
+     * ```javascript
+     * var date = shadow.Date.create(new Date(2013, 3, 20))
+     * date.value
+     * // returns [2013, 3, 20]
+     * ```
      *
      * @attribute value
      * @type {Array}
@@ -676,11 +700,13 @@ shadow.Object.extend({
      *
      * @example
      *
-     *     var date = shadow.Date.create([2013, 3, 20], {
-     *         setToTheFirst: true
-     *     })
-     *     date.value
-     *     // returns [2013, 3, 1]
+     * ```javascript
+     * var date = shadow.Date.create([2013, 3, 20], {
+     *     setToTheFirst: true
+     * })
+     * date.value
+     * // returns [2013, 3, 1]
+     * ```
      *
      * @attribute setToTheFirst
      * @type {Boolean}
@@ -812,11 +838,13 @@ shadow.Object.extend({
      *
      * @example
      *
-     *     shadow.Date.create([2013, 3, 20]) > shadow.Date.create([2014, 8, 14])
-     *     // returns false
+     * ```javascript
+     * shadow.Date.create([2013, 3, 20]) > shadow.Date.create([2014, 8, 14])
+     * // returns false
      *
-     *     shadow.Date.create([2013, 3, 20]) < shadow.Date.create([2014, 8, 14])
-     *     // returns true
+     * shadow.Date.create([2013, 3, 20]) < shadow.Date.create([2014, 8, 14])
+     * // returns true
+     * ```
      *
      * @method valueOf
      * @return {Number} The time of the date to make comparisons easier.
@@ -829,9 +857,11 @@ shadow.Object.extend({
      *
      * @example
      *
-     *     var date = shadow.Date.create([2013, 3, 20])
-     *     JSON.stringify(date)
-     *     // returns "[2013,3,20]"
+     * ```javascript
+     * var date = shadow.Date.create([2013, 3, 20])
+     * JSON.stringify(date)
+     * // returns "[2013,3,20]"
+     * ```
      *
      * @method toJSON
      * @return {Array} The value of the date.
@@ -920,11 +950,15 @@ shadow.Object.extend({
      *
      * @example
      *
-     *     <div data-ui-prop="false" data-ui-another-prop="[1,3,4]"></div>
+     * ```html
+     * <div data-ui-prop="false" data-ui-another-prop="[1,3,4]"></div>
+     * ```
      *
      * Becomes
      *
-     *     attrs: { prop: false, anotherProp: [1,3,4] }
+     * ```javascript
+     * attrs: { prop: false, anotherProp: [1,3,4] }
+     * ```
      *
      * @attribute attrs
      * @type Hash
@@ -952,20 +986,24 @@ shadow.Object.extend({
      *
      * @example
      *
-     *     classNames: {
-     *         root: ' --root',
-     *         box: 'box',
-     *         button: 'button'
-     *     },
-     *     classNamesPrefix: 'my-prefix'
+     * ```javascript
+     * classNames: {
+     *     root: ' --root',
+     *     box: 'box',
+     *     button: 'button'
+     * },
+     * classNamesPrefix: 'my-prefix'
+     * ```
      *
      * Becomes
      *
-     *     classNames: {
-     *         root: 'my-prefix my-prefix--root',
-     *         box: 'my-prefix__box',
-     *         button: 'my-prefix__button'
-     *     }
+     * ```javascript
+     * classNames: {
+     *     root: 'my-prefix my-prefix--root',
+     *     box: 'my-prefix__box',
+     *     button: 'my-prefix__button'
+     * }
+     * ```
      *
      * @attribute classNamesPrefix
      * @type String
@@ -1127,29 +1165,35 @@ shadow.Object.extend({
      *
      * @example
      *
-     *     var element = shadow.Element.create({
-     *         //...
-     *         attrs: {
-     *             myAttr: true,
-     *             myOtherAttr: { niceness: 10 }
-     *         }
-     *     })
+     * ```javascript
+     * var element = shadow.Element.create({
+     *     //...
+     *     attrs: {
+     *         myAttr: true,
+     *         myOtherAttr: { niceness: 10 }
+     *     }
+     * })
+     * ```
      *
      * We can use the `get` method:
      *
-     *     element.get('myAttr')
-     *     // returns true
+     * ```javascript
+     * element.get('myAttr')
+     * // returns true
      *
-     *     element.get('myOtherAttr')
-     *     // returns { niceness: 10 }
+     * element.get('myOtherAttr')
+     * // returns { niceness: 10 }
+     * ```
      *
      * Or, we can directly access the `attrs` object:
      *
-     *     element.attrs.myAttr
-     *     // returns true
+     * ```javascript
+     * element.attrs.myAttr
+     * // returns true
      *
-     *     element.attrs.myOtherAttr
-     *     // returns { niceness: 10 }
+     * element.attrs.myOtherAttr
+     * // returns { niceness: 10 }
+     * ```
      *
      * @method get
      * @param {String} name The name of the attribute to get.
@@ -1177,24 +1221,28 @@ shadow.Object.extend({
      *
      * @example
      *
-     *     var element = shadow.Element.create({
-     *         //...
-     *         attrs: {
-     *             myCollection: [{ value: 6 }, { value: 14 }, { value: 19 }]
-     *         }
-     *     })
+     * ```js
+     * var element = shadow.Element.create({
+     *     //...
+     *     attrs: {
+     *         myCollection: [{ value: 6 }, { value: 14 }, { value: 19 }]
+     *     }
+     * })
+     * ```
      *
      * To add a value, we’d do something like this:
      *
-     *     element.get('myCollection')
-     *     // returns [{ value: 6 }, { value: 14 }, { value: 19 }]
+     * ```js
+     * element.get('myCollection')
+     * // returns [{ value: 6 }, { value: 14 }, { value: 19 }]
      *
-     *     element.add('myCollection', { value: 24 }, function(unit, loopedUnit) {
-     *         return unit.value === loopedUnit.value
-     *     })
+     * element.add('myCollection', { value: 24 }, function(unit, loopedUnit) {
+     *     return unit.value === loopedUnit.value
+     * })
      *
-     *     element.get('myCollection')
-     *     // returns [{ value: 6 }, { value: 14 }, { value: 19 }, { value: 24 }]
+     * element.get('myCollection')
+     * // returns [{ value: 6 }, { value: 14 }, { value: 19 }, { value: 24 }]
+     * ```
      *
      * @method add
      * @param {String} name The name of the attribute to add to.
@@ -1537,9 +1585,9 @@ shadow.Element.extend({
      *
      * @method format
      * @param {String|Boolean|Number|Array|Hash} value The value to format.
-     * @param {Hash} options *TODO*: Options to customize the formatting.
+     * @param {Hash} options Options to customize the formatting.
      * @return {String} The formatted string.
-     * @todo
+     * @todo Implement the `options` argument.
      */
     format: function(value, options) {
         var dataElement = this;

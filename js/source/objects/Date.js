@@ -16,9 +16,11 @@ shadow.Object.extend({
      *
      * @example
      *
-     *     var date = shadow.Date.create(new Date(2013, 3, 20))
-     *     date.value
-     *     // returns [2013, 3, 20]
+     * ```javascript
+     * var date = shadow.Date.create(new Date(2013, 3, 20))
+     * date.value
+     * // returns [2013, 3, 20]
+     * ```
      *
      * @attribute value
      * @type {Array}
@@ -66,11 +68,13 @@ shadow.Object.extend({
      *
      * @example
      *
-     *     var date = shadow.Date.create([2013, 3, 20], {
-     *         setToTheFirst: true
-     *     })
-     *     date.value
-     *     // returns [2013, 3, 1]
+     * ```javascript
+     * var date = shadow.Date.create([2013, 3, 20], {
+     *     setToTheFirst: true
+     * })
+     * date.value
+     * // returns [2013, 3, 1]
+     * ```
      *
      * @attribute setToTheFirst
      * @type {Boolean}
@@ -242,11 +246,13 @@ shadow.Object.extend({
      *
      * @example
      *
-     *     shadow.Date.create([2013, 3, 20]) > shadow.Date.create([2014, 8, 14])
-     *     // returns false
+     * ```javascript
+     * shadow.Date.create([2013, 3, 20]) > shadow.Date.create([2014, 8, 14])
+     * // returns false
      *
-     *     shadow.Date.create([2013, 3, 20]) < shadow.Date.create([2014, 8, 14])
-     *     // returns true
+     * shadow.Date.create([2013, 3, 20]) < shadow.Date.create([2014, 8, 14])
+     * // returns true
+     * ```
      *
      * @method valueOf
      * @return {Number} The time of the date to make comparisons easier.
@@ -261,9 +267,11 @@ shadow.Object.extend({
      *
      * @example
      *
-     *     var date = shadow.Date.create([2013, 3, 20])
-     *     JSON.stringify(date)
-     *     // returns "[2013,3,20]"
+     * ```javascript
+     * var date = shadow.Date.create([2013, 3, 20])
+     * JSON.stringify(date)
+     * // returns "[2013,3,20]"
+     * ```
      *
      * @method toJSON
      * @return {Array} The value of the date.

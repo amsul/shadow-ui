@@ -19,6 +19,7 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.3.0/handlebars.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/ember.js/1.7.0-beta.2/ember.js"></script>
     <script src="/docs/scripts/main.js"></script>
+    <script src="/js/shadow.js"></script>
 </head>
 <body>
     <script type="text/x-handlebars">
@@ -39,7 +40,7 @@
             <div class="container  container--padded">
                 <div class="container__box">
                     <h2 class="heading  heading--three  heading--flat"><code>{{name}}</code> <span class="is-thin">module</span></h2>
-                    <h6 class="heading  is-thin  is-dimmed">Defined in {{#link-to "file" name}}<code>{{file}}:{{line}}</code>{{/link-to}}</h6>
+                    <h6 class="heading  is-thin  is-dimmed">Defined in {{#link-to-github file=file line=line}}<code>{{file}}:{{line}}</code>{{/link-to-github}}</h6>
                     {{md description}}
                 </div>
             </div>
@@ -70,7 +71,7 @@
                     {{#if class.extends}}
                         <h6 class="heading  heading--flat  is-thin  is-dimmed">Extends {{#link-to "class" class.extends}}<code>{{class.extends}}</code>{{/link-to}}</h6>
                     {{/if}}
-                    <h6 class="heading  heading--flat  is-thin  is-dimmed">Defined in {{#link-to "file" class.name}}<code>{{class.file}}:{{class.line}}</code>{{/link-to}}</h6>
+                    <h6 class="heading  heading--flat  is-thin  is-dimmed">Defined in {{#link-to-github file=class.file line=class.line}}<code>{{class.file}}:{{class.line}}</code>{{/link-to-github}}</h6>
                     {{#if class.module}}
                         <h6 class="heading  is-thin  is-dimmed">Module {{#link-to "module" class.module}}<code>{{class.module}}</code>{{/link-to}}</h6>
                     {{/if}}
@@ -133,9 +134,9 @@
                 {{/if}}
             </h3>
             {{#if extending}}
-                <h6 class="heading  is-thin  is-dimmed">Defined by {{#link-to "class" extending.class}}<code>{{extending.class}}</code>{{/link-to}} and extended in {{#link-to "file" class}}<code>{{file}}:{{line}}</code>{{/link-to}}</h6>
+                <h6 class="heading  is-thin  is-dimmed">Defined by {{#link-to "class" extending.class}}<code>{{extending.class}}</code>{{/link-to}} and extended in {{#link-to-github file=file line=line}}<code>{{file}}:{{line}}</code>{{/link-to-github}}</h6>
             {{else}}
-                <h6 class="heading  is-thin  is-dimmed">Defined in {{#link-to "file" class}}<code>{{file}}:{{line}}</code>{{/link-to}}</h6>
+                <h6 class="heading  is-thin  is-dimmed">Defined in {{#link-to-github file=file line=line}}<code>{{file}}:{{line}}</code>{{/link-to-github}}</h6>
             {{/if}}
             {{md description}}
             {{#if example}}

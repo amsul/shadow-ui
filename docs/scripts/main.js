@@ -226,6 +226,20 @@
         isNotActive: Em.computed.not('tab.isActive')
     })
 
+    App.LinkToGithubView = Em.View.extend({
+        tagName: 'a',
+        attributeBindings: ['href'],
+        href: function() {
+            var root = 'http://github.com/amsul/shadow-ui/blob'
+            var version = this.get('parentView.controller.model.project.version')
+            var file = this.get('file')
+            var line = this.get('line')
+            return root + '/' + version + '/' + file + (line ? '#L' + line : '')
+        }.property('file', 'line')
+    })
+
+    Em.Handlebars.helper('link-to-github', App.LinkToGithubView)
+
     function objectIntoFlatArray(object) {
         return Object.keys(object).map(function(key) {
             return object[key]

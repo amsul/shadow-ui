@@ -70,7 +70,8 @@ a {
     color: #0089ec;
     text-decoration: none;
 }
-a:hover {
+a:hover,
+a:focus {
     text-decoration: underline;
 }
 
@@ -110,6 +111,7 @@ a:hover {
         color: #999;
     }
     .container__link-hook:hover,
+    .container__link-hook:focus,
     .container__box .container__link-hook:hover {
         color: #0089ec;
         text-decoration: none;
@@ -171,7 +173,7 @@ a:hover {
     font-weight: 100;
     font-size: 0.75em;
     text-transform: lowercase;
-    padding: 0 0.25em 1px;
+    padding: 0 0.375em 1px;
     border-radius: 4px;
 }
 .capsule--access {
@@ -200,8 +202,10 @@ a:hover {
         background: none;
         font-weight: 600;
     }
-    .tabs__button:hover {
+    .tabs__button:hover,
+    .tabs__button:focus {
         text-decoration: none;
+        border-color: #b2ddff;
     }
     .is-active .tabs__button {
         border-color: #0089ec;
@@ -223,7 +227,8 @@ a:hover {
 .is-dimmed a {
     color: #666;
 }
-.is-dimmed a:hover {
+.is-dimmed a:hover,
+.is-dimmed a:focus {
     color: #333;
 }
 .is-color-inherited {

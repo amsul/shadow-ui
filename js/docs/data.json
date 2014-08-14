@@ -414,26 +414,6 @@
         {
             "file": "js/source/objects/Date.js",
             "line": 128,
-            "description": "Extend the shadow date.",
-            "itemtype": "method",
-            "name": "extend",
-            "params": [
-                {
-                    "name": "options",
-                    "description": "Options to extend the date’s prototype.",
-                    "type": "Object"
-                }
-            ],
-            "return": {
-                "description": "An extension of the shadow date class.",
-                "type": "shadow.Date"
-            },
-            "static": 1,
-            "class": "shadow.Date"
-        },
-        {
-            "file": "js/source/objects/Date.js",
-            "line": 138,
             "description": "Compare the shadow date’s value with another date.",
             "itemtype": "method",
             "name": "compare",
@@ -458,7 +438,7 @@
         },
         {
             "file": "js/source/objects/Date.js",
-            "line": 204,
+            "line": 194,
             "description": "Compare a date with a range in various ways.",
             "itemtype": "method",
             "name": "compareRange",
@@ -483,7 +463,7 @@
         },
         {
             "file": "js/source/objects/Date.js",
-            "line": 244,
+            "line": 234,
             "description": "Simplify comparison of dates.",
             "example": [
                 "\n\n```javascript\nshadow.Date.create([2013, 3, 20]) > shadow.Date.create([2014, 8, 14])\n// returns false\n\nshadow.Date.create([2013, 3, 20]) < shadow.Date.create([2014, 8, 14])\n// returns true\n```"
@@ -498,7 +478,7 @@
         },
         {
             "file": "js/source/objects/Date.js",
-            "line": 265,
+            "line": 255,
             "description": "Simplify stringification of the shadow date.",
             "example": [
                 "\n\n```javascript\nvar date = shadow.Date.create([2013, 3, 20])\nJSON.stringify(date)\n// returns \"[2013,3,20]\"\n```"
@@ -513,13 +493,13 @@
         },
         {
             "file": "js/source/objects/Date.js",
-            "line": 286,
+            "line": 276,
             "description": "Convert a date representation into a date.",
             "class": "shadow.Date"
         },
         {
             "file": "js/source/objects/Date.js",
-            "line": 304,
+            "line": 294,
             "description": "Get the decade a year belongs to.",
             "class": "shadow.Date"
         },
@@ -1377,11 +1357,11 @@
         },
         {
             "message": "Missing item type\nConvert a date representation into a date.",
-            "line": " js/source/objects/Date.js:286"
+            "line": " js/source/objects/Date.js:276"
         },
         {
             "message": "Missing item type\nGet the decade a year belongs to.",
-            "line": " js/source/objects/Date.js:304"
+            "line": " js/source/objects/Date.js:294"
         },
         {
             "message": "Missing item type\nGet the shadow ui attributes from an element.",

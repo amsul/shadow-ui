@@ -66,11 +66,13 @@
             <div class="container  container--padded">
                 <div class="container__box">
                     <h2 class="heading  heading--three  heading--flat">
-                        <code>{{class.name}}</code> <span class="is-thin">class</span>{{#if class.static}} &nbsp; <span class="capsule  capsule--static">Static</span>{{/if}}
+                        <code>{{class.name}}</code> <span class="is-thin">class</span>{{#if class.isStatic}} &nbsp; <span class="capsule  capsule--static">Static</span>{{/if}}
                     </h2>
-                    {{#if class.extends}}
+                    {{#if class.isExtended}}
                         <h6 class="heading  heading--flat  is-thin  is-dimmed">Extends {{#link-to "class" class.extends}}<code>{{class.extends}}</code>{{/link-to}}</h6>
-                    {{/if}}
+                    {{else}}{{#if class.isInherited}}
+                        <h6 class="heading  heading--flat  is-thin  is-dimmed">Extends {{#link-to "class" class.inherits}}<code>{{class.inherits}}</code>{{/link-to}}</h6>
+                    {{/if}}{{/if}}
                     <h6 class="heading  heading--flat  is-thin  is-dimmed">Defined in {{#link-to-github file=class.file line=class.line}}<code>{{class.file}}:{{class.line}}</code>{{/link-to-github}}</h6>
                     {{#if class.module}}
                         <h6 class="heading  is-thin  is-dimmed">Module {{#link-to "module" class.module}}<code>{{class.module}}</code>{{/link-to}}</h6>
@@ -128,16 +130,18 @@
                 {{#link-to "class" class (query-params itemtype=itemtype name=name)
                     class="container__link-hook"}}&sect;{{/link-to}}
                 {{#if isMethod}}
-                    <code>{{name}}{{#if params}} <small>({{list-params data=params}})</small>{{/if}}</code>{{#if static}} &nbsp; <span class="capsule capsule--static">Static</span>{{/if}}{{#if access}} &nbsp; <span class="capsule capsule--access">{{access}}</span>{{/if}}
+                    <code>{{name}}{{#if params}} <small>({{list-params data=params}})</small>{{/if}}</code>{{#if isStatic}} &nbsp; <span class="capsule capsule--static">Static</span>{{/if}}{{#if access}} &nbsp; <span class="capsule capsule--access">{{access}}</span>{{/if}}
                 {{else}}
                     <code>{{name}}</code> &nbsp; <code class="is-size-five  is-thin  is-dimmed">{{type}}</code>{{#if readonly}} &nbsp; <span class="capsule capsule--access">Readonly</span>{{/if}}
                 {{/if}}
             </h3>
-            {{#if extending}}
-                <h6 class="heading  is-thin  is-dimmed">Defined by {{#link-to "class" extending.class}}<code>{{extending.class}}</code>{{/link-to}} and extended in {{#link-to-github file=file line=line}}<code>{{file}}:{{line}}</code>{{/link-to-github}}</h6>
+            {{#if isExtended}}
+                <h6 class="heading  is-thin  is-dimmed">Defined by {{#link-to "class" extends (query-params itemtype=itemtype name=name)}}<code>{{extends}}</code>{{/link-to}} and extended in {{#link-to-github file=file line=line}}<code>{{file}}:{{line}}</code>{{/link-to-github}}</h6>
+            {{else}}{{#if isInherited}}
+                <h6 class="heading  is-thin  is-dimmed">Inherited from {{#link-to "class" inherits (query-params itemtype=itemtype name=name)}}<code>{{inherits}}</code>{{/link-to}}</h6>
             {{else}}
                 <h6 class="heading  is-thin  is-dimmed">Defined in {{#link-to-github file=file line=line}}<code>{{file}}:{{line}}</code>{{/link-to-github}}</h6>
-            {{/if}}
+            {{/if}}{{/if}}
             {{md description}}
             {{#if example}}
                 {{#each example}}{{md .}}{{/each}}

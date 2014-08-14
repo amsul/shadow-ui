@@ -126,16 +126,6 @@ shadow.Object.extend({
 
 
     /**
-     * Extend the shadow date.
-     *
-     * @method extend
-     * @param {Object} options Options to extend the date’s prototype.
-     * @return {shadow.Date} An extension of the shadow date class.
-     * @static
-     */
-
-
-    /**
      * Compare the shadow date’s value with another date.
      *
      * @method compare

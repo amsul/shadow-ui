@@ -79,30 +79,26 @@
         }
     })
 
+    App.ClassItemObject = Em.Object.extend({
+        isMethod: Em.computed.equal('itemtype', 'method'),
+        isStatic: Em.computed.equal('static', 1),
+        isInherited: Em.computed.any('inherits'),
+        isExtended: false,
+    })
+
     App.ClassRoute = Em.Route.extend({
         setupController: function(controller, model) {
             controller.set('model', model)
         },
         model: function(params) {
             var data = this.modelFor('application')
-            var attributes = data.attributes.filterBy('class', params.class_name)
-            var methods = data.methods.filterBy('class', params.class_name)
             var klass = data.classes.findBy('name', params.class_name)
-            var extensionMethods
-            if ( klass.extends ) {
-                extensionMethods = data.methods.filterBy('class', klass.extends)
-            }
+            klass = App.ClassItemObject.create(klass)
+            var extensionTree = createExtensionTree(klass, data.classes)
             return {
                 'class': klass,
-                attributes: attributes,
-                methods: methods.map(function(method) {
-                    var extensionMethod
-                    if ( klass.extends && (extensionMethod = extensionMethods.findBy('name', method.name)) ) {
-                        method.extending = extensionMethod
-                    }
-                    method.isMethod = true
-                    return method
-                })
+                attributes: filterClassAttributes(klass, data.attributes, extensionTree),
+                methods: filterClassMethods(klass, data.methods, extensionTree)
             }
         }
     })
@@ -113,14 +109,14 @@
         name: '',
         tabsSortedClass: function() {
             var model = this.get('model')
-            var ClassItemObject = Em.Object.extend({
+            var ClassItemsObject = Em.Object.extend({
                 isIndex: false,
                 isActive: false,
                 name: null,
                 title: null,
                 data: null
             })
-            var index = ClassItemObject.create({
+            var index = ClassItemsObject.create({
                 isIndex: true,
                 name: 'index',
                 title: 'Index',
@@ -128,7 +124,7 @@
             })
             var tabs = [index]
             if ( model.attributes.length ) {
-                var attributes = ClassItemObject.create({
+                var attributes = ClassItemsObject.create({
                     name: 'attributes',
                     title: 'Attributes',
                     data: model.attributes.sortBy('name')
@@ -137,7 +133,7 @@
                 tabs.push(attributes)
             }
             if ( model.methods.length ) {
-                var methods = ClassItemObject.create({
+                var methods = ClassItemsObject.create({
                     name: 'methods',
                     title: 'Methods',
                     data: model.methods.sortBy('name')
@@ -177,26 +173,23 @@
     App.ToggleTabsComponent = Em.Component.extend(Ember.ControllerMixin, {
         needs: ['class'],
         showStartingTab: function() {
-            var itemtype = this.get('controllers.class.itemtype')
-            var name = this.get('controllers.class.name')
-            if ( itemtype || name ) {
-                this.queryItemIntoView(itemtype, name)
+            if ( this.get('controllers.class.itemtype') ) {
+                this.queryItemIntoView()
                 return
             }
             var tab = this.get('tabs')[0]
             this.showTab(tab.name)
-        }.on('init').observes('tabs', 'controllers.class.itemtype', 'controllers.class.name'),
-        queryItemIntoView: function(itemtype, name) {
-            if ( !itemtype ) {
-                return
-            }
+        }.on('init').observes('tabs', 'controllers.class.itemtype'),
+        queryItemIntoView: function() {
+            var itemtype = this.get('controllers.class.itemtype')
             itemtype = itemtype == 'attribute' ? 'attributes' :
-                itemtype == 'method' ? 'methods' : itemtype
+                itemtype == 'method' ? 'methods' : itemtype || 'index'
             this.showTab(itemtype)
-            if ( name ) {
+            Em.run.next(this, function() {
+                var name = this.get('controllers.class.name')
                 this.scrollIntoView(name)
-            }
-        },
+            })
+        }.on('init').observes('controllers.class.itemtype', 'controllers.class.name'),
         showTab: function(tabName) {
             if ( !tabName ) {
                 return
@@ -210,10 +203,11 @@
             activeTab.set('isActive', true)
         },
         scrollIntoView: function(name) {
-            Em.run.next(this, function() {
-                var $el = $('[data-query-name="' + name + '"]')
-                $el[0].scrollIntoView()
-            })
+            if ( !name ) {
+                return
+            }
+            var $el = $('[data-query-name="' + name + '"]')
+            $el[0].scrollIntoView()
         }
     })
 
@@ -253,6 +247,69 @@
                 value: object[key]
             }
         })
+    }
+
+    function filterClassMethods(klass, methods, extensionTree) {
+        var methodsAdded = []
+        methods = methods.
+            map(function(method) {
+                return App.ClassItemObject.create(method)
+            })
+            .filter(function(method) {
+                var added = false
+                var methodAdded = methodsAdded.findBy('name', method.name)
+                if ( method.class != klass.name && methodAdded ) {
+                    if (
+                        extensionTree.indexOf(method.class) > -1 &&
+                        !methodAdded.get('isExtended') &&
+                        methodAdded.class == klass.name
+                    ) {
+                        methodAdded.set('isExtended', true)
+                        methodAdded.set('extends', method.class)
+                    }
+                    return false
+                }
+                if ( extensionTree.indexOf(method.class) > -1 ) {
+                    method.set('inherits', method.class)
+                    added = true
+                }
+                else {
+                    added = method.class == klass.name
+                }
+                if ( added ) {
+                    methodsAdded.push(method)
+                }
+                return added
+            })
+        return methods
+    }
+
+    function filterClassAttributes(klass, attributes, extensionTree) {
+        return attributes.
+            map(function(attribute) {
+                return App.ClassItemObject.create(attribute)
+            }).
+            filter(function(attribute) {
+                if ( extensionTree.indexOf(attribute.class) > -1 ) {
+                    attribute.set('inherits', attribute.class)
+                    return true
+                }
+                return attribute.class == klass.name
+            })
+    }
+
+    function createExtensionTree(klass, classes) {
+        var extensionTree = []
+        var extensionName = klass.extends
+        if ( !extensionName ) {
+            return extensionTree
+        }
+        extensionTree.push(extensionName)
+        var extension = classes.findBy('name', extensionName)
+        if ( extension.extends ) {
+            extensionTree = extensionTree.concat(createExtensionTree(extension, classes))
+        }
+        return extensionTree
     }
 
 })()

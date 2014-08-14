@@ -1,6 +1,6 @@
 
 /*!
- * Shadow UI v0.6.1-0, 2014/08/13
+ * Shadow UI v0.6.1-0, 2014/08/14
  * By Amsul, http://amsul.ca
  * Hosted on http://amsul.github.io/shadow-ui
  * Licensed under MIT
@@ -745,14 +745,6 @@ shadow.Object.extend({
         _.define(shadowDate, "time", time);
         return shadowDate;
     },
-    /**
-     * Extend the shadow date.
-     *
-     * @method extend
-     * @param {Object} options Options to extend the date’s prototype.
-     * @return {shadow.Date} An extension of the shadow date class.
-     * @static
-     */
     /**
      * Compare the shadow date’s value with another date.
      *

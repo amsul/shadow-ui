@@ -5,6 +5,7 @@
  * @class shadow.DataElement
  * @extends shadow.Element
  * @static
+ * @since 0.6.0
  */
 shadow.Element.extend({
 

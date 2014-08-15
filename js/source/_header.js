@@ -14,7 +14,7 @@
 
     // ...AMD...
     else if ( typeof define == 'function' && define.amd )
-        define('shadow', [global, 'jquery'], factory)
+        define([global, 'jquery'], factory)
 
     // ...and basic `script` includes.
     else global.shadow = factory(global, global.jQuery)

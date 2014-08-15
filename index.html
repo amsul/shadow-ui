@@ -7,217 +7,43 @@
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/normalize/3.0.1/normalize.css">
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/styles/hybrid.min.css">
     <link rel="stylesheet" href="/docs/styles/main.css">
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/highlight.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/languages/javascript.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/languages/json.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/languages/css.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/languages/scss.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/languages/xml.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/languages/handlebars.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/marked/0.3.2/marked.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.3.0/handlebars.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/ember.js/1.7.0-beta.2/ember.js"></script>
-    <script src="/docs/scripts/main.js"></script>
-    <script src="/js/shadow.js"></script>
+    <script>
+        var require = {
+            baseUrl: '/docs/scripts',
+            deps: ['main'],
+            paths: {
+                'text': '//cdnjs.cloudflare.com/ajax/libs/require-text/2.0.12/text',
+                'ember': '//cdnjs.cloudflare.com/ajax/libs/ember.js/1.7.0-beta.2/ember',
+                'handlebars': '//cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.3.0/handlebars',
+                'jquery': '//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery',
+                'marked': '//cdnjs.cloudflare.com/ajax/libs/marked/0.3.2/marked',
+                'highlight#source': '//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/highlight.min',
+                'highlight-javascript': '//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/languages/javascript.min',
+                'highlight-json': '//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/languages/json.min',
+                'highlight-css': '//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/languages/css.min',
+                'highlight-scss': '//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/languages/scss.min',
+                'highlight-xml': '//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/languages/xml.min',
+                'highlight-handlebars': '//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/languages/handlebars.min'
+            },
+            shim: {
+                'ember': {
+                    deps: ['handlebars', 'jquery'],
+                    exports: 'Em'
+                },
+                'handlebars': {
+                    exports: 'Handlebars'
+                },
+                'highlight#source': {
+                    exports: 'hljs'
+                }
+            }
+        }
+    </script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.14/require.js"></script>
+    <script>
+        require(['/js/shadow.js'], function(shadow) {
+            window.shadow = shadow
+        })
+    </script>
 </head>
-<body>
-    <script type="text/x-handlebars">
-        <header class="container  container--padded">
-            <h1 class="heading  heading--three">{{#link-to "index" class="is-color-inherited"}}{{project.name}} <small class="heading__subtext">v{{project.version}}</small>{{/link-to}}</h1>
-        </header>
-        {{outlet}}
-        {{partial "sidebar"}}
-    </script>
-    <script type="text/x-handlebars" data-template-name="index">
-        <main class="container  container--padded  container--section">
-            <p>{{project.description}}</p>
-        </main>
-    </script>
-    <script type="text/x-handlebars" data-template-name="module">
-        <main>
-
-            <div class="container  container--padded">
-                <div class="container__box">
-                    <h2 class="heading  heading--two  heading--flat"><code>{{name}}</code> <span class="is-thin">module</span></h2>
-                    <h6 class="heading  is-thin  is-dimmed">Defined in {{#link-to-github file=file line=line}}<code>{{file}}:{{line}}</code>{{/link-to-github}}</h6>
-                    {{md content=description}}
-                </div>
-            </div>
-
-            <hr>
-
-            {{#if classes}}
-                <div class="container  container--padded  container--section">
-                    <h3>Classes</h3>
-                    <ul>
-                        {{#each class in classes}}
-                            <li>{{#link-to "class" class.name}}<code>{{class.name}}</code>{{/link-to}}</li>
-                        {{/each}}
-                    </ul>
-                </div>
-            {{/if}}
-
-        </main>
-    </script>
-    <script type="text/x-handlebars" data-template-name="class">
-        <main>
-
-            <div class="container  container--padded">
-                <div class="container__box">
-                    <h2 class="heading  heading--two  heading--flat">
-                        <code>{{class.name}}</code> <span class="is-thin">class</span>{{#if class.isStatic}} &nbsp;<span class="capsule  capsule--static">Static</span>{{/if}}
-                    </h2>
-                    {{#if class.isExtended}}
-                        <h6 class="heading  heading--flat  is-thin  is-dimmed">Extends {{#link-to "class" class.extends}}<code>{{class.extends}}</code>{{/link-to}}</h6>
-                    {{else}}{{#if class.isInherited}}
-                        <h6 class="heading  heading--flat  is-thin  is-dimmed">Extends {{#link-to "class" class.inherits}}<code>{{class.inherits}}</code>{{/link-to}}</h6>
-                    {{/if}}{{/if}}
-                    <h6 class="heading  heading--flat  is-thin  is-dimmed">Defined in {{#link-to-github file=class.file line=class.line}}<code>{{class.file}}:{{class.line}}</code>{{/link-to-github}}</h6>
-                    {{#if class.module}}
-                        <h6 class="heading  is-thin  is-dimmed">Module {{#link-to "module" class.module}}<code>{{class.module}}</code>{{/link-to}}</h6>
-                    {{/if}}
-                    {{md content=class.description}}
-                </div>
-            </div>
-
-            <hr>
-
-            {{#toggle-tabs tabs=controller.tabsSortedClass class="tabs" id="classitem-tabs"}}
-                <div class="container  container--padded  container--section">
-                    <ul class="list--plain  list--inline-spaced">
-                        {{#each tab in controller.tabsSortedClass~}}
-                            <li>
-                                {{#toggle-tabs-button tab=tab}}
-                                    {{#link-to "class" class.name (query-params itemtype=tab.name name="")
-                                        class="tabs__button is-size-three"}}
-                                        {{tab.title}}
-                                    {{/link-to}}
-                                {{/toggle-tabs-button}}
-                            </li>
-                        {{~/each}}
-                    </ul>
-                </div>
-                <div class="container  container--section">
-                    {{#each tab in controller.tabsSortedClass}}
-                        {{#toggle-tabs-body tab=tab class="tabs__body"}}
-                            {{#if tab.isIndex}}
-                                {{#each category in tab.data}}
-                                    <h3>{{category.title}}</h3>
-                                    <ul>
-                                        {{#each unit in category.data}}
-                                            <li>
-                                                {{#link-to "class" unit.class (query-params itemtype=unit.itemtype name=unit.queryName)}}
-                                                    <code>{{unit.name}}</code>
-                                                {{/link-to}}
-                                            </li>
-                                        {{/each}}
-                                    </ul>
-                                {{/each}}
-                            {{else}}
-                                {{#each unit in tab.data}}
-                                    {{render "classitem" unit}}
-                                {{/each}}
-                                <h3><code>{{tab.data.name}}</code></h3>
-                                <p>{{{tab.data.description}}}</p>
-                            {{/if}}
-                        {{/toggle-tabs-body}}
-                    {{/each}}
-                </div>
-            {{/toggle-tabs}}
-
-        </main>
-    </script>
-    <script type="text/x-handlebars" data-template-name="classitem">
-        <div class="container__box  container__box--bordered" {{bind-attr data-query-name=queryName}}>
-            <h3 class="heading  heading--three  heading--flat">
-                {{#link-to "class" class (query-params itemtype=itemtype name=queryName)
-                    class="container__link-hook"}}&sect;{{/link-to}}
-                {{#if isMethod}}
-                    <code>{{name}}{{#if params}} <small>({{list-params data=params}})</small>{{/if}}</code>{{#if isStatic}} &nbsp;<span class="capsule capsule--static">Static</span>{{/if}}{{#if access}} &nbsp;<span class="capsule capsule--access">{{access}}</span>{{/if}}
-                {{else}}
-                    <code>{{name}}</code> &nbsp;<code class="is-size-four  is-thin  is-dimmed">{{type}}</code>{{#if isRequired}} &nbsp;<span class="capsule capsule--required">Required</span>{{/if}}{{#if isWriteOnce}} &nbsp;<span class="capsule capsule--access-two">Write-once</span>{{/if}}{{#if isReadOnly}} &nbsp;<span class="capsule capsule--access-three">Read-only</span>{{/if}}
-                {{/if}}
-            </h3>
-            {{#if isExtended}}
-                <h6 class="heading  is-thin  is-dimmed">Defined by {{#link-to "class" extends (query-params itemtype=itemtype name=queryName)}}<code>{{extends}}</code>{{/link-to}} and extended in {{#link-to-github file=file line=line}}<code>{{file}}:{{line}}</code>{{/link-to-github}}</h6>
-            {{else}}{{#if isInherited}}
-                <h6 class="heading  is-thin  is-dimmed">Inherited from {{#link-to "class" inherits (query-params itemtype=itemtype name=queryName)}}<code>{{inherits}}</code>{{/link-to}}</h6>
-            {{else}}
-                <h6 class="heading  is-thin  is-dimmed">Defined in {{#link-to-github file=file line=line}}<code>{{file}}:{{line}}</code>{{/link-to-github}}</h6>
-            {{/if}}{{/if}}
-            {{md content=description}}
-            {{#if todo}}
-                <h4>To-dos:</h4>
-                <ol>
-                    {{#each task in todo}}
-                        <li>{{md content=task}}</li>
-                    {{/each}}
-                </ol>
-            {{/if}}
-            {{#if params}}
-                <h4>Parameters:</h4>
-                <ol class="list--plain">
-                    {{#each param in params}}
-                        <li>
-                            <p class="heading--flat"><code>{{param.name}}</code> &nbsp;<code class="is-size-six  is-dimmed">{{param.type}}</code>{{#if param.optional}} &nbsp;<span class="capsule capsule--optional">Optional</span>{{/if}}</p>
-                            {{md content=param.description}}
-                        </li>
-                    {{/each}}
-                </ol>
-            {{/if}}
-            {{#if default}}
-                <h4>Default: <code class="is-thin">{{default}}</code></h4>
-            {{/if}}
-            {{#if return}}
-                <h4>Returns:</h4>
-                <ol class="list--plain">
-                    <li>
-                        <p class="heading--flat"><code>{{return.type}}</code></p>
-                        {{md content=return.description}}
-                    </li>
-                </ol>
-            {{/if}}
-            {{#if example}}
-                <h4>Example:</h4>
-                {{#each example}}{{md content=.}}{{/each}}
-            {{/if}}
-        </div>
-    </script>
-    <script type="text/x-handlebars" data-template-name="_sidebar">
-        <aside class="container  container--padded  container--section">
-            {{partial "sidebar-modules"}}
-            {{partial "sidebar-classes"}}
-        </aside>
-    </script>
-    <script type="text/x-handlebars" data-template-name="_sidebar-modules">
-        <div class="container__box">
-            <h3 class="heading  heading--flat">Modules</h3>
-            <ul class="list--unindent  list--plain">
-                {{#each module in modules}}
-                    <li>
-                        {{#link-to "module" module.name}}<code>{{module.name}}</code>{{/link-to}}
-                        {{#if submodules}}
-                            {{log "TODO"}}
-                            {{log submodules}}
-                        {{/if}}
-                    </li>
-                {{/each}}
-            </ul>
-        </div>
-    </script>
-    <script type="text/x-handlebars" data-template-name="_sidebar-classes">
-        <div class="container__box">
-            <h3 class="heading  heading--flat">Classes</h3>
-            <ul class="list--unindent  list--plain">
-                {{#each class in classes}}
-                    <li>{{#link-to "class" class.name}}<code>{{class.name}}</code>{{/link-to}}</li>
-                {{/each}}
-            </ul>
-        </div>
-    </script>
-    <script type="text/x-handlebars" data-template-name="components/list-params">
-        {{~dataList~}}
-    </script>
-</body>
 </html>

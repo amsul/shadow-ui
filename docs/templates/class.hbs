@@ -1,0 +1,71 @@
+<main>
+
+    <div class="container  container--padded">
+        <div class="container__box">
+            <h2 class="heading  heading--two  heading--flat">
+                <code>{{class.name}}</code> <span class="is-thin">class</span>{{#if class.isStatic}} &nbsp;<span class="capsule  capsule--static">Static</span>{{/if}}
+            </h2>
+            <div class="meta">
+                {{#if class.isExtended}}
+                    <div class="meta__info">Extends {{#link-to "class" class.extends}}<code>{{class.extends}}</code>{{/link-to}}</div>
+                {{else}}{{#if class.isInherited}}
+                    <div class="meta__info">Extends {{#link-to "class" class.inherits}}<code>{{class.inherits}}</code>{{/link-to}}</div>
+                {{/if}}{{/if}}
+                <div class="meta__info">Defined in {{#link-to-github file=class.file line=class.line}}<code>{{class.file}}:{{class.line}}</code>{{/link-to-github}}</div>
+                {{#if class.module}}
+                    <div class="meta__info">Module {{#link-to "module" class.module}}<code>{{class.module}}</code>{{/link-to}}</div>
+                {{/if}}
+                {{#if class.since}}
+                    <div class="meta__info">Added in v{{class.since}}</div>
+                {{/if}}
+            </div>
+            {{md content=class.description}}
+        </div>
+    </div>
+
+    <hr>
+
+    {{#toggle-tabs tabs=controller.tabsSortedClass class="tabs" id="classitem-tabs"}}
+        <div class="container  container--padded  container--section">
+            <ul class="list--plain  list--inline-spaced">
+                {{#each tab in controller.tabsSortedClass~}}
+                    <li>
+                        {{#toggle-tabs-button tab=tab}}
+                            {{#link-to "class" class.name (query-params itemtype=tab.name name="")
+                                class="tabs__button is-size-three"}}
+                                {{tab.title}}
+                            {{/link-to}}
+                        {{/toggle-tabs-button}}
+                    </li>
+                {{~/each}}
+            </ul>
+        </div>
+        <div class="container  container--section">
+            {{#each tab in controller.tabsSortedClass}}
+                {{#toggle-tabs-body tab=tab class="tabs__body"}}
+                    {{#if tab.isIndex}}
+                        {{#each category in tab.data}}
+                            <h3>{{category.title}}</h3>
+                            <ul>
+                                {{#each unit in category.data}}
+                                    <li>
+                                        {{#link-to "class" unit.class (query-params itemtype=unit.itemtype name=unit.queryName)}}
+                                            <code>{{unit.name}}</code>
+                                        {{/link-to}}
+                                    </li>
+                                {{/each}}
+                            </ul>
+                        {{/each}}
+                    {{else}}
+                        {{#each unit in tab.data}}
+                            {{render "classitem" unit}}
+                        {{/each}}
+                        <h3><code>{{tab.data.name}}</code></h3>
+                        <p>{{{tab.data.description}}}</p>
+                    {{/if}}
+                {{/toggle-tabs-body}}
+            {{/each}}
+        </div>
+    {{/toggle-tabs}}
+
+</main>

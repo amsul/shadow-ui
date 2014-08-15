@@ -164,6 +164,26 @@ a:focus {
 
 
 /**
+ * Meta component.
+ */
+.meta {
+    font-size: 0.75rem;
+    color: #999;
+    margin-bottom: 1.25rem
+}
+    .meta__info {
+        margin-bottom: 0.25rem;
+    }
+    .meta__info a {
+        color: #666;
+    }
+    .meta__info a:hover,
+    .meta__info a:focus {
+        color: #333;
+    }
+
+
+/**
  * List component.
  */
 .list {}

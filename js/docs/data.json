@@ -100,7 +100,8 @@
             "line": 2,
             "description": "Construct a shadow data element object.",
             "extends": "shadow.Element",
-            "static": 1
+            "static": 1,
+            "since": "0.6.0"
         },
         "shadow.Date": {
             "name": "shadow.Date",
@@ -165,7 +166,7 @@
     "classitems": [
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 14,
+            "line": 15,
             "description": "An optional `input` element that holds the `attrs.value` as it's `value`\n\nIf it is a string, the value will be used as a jQuery selector.",
             "itemtype": "property",
             "name": "$input",
@@ -175,7 +176,7 @@
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 28,
+            "line": 29,
             "description": "The raw active “selection” of the data element's `attrs.value`.",
             "itemtype": "attribute",
             "name": "attrs.select",
@@ -185,7 +186,7 @@
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 38,
+            "line": 39,
             "description": "The stringified “selection” of the data element's `attrs.select`.",
             "itemtype": "attribute",
             "name": "attrs.value",
@@ -196,7 +197,7 @@
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 49,
+            "line": 50,
             "description": "A flag to automatically generate a hidden `input` if one is missing.",
             "itemtype": "attribute",
             "name": "attrs.hiddenInput",
@@ -206,7 +207,7 @@
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 59,
+            "line": 60,
             "description": "A flag to allow multiple selections in `attrs.select`.",
             "itemtype": "attribute",
             "name": "attrs.allowMultiple",
@@ -216,7 +217,7 @@
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 69,
+            "line": 70,
             "description": "A flag to allow range selections in `attrs.select`.",
             "itemtype": "attribute",
             "name": "attrs.allowRange",
@@ -226,7 +227,7 @@
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 79,
+            "line": 80,
             "description": "Formatting to use when stringifying `attrs.select` into `attrs.value`.\n\nThis has to be used in conjunction with the data element's\n{{#link-to \"class\" \"shadow.DataElement\" (query-params itemtype=\"attribute\" name=\"formats\")}}`formats`{{/link-to}}\nhash.",
             "itemtype": "attribute",
             "name": "attrs.format",
@@ -236,7 +237,7 @@
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 93,
+            "line": 94,
             "description": "Formatting to use when stringifying `attrs.select` into `attrs.value`\nwith `attrs.allowMultiple` set to `true`.\n\nIf `attrs.allowMultiple` is `false`, this defaults to `null`.",
             "itemtype": "attribute",
             "name": "attrs.formatMultiple",
@@ -246,7 +247,7 @@
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 106,
+            "line": 107,
             "description": "Formatting to use when stringifying `attrs.select` into `attrs.value`\nwith `attrs.allowRange` set to `true`.\n\nIf `attrs.allowRange` is `false`, this defaults to `null`.",
             "itemtype": "attribute",
             "name": "attrs.formatRange",
@@ -256,7 +257,7 @@
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 121,
+            "line": 122,
             "description": "A formatting is used to stringify and parse values. It is used in conjunction with the\n{{#link-to \"class\" \"shadow.DataElement\" (query-params itemtype=\"attribute\" name=\"attrs.format\")}}`attrs.format`{{/link-to}}\nattribute.",
             "itemtype": "property",
             "name": "formats",
@@ -266,7 +267,7 @@
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 135,
+            "line": 136,
             "itemtype": "property",
             "name": "classNames.input",
             "type": "{String}",
@@ -275,7 +276,7 @@
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 145,
+            "line": 146,
             "description": "Setup the data element’s attributes before everything gets sealed\nand before getters and setters are bound onto the attributes.\n\nFor an instance-specific setup, safely override the method:\n\n```javascript\nvar dataEl = shadow.DataElement.create({\n    setup: function() {\n        this._super()\n        // carry on with any setup here\n    }\n})\n```",
             "itemtype": "method",
             "name": "setup",
@@ -283,7 +284,7 @@
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 228,
+            "line": 229,
             "description": "Create an instance of a data element object.",
             "itemtype": "method",
             "name": "create",
@@ -303,7 +304,7 @@
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 307,
+            "line": 308,
             "description": "Convert a value into a formatted string.",
             "itemtype": "method",
             "name": "format",
@@ -330,7 +331,7 @@
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 370,
+            "line": 371,
             "description": "Convert a formatted string into a parsed value.",
             "itemtype": "method",
             "name": "parse",
@@ -349,7 +350,7 @@
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 433,
+            "line": 434,
             "description": "Convert a formatted unit string into a parsed unit hash.",
             "itemtype": "method",
             "name": "parseUnit",
@@ -370,7 +371,7 @@
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 478,
+            "line": 479,
             "description": "Get a data element’s attribute with certain options.",
             "itemtype": "method",
             "name": "get",
@@ -390,49 +391,49 @@
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 502,
+            "line": 503,
             "description": "Format multiple units of value.",
             "class": "shadow.DataElement"
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 541,
+            "line": 542,
             "description": "Format a range’s units.",
             "class": "shadow.DataElement"
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 566,
+            "line": 567,
             "description": "Convert a formatting string into a formatting array.",
             "class": "shadow.DataElement"
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 611,
+            "line": 612,
             "description": "Parse multiple units of value.",
             "class": "shadow.DataElement"
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 672,
+            "line": 673,
             "description": "Parse a range’s units.",
             "class": "shadow.DataElement"
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 719,
+            "line": 720,
             "description": "Escape any regular expression special characters.",
             "class": "shadow.DataElement"
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 727,
+            "line": 728,
             "description": "Slice a string up to a string marked as a starting point.",
             "class": "shadow.DataElement"
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 739,
+            "line": 740,
             "description": "Slice a string up to a string marked as the ending point.",
             "class": "shadow.DataElement"
         },
@@ -1215,7 +1216,7 @@
         },
         {
             "file": "js/source/helpers.js",
-            "line": 74,
+            "line": 78,
             "description": "Convert to pascal-cased text.\n\n```javascript\nshadow._.casePascal('howdy-there stranger')\n// returns 'HowdyThere stranger'\n\nshadow._.casePascal('HowdyThere-stranger')\n// returns 'HowdyThereStranger'\n```",
             "itemtype": "method",
             "name": "casePascal",
@@ -1236,7 +1237,7 @@
         },
         {
             "file": "js/source/helpers.js",
-            "line": 110,
+            "line": 114,
             "description": "Convert to dash-cased text.\n\n```javascript\nshadow._.caseDash('howdy-there stranger')\n// returns 'howdy-there stranger'\n\nshadow._.caseDash('HowdyThere-stranger')\n// returns 'howdy-there-stranger'\n```",
             "itemtype": "method",
             "name": "caseDash",
@@ -1257,7 +1258,7 @@
         },
         {
             "file": "js/source/helpers.js",
-            "line": 146,
+            "line": 150,
             "description": "Check what the internal type of a value is.\n\n```javascript\nshadow._.isTypeOf(new Date)\n// returns 'date'\n\nshadow._.isTypeof(new Date, 'date')\n// returns true\n```",
             "itemtype": "method",
             "name": "isTypeOf",
@@ -1283,7 +1284,7 @@
         },
         {
             "file": "js/source/helpers.js",
-            "line": 171,
+            "line": 175,
             "description": "Define aria attributes on an element.\n\nGiven the following element:\n\n```html\n<div id=\"elem\"></div>\n```\n\n...and applying the following snippet:\n\n```javascript\nvar el = document.getElementById('elem')\nshadow._.aria(el, 'role', 'button')\nshadow._.aria(el, 'controls', 'widget')\n```\n\n...the element becomes:\n\n```html\n<div id=\"elem\" role=\"button\" aria-controls=\"widget\"></div>\n```",
             "itemtype": "method",
             "name": "aria",
@@ -1310,7 +1311,7 @@
         },
         {
             "file": "js/source/helpers.js",
-            "line": 200,
+            "line": 204,
             "description": "An alternate way to set multiple aria attributes on an element.\n\nGiven the following element:\n\n```html\n<div id=\"elem\"></div>\n```\n\nAnd applying the following snippet:\n\n```javascript\nvar el = document.getElementById('elem')\nshadow._.aria(el, {\n    role: 'button',\n    controls: 'widget'\n})\n```\n\nThe element becomes:\n\n```html\n<div id=\"elem\" role=\"button\" aria-controls=\"widget\"></div>\n```",
             "itemtype": "method",
             "name": "aria",
@@ -1332,7 +1333,7 @@
         },
         {
             "file": "js/source/helpers.js",
-            "line": 242,
+            "line": 246,
             "description": "Create an element node with optional children.",
             "itemtype": "method",
             "name": "el",
@@ -1377,7 +1378,7 @@
         },
         {
             "file": "js/source/helpers.js",
-            "line": 299,
+            "line": 303,
             "description": "Get the index of a unit within a collection.",
             "itemtype": "method",
             "name": "indexIn",
@@ -1409,7 +1410,7 @@
         },
         {
             "file": "js/source/helpers.js",
-            "line": 324,
+            "line": 328,
             "description": "Check if a unit is within a collection.",
             "itemtype": "method",
             "name": "isWithin",
@@ -1443,35 +1444,35 @@
     "warnings": [
         {
             "message": "Missing item type\nFormat multiple units of value.",
-            "line": " js/source/objects/DataElement.js:502"
+            "line": " js/source/objects/DataElement.js:503"
         },
         {
             "message": "Missing item type\nFormat a range’s units.",
-            "line": " js/source/objects/DataElement.js:541"
+            "line": " js/source/objects/DataElement.js:542"
         },
         {
             "message": "Missing item type\nConvert a formatting string into a formatting array.",
-            "line": " js/source/objects/DataElement.js:566"
+            "line": " js/source/objects/DataElement.js:567"
         },
         {
             "message": "Missing item type\nParse multiple units of value.",
-            "line": " js/source/objects/DataElement.js:611"
+            "line": " js/source/objects/DataElement.js:612"
         },
         {
             "message": "Missing item type\nParse a range’s units.",
-            "line": " js/source/objects/DataElement.js:672"
+            "line": " js/source/objects/DataElement.js:673"
         },
         {
             "message": "Missing item type\nEscape any regular expression special characters.",
-            "line": " js/source/objects/DataElement.js:719"
+            "line": " js/source/objects/DataElement.js:720"
         },
         {
             "message": "Missing item type\nSlice a string up to a string marked as a starting point.",
-            "line": " js/source/objects/DataElement.js:727"
+            "line": " js/source/objects/DataElement.js:728"
         },
         {
             "message": "Missing item type\nSlice a string up to a string marked as the ending point.",
-            "line": " js/source/objects/DataElement.js:739"
+            "line": " js/source/objects/DataElement.js:740"
         },
         {
             "message": "Missing item type\nConvert a date representation into a date.",

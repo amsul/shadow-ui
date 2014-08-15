@@ -25,6 +25,8 @@ describe('shadow._', function() {
         it('converts a string to be camel cased', function() {
             var casedString = _.caseCamel('Completely_SOMETHINGMixed-Up')
             expect(casedString).toBe('completelySomethingMixedUp')
+            casedString = _.caseCamel('HTMLElement')
+            expect(casedString).toBe('htmlElement')
         })
     })
 
@@ -34,6 +36,8 @@ describe('shadow._', function() {
         it('converts a string to be pascal cased', function() {
             var casedString = _.casePascal('Completely_SOMETHINGMixed-Up')
             expect(casedString).toBe('CompletelySomethingMixedUp')
+            casedString = _.casePascal('HTMLElement')
+            expect(casedString).toBe('HtmlElement')
         })
     })
 
@@ -43,6 +47,8 @@ describe('shadow._', function() {
         it('converts a string to be dash cased', function() {
             var casedString = _.caseDash('Completely_SOMETHINGMixed-Up')
             expect(casedString).toBe('completely-something-mixed-up')
+            casedString = _.caseDash('HTMLElement')
+            expect(casedString).toBe('html-element')
         })
     })
 

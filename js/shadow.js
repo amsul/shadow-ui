@@ -14,7 +14,7 @@
 
     // ...AMD...
     else if ( typeof define == 'function' && define.amd )
-        define('shadow', [global, 'jquery'], factory)
+        define([global, 'jquery'], factory)
 
     // ...and basic `script` includes.
     else global.shadow = factory(global, global.jQuery)
@@ -139,6 +139,10 @@ var _ = shadow._ = {
             newWord = true;
             return (index ? word[0].toUpperCase() : word[0].toLowerCase()) + word.slice(1);
         });
+        var firstWord = wordChunks[0];
+        if (wordChunks.length > 1 && firstWord[0].match(/[A-Z]/)) {
+            wordChunks[0] = firstWord[0].toLowerCase() + firstWord.slice(1);
+        }
         return wordChunks.join("");
     },
     /**
@@ -202,7 +206,7 @@ var _ = shadow._ = {
                     return word.toLowerCase();
                 }
                 newWord = false;
-                return "-" + word.toLowerCase();
+                return (index ? "-" : "") + word.toLowerCase();
             }
             newWord = true;
             return (index ? "-" : "") + word[0].toLowerCase() + word.slice(1);
@@ -1710,6 +1714,7 @@ function prefixifyClassNames(classNames, prefix) {
  * @class shadow.DataElement
  * @extends shadow.Element
  * @static
+ * @since 0.6.0
  */
 shadow.Element.extend({
     name: "DataElement",

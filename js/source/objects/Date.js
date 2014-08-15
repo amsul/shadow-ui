@@ -20,7 +20,7 @@ shadow.Object.extend({
      * // returns [2013, 3, 20]
      * ```
      *
-     * @attribute value
+     * @property value
      * @type {Array}
      * @default null
      * @readOnly
@@ -31,7 +31,7 @@ shadow.Object.extend({
     /**
      * The year of the shadow date object.
      *
-     * @attribute year
+     * @property year
      * @type {Number}
      * @default null
      * @readOnly
@@ -42,7 +42,7 @@ shadow.Object.extend({
     /**
      * The month of the shadow date object.
      *
-     * @attribute month
+     * @property month
      * @type {Number}
      * @default null
      * @readOnly
@@ -53,7 +53,7 @@ shadow.Object.extend({
     /**
      * The date of the shadow date object.
      *
-     * @attribute date
+     * @property date
      * @type {Number}
      * @default null
      * @readOnly
@@ -65,33 +65,63 @@ shadow.Object.extend({
      * A flag to set the date to the first of the month upon creation.
      *
      * ```javascript
-     * var date = shadow.Date.create([2013, 3, 20], {
+     * shadow.Date.create([2013, 3, 20], {
      *     setToTheFirst: true
      * })
-     * date.value
-     * // returns [2013, 3, 1]
+     * // returns { year: 2013, month: 3, date: 1, ... }
      * ```
      *
-     * @attribute setToTheFirst
+     * @property setToTheFirst
      * @type {Boolean}
      * @default false
+     * @writeOnce
      */
     setToTheFirst: false,
 
 
     /**
-     * Create an instance of a shadow date.
+     * Create an instance of a shadow date by passing a date value representation.
+     *
+     * @example
+     *
+     * The value as an array:
+     *
+     * ```javascript
+     * shadow.Date.create([2014, 3, 20])
+     * // returns { year: 2014, month: 3, date: 20, ... }
+     * ```
+     *
+     * The value as a JavaScript date object:
+     *
+     * ```javascript
+     * shadow.Date.create(new Date(2014, 3, 20))
+     * // returns { year: 2014, month: 3, date: 20, ... }
+     * ```
+     *
+     * The value as a UNIX time stamp:
+     *
+     * ```javascript
+     * shadow.Date.create(1397966400000)
+     * // returns { year: 2014, month: 3, date: 20, ... }
+     * ```
+     *
+     * The value as an ISO string:
+     *
+     * ```javascript
+     * shadow.Date.create('2014-04-20T16:20:00.000Z')
+     * // returns { year: 2014, month: 3, date: 20, ... }
+     * ```
      *
      * @method create
      * @param {Array|String|Number|Date|shadow.Date} value The value of the date to create.
-     * @param {Object} options Options for the date’s prototype.
+     * @param {Object} [options] Options for the date’s prototype.
      * @return {shadow.Date} An instance of the shadow date.
      * @static
      */
     create: function(value, options) {
 
         if ( !value ) {
-            return this._super(options)
+            return this._super()
         }
 
         if ( value === true ) {
@@ -124,8 +154,71 @@ shadow.Object.extend({
     /**
      * Compare the shadow date’s value with another date.
      *
+     * @example
+     *
+     * Given the following two dates:
+     *
+     * ```javascript
+     * var one = shadow.Date.create([2013, 3, 20])
+     * var two = new Date(2014, 3, 20)
+     * ```
+     *
+     * ...we can compare them in various ways (all the following conditions resolve to `true`):
+     *
+     * ```javascript
+     * // Compare the two for equality
+     * one.compare(two) == false
+     *
+     * // Compare the first as being greater than the second
+     * one.compare('greater', two) == false
+     *
+     * // Compare the first as being lesser than the second
+     * one.compare('lesser', two) == true
+     * ```
+     *
+     * ...or we can scope the comparison to time units:
+     *
+     * ```javascript
+     * // Compare the months
+     * one.compare('month', two) == false
+     * one.compare('month greater', two) == false
+     * one.compare('month lesser', two) == true
+     *
+     * // Compare the years
+     * one.compare('year', two) == false
+     * one.compare('year greater', two) == false
+     * one.compare('year lesser', two) == true
+     *
+     * // Compare the decade
+     * one.compare('decade', two) == true
+     * one.compare('decade greater', two) == false
+     * one.compare('decade lesser', two) == false
+     * ```
+     *
      * @method compare
-     * @param {String} [comparison] A “scope” to compare within.
+     * @param {String} [comparison] A comparison scope. Valid values are:
+     *
+     * - `'date'`
+     * - `'date greater'`
+     * - `'date lesser'`
+     * - `'date greater equal'`
+     * - `'date lesser equal'`
+     * - `'month'`
+     * - `'month greater'`
+     * - `'month lesser'`
+     * - `'month greater equal'`
+     * - `'month lesser equal'`
+     * - `'year'`
+     * - `'year greater'`
+     * - `'year lesser'`
+     * - `'year greater equal'`
+     * - `'year lesser equal'`
+     * - `'decade'`
+     * - `'decade greater'`
+     * - `'decade lesser'`
+     * - `'decade greater equal'`
+     * - `'decade lesser equal'`
+     *
      * @param {Array|String|Number|Date|shadow.Date} date The value of the date to compare against.
      * @return {Boolean}
      */
@@ -188,10 +281,35 @@ shadow.Object.extend({
 
 
     /**
-     * Compare a date with a range in various ways.
+     * Compare a date with a range to see if it falls within the bounds
+     * of the range in various different comparison scopes.
+     *
+     * @example
+     *
+     * Given the following date and range:
+     *
+     * ```javascript
+     * var date = shadow.Date.create([2014, 3, 20])
+     * var range = [new Date(2014, 4, 27), [2015, 2, 4]]
+     * ```
+     *
+     * ...we can compare them in various ways (all the following conditions resolve to `true`):
+     *
+     * ```javascript
+     * date.compareRange(range) == false
+     * date.compareRange('month', range) == false
+     * date.compareRange('year', range) == true
+     * date.compareRange('decade', range) == true
+     * ```
      *
      * @method compareRange
-     * @param {String} [comparison] A “scope” to compare within.
+     * @param {String} [comparison] A comparison scope. Valid values are:
+     *
+     * - `'date'`
+     * - `'month'`
+     * - `'year'`
+     * - `'decade'`
+     *
      * @param {Array} range The range to compare against.
      * @return {Boolean}
      */
@@ -228,7 +346,16 @@ shadow.Object.extend({
 
 
     /**
-     * Simplify comparison of dates.
+     * Get the date’s time value.
+     *
+     * @example
+     *
+     * ```javascript
+     * shadow.Date.create([2013, 3, 20]).valueOf()
+     * // returns 1366430400000
+     * ```
+     *
+     * This allows for easy comparison of dates.
      *
      * ```javascript
      * shadow.Date.create([2013, 3, 20]) > shadow.Date.create([2014, 8, 14])
@@ -239,7 +366,7 @@ shadow.Object.extend({
      * ```
      *
      * @method valueOf
-     * @return {Number} The time of the date to make comparisons easier.
+     * @return {Number} The time of the date.
      */
     valueOf: function() {
         return this.time

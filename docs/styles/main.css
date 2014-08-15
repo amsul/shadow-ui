@@ -6,6 +6,22 @@
     box-sizing: border-box;
 }
 
+::selection,
+.hljs::selection,
+.hljs span::selection {
+    background: #0089ec;
+    color: #fff;
+    text-shadow: none;
+}
+
+::-moz-selection,
+.hljs::-moz-selection,
+.hljs span::-moz-selection {
+    background: #0089ec;
+    color: #fff;
+    text-shadow: none;
+}
+
 html {
     font-family: 'Open Sans', sans-serif;
     line-height: 1.25;
@@ -39,6 +55,11 @@ hr:last-child {
 
 ul, ol, dd {
     padding-left: 2.5rem;
+}
+
+ul ul,
+ol ul {
+    list-style: square;
 }
 
 code, kbd, pre, samp {
@@ -169,18 +190,31 @@ a:focus {
  */
 .capsule {
     background: #ccc;
+    border: 1px solid transparent;
     color: #fff;
     font-weight: 100;
-    font-size: 0.75em;
+    font-size: 0.625em;
     text-transform: lowercase;
     padding: 0 0.375em 1px;
     border-radius: 4px;
 }
 .capsule--access {
-    background: orange;
+    background: blueviolet;
+}
+.capsule--access-two {
+    background: darkorange;
+}
+.capsule--access-three {
+    background: crimson;
+}
+.capsule--required {
+    background: yellowgreen;
 }
 .capsule--optional {
-    background: yellowgreen;
+    background: none;
+    border-color: currentcolor;
+    color: yellowgreen;
+    font-weight: 600;
 }
 
 
@@ -210,6 +244,19 @@ a:focus {
     .is-active .tabs__button {
         border-color: #0089ec;
     }
+
+
+/**
+ * Notification component.
+ */
+.notification {
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    border-top-width: 2px;
+    border-top-color: #0089ec;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.25rem;
+}
 
 
 

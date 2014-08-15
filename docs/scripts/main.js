@@ -38,6 +38,7 @@
         model: function() {
             return $.getJSON('/js/docs/data.json').then(function(data) {
                 var attributes = data.classitems.filterBy('itemtype', 'attribute')
+                var properties = data.classitems.filterBy('itemtype', 'property')
                 var methods = data.classitems.filterBy('itemtype', 'method')
                 return {
                     project: data.project,
@@ -47,6 +48,11 @@
                         attribute.readonly = 'readonly' in attribute
                         attribute.type = attribute.type.replace(/^\{|\}$/g, '')
                         return attribute
+                    }),
+                    properties: properties.map(function(property) {
+                        property.readonly = 'readonly' in property
+                        property.type = property.type.replace(/^\{|\}$/g, '')
+                        return property
                     }),
                     methods: methods
                 }
@@ -74,6 +80,9 @@
     App.ClassItemObject = Em.Object.extend({
         isMethod: Em.computed.equal('itemtype', 'method'),
         isStatic: Em.computed.equal('static', 1),
+        isRequired: Em.computed.equal('required', 1),
+        isReadOnly: Em.computed.equal('readonly', true),
+        isWriteOnce: Em.computed.equal('writeonce', ''),
         isInherited: Em.computed.any('inherits'),
         isExtended: false,
         queryName: function() {
@@ -98,6 +107,7 @@
             return {
                 'class': klass,
                 attributes: filterClassAttributes(klass, data.attributes, extensionTree),
+                properties: filterClassAttributes(klass, data.properties, extensionTree),
                 methods: filterClassMethods(klass, data.methods, extensionTree)
             }
         }
@@ -131,6 +141,15 @@
                 })
                 index.data.push(attributes)
                 tabs.push(attributes)
+            }
+            if ( model.properties.length ) {
+                var properties = ClassItemsObject.create({
+                    name: 'property',
+                    title: 'Properties',
+                    data: model.properties.sortBy('name')
+                })
+                index.data.push(properties)
+                tabs.push(properties)
             }
             if ( model.methods.length ) {
                 var methods = ClassItemsObject.create({

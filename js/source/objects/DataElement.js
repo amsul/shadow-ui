@@ -16,7 +16,7 @@ shadow.Element.extend({
      *
      * If it is a string, the value will be used as a jQuery selector.
      *
-     * @attribute $input
+     * @property $input
      * @type jQuery|HTMLInputElement|HTMLTextAreaElement|String
      * @default null
      */
@@ -41,7 +41,7 @@ shadow.Element.extend({
          * @attribute attrs.value
          * @type String
          * @default null
-         * @readonly
+         * @writeOnce
          */
         value: null,
 
@@ -123,7 +123,7 @@ shadow.Element.extend({
      * {{#link-to "class" "shadow.DataElement" (query-params itemtype="attribute" name="attrs.format")}}`attrs.format`{{/link-to}}
      * attribute.
      *
-     * @attribute formats
+     * @property formats
      * @type Hash
      * @default null
      */
@@ -133,7 +133,7 @@ shadow.Element.extend({
     classNames: {
 
         /**
-         * @attribute classNames.input
+         * @property classNames.input
          * @type {String}
          * @default 'input'
          */

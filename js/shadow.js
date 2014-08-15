@@ -1,6 +1,6 @@
 
 /*!
- * Shadow UI v0.6.1-0, 2014/08/14
+ * Shadow UI v0.6.1-0, 2014/08/15
  * By Amsul, http://amsul.ca
  * Hosted on http://amsul.github.io/shadow-ui
  * Licensed under MIT
@@ -403,13 +403,41 @@ function ariaSet(element, attribute, value) {
  */
 shadow.Object = Object.create({}, {
     /**
-     * The name of the object.
+     * The name of the shadow object.
      *
-     * Classes are `PascalCased` and objects are `camelCased`.
+     * Names of classes are `PascalCased` and objects are `camelCased`:
      *
-     * @attribute name
+     * ```javascript
+     * shadow.Object.name == 'Object' // returns true
+     * shadow.Object.create().name == 'object' // returns true
+     * ```
+     *
+     * Values of `data-ui` attributes are `dash-cased`:
+     *
+     * ```html
+     * <div data-ui="data-element"></div>
+     * ```
+     *
+     * This initializes the shadow element on page load.
+     *
+     * @example
+     *
+     * The only time the `name` is writable is during extension:
+     *
+     * ```javascript
+     * var MyExtension = shadow.Object.extend({
+     *     name: 'MyExtension'
+     * })
+     * MyExtension.name == 'MyExtension' // returns true
+     * MyExtension.create().name == 'myExtension' // returns true
+     * ```
+     *
+     * This name is used to keep a reference of the classes under the `shadow` namespace.
+     *
+     * @property name
      * @type String
-     * @readOnly
+     * @writeOnce
+     * @required
      */
     name: {
         enumerable: true,
@@ -417,6 +445,30 @@ shadow.Object = Object.create({}, {
     },
     /**
      * Create an instance of the shadow object.
+     *
+     * @example
+     *
+     * A plain shadow object:
+     *
+     * ```javascript
+     * var object = shadow.Object.create()
+     * object.isInstanceOf(shadow.Object) // returns true
+     * object.name == 'object' // returns true
+     * ```
+     *
+     * A custom shadow object with overriding properties:
+     *
+     * ```javascript
+     * var MyObject = shadow.Object.extend({
+     *     name: 'MyObject',
+     *     someProperty: false
+     * })
+     * var myObject = MyObject.create({
+     *     someProperty: true
+     * })
+     * myObject.isInstanceOf(MyObject) // returns true
+     * myObject.someProperty === true // returns true
+     * ```
      *
      * @method create
      * @param {Object} options Options to extend the object’s prototype.
@@ -462,6 +514,8 @@ shadow.Object = Object.create({}, {
      * Extend the object using prototypes. Based on:
      * http://aaditmshah.github.io/why-prototypal-inheritance-matters/#inheriting_from_multiple_prototypes
      *
+     * @todo Document an example.
+     *
      * @method extend
      * @param {Object} options Options to extend the object’s prototype.
      * @return {shadow.Object} An extension of the shadow object class.
@@ -502,6 +556,13 @@ shadow.Object = Object.create({}, {
     //extend
     /**
      * Check if the object is a class.
+     *
+     * @example
+     *
+     * ```javascript
+     * shadow.Object.isClass() // returns true
+     * shadow.Object.create().isClass() // returns false
+     * ```
      *
      * @method isClass
      * @return {Boolean}
@@ -567,6 +628,34 @@ shadow.Object = Object.create({}, {
     /**
      * Cast the object into a string representation.
      *
+     * If `shadow.IS_DEBUGGING` is set to `true`, the
+     * {{#link-to "class" "shadow.Object" (query-params itemtype="method" name="toFullString")}}
+     * `toFullString`{{/link-to}} response is returned instead.
+     *
+     * @example
+     *
+     * ```javascript
+     * shadow.Object.toString()               // returns '{class Object}'
+     * shadow.DataElement.toString()          // returns '{class DataElement}'
+     * shadow.Object.create().toString()      // returns '{object Object}'
+     * shadow.DataElement.create().toString() // returns '{object DataElement}'
+     * ```
+     *
+     * This allows you to add easy debugging:
+     *
+     * ```javascript
+     * console.debug('Creating: ' + shadow.DataElement)
+     * // logs 'Creating: {class DataElement}'
+     *
+     * console.debug('Created: ' + shadow.Object.create())
+     * // logs 'Created: {object Object}'
+     * ```
+     *
+     * <div class="notification">
+     * **Note**: This only works if the class or object does not have a `valueOf` method. Those
+     * that do have a `valueOf` method will use that return value instead, such as `shadow.Date`.
+     * </div>
+     *
      * @method toString
      * @return {String} A string representation of the shadow object.
      */
@@ -585,6 +674,15 @@ shadow.Object = Object.create({}, {
     },
     /**
      * Cast the object into a full string representation.
+     *
+     * @example
+     *
+     * ```javascript
+     * shadow.Object.toFullString()               // returns '{class Object}'
+     * shadow.DataElement.toFullString()          // returns '{class DataElement:Element:Object}'
+     * shadow.Object.create().toFullString()      // returns '{object Object}'
+     * shadow.DataElement.create().toFullString() // returns '{object DataElement:Element:Object}'
+     * ```
      *
      * @method toFullString
      * @return {String} A full trace string representation of the shadow object.
@@ -652,7 +750,7 @@ shadow.Object.extend({
      * // returns [2013, 3, 20]
      * ```
      *
-     * @attribute value
+     * @property value
      * @type {Array}
      * @default null
      * @readOnly
@@ -661,7 +759,7 @@ shadow.Object.extend({
     /**
      * The year of the shadow date object.
      *
-     * @attribute year
+     * @property year
      * @type {Number}
      * @default null
      * @readOnly
@@ -670,7 +768,7 @@ shadow.Object.extend({
     /**
      * The month of the shadow date object.
      *
-     * @attribute month
+     * @property month
      * @type {Number}
      * @default null
      * @readOnly
@@ -679,7 +777,7 @@ shadow.Object.extend({
     /**
      * The date of the shadow date object.
      *
-     * @attribute date
+     * @property date
      * @type {Number}
      * @default null
      * @readOnly
@@ -689,30 +787,60 @@ shadow.Object.extend({
      * A flag to set the date to the first of the month upon creation.
      *
      * ```javascript
-     * var date = shadow.Date.create([2013, 3, 20], {
+     * shadow.Date.create([2013, 3, 20], {
      *     setToTheFirst: true
      * })
-     * date.value
-     * // returns [2013, 3, 1]
+     * // returns { year: 2013, month: 3, date: 1, ... }
      * ```
      *
-     * @attribute setToTheFirst
+     * @property setToTheFirst
      * @type {Boolean}
      * @default false
+     * @writeOnce
      */
     setToTheFirst: false,
     /**
-     * Create an instance of a shadow date.
+     * Create an instance of a shadow date by passing a date value representation.
+     *
+     * @example
+     *
+     * The value as an array:
+     *
+     * ```javascript
+     * shadow.Date.create([2014, 3, 20])
+     * // returns { year: 2014, month: 3, date: 20, ... }
+     * ```
+     *
+     * The value as a JavaScript date object:
+     *
+     * ```javascript
+     * shadow.Date.create(new Date(2014, 3, 20))
+     * // returns { year: 2014, month: 3, date: 20, ... }
+     * ```
+     *
+     * The value as a UNIX time stamp:
+     *
+     * ```javascript
+     * shadow.Date.create(1397966400000)
+     * // returns { year: 2014, month: 3, date: 20, ... }
+     * ```
+     *
+     * The value as an ISO string:
+     *
+     * ```javascript
+     * shadow.Date.create('2014-04-20T16:20:00.000Z')
+     * // returns { year: 2014, month: 3, date: 20, ... }
+     * ```
      *
      * @method create
      * @param {Array|String|Number|Date|shadow.Date} value The value of the date to create.
-     * @param {Object} options Options for the date’s prototype.
+     * @param {Object} [options] Options for the date’s prototype.
      * @return {shadow.Date} An instance of the shadow date.
      * @static
      */
     create: function(value, options) {
         if (!value) {
-            return this._super(options);
+            return this._super();
         }
         if (value === true) {
             value = new Date();
@@ -736,8 +864,71 @@ shadow.Object.extend({
     /**
      * Compare the shadow date’s value with another date.
      *
+     * @example
+     *
+     * Given the following two dates:
+     *
+     * ```javascript
+     * var one = shadow.Date.create([2013, 3, 20])
+     * var two = new Date(2014, 3, 20)
+     * ```
+     *
+     * ...we can compare them in various ways (all the following conditions resolve to `true`):
+     *
+     * ```javascript
+     * // Compare the two for equality
+     * one.compare(two) == false
+     *
+     * // Compare the first as being greater than the second
+     * one.compare('greater', two) == false
+     *
+     * // Compare the first as being lesser than the second
+     * one.compare('lesser', two) == true
+     * ```
+     *
+     * ...or we can scope the comparison to time units:
+     *
+     * ```javascript
+     * // Compare the months
+     * one.compare('month', two) == false
+     * one.compare('month greater', two) == false
+     * one.compare('month lesser', two) == true
+     *
+     * // Compare the years
+     * one.compare('year', two) == false
+     * one.compare('year greater', two) == false
+     * one.compare('year lesser', two) == true
+     *
+     * // Compare the decade
+     * one.compare('decade', two) == true
+     * one.compare('decade greater', two) == false
+     * one.compare('decade lesser', two) == false
+     * ```
+     *
      * @method compare
-     * @param {String} [comparison] A “scope” to compare within.
+     * @param {String} [comparison] A comparison scope. Valid values are:
+     *
+     * - `'date'`
+     * - `'date greater'`
+     * - `'date lesser'`
+     * - `'date greater equal'`
+     * - `'date lesser equal'`
+     * - `'month'`
+     * - `'month greater'`
+     * - `'month lesser'`
+     * - `'month greater equal'`
+     * - `'month lesser equal'`
+     * - `'year'`
+     * - `'year greater'`
+     * - `'year lesser'`
+     * - `'year greater equal'`
+     * - `'year lesser equal'`
+     * - `'decade'`
+     * - `'decade greater'`
+     * - `'decade lesser'`
+     * - `'decade greater equal'`
+     * - `'decade lesser equal'`
+     *
      * @param {Array|String|Number|Date|shadow.Date} date The value of the date to compare against.
      * @return {Boolean}
      */
@@ -786,10 +977,35 @@ shadow.Object.extend({
         return one === two;
     },
     /**
-     * Compare a date with a range in various ways.
+     * Compare a date with a range to see if it falls within the bounds
+     * of the range in various different comparison scopes.
+     *
+     * @example
+     *
+     * Given the following date and range:
+     *
+     * ```javascript
+     * var date = shadow.Date.create([2014, 3, 20])
+     * var range = [new Date(2014, 4, 27), [2015, 2, 4]]
+     * ```
+     *
+     * ...we can compare them in various ways (all the following conditions resolve to `true`):
+     *
+     * ```javascript
+     * date.compareRange(range) == false
+     * date.compareRange('month', range) == false
+     * date.compareRange('year', range) == true
+     * date.compareRange('decade', range) == true
+     * ```
      *
      * @method compareRange
-     * @param {String} [comparison] A “scope” to compare within.
+     * @param {String} [comparison] A comparison scope. Valid values are:
+     *
+     * - `'date'`
+     * - `'month'`
+     * - `'year'`
+     * - `'decade'`
+     *
      * @param {Array} range The range to compare against.
      * @return {Boolean}
      */
@@ -814,7 +1030,16 @@ shadow.Object.extend({
         return shadowDate.compare(comparison + " greater equal", lowerBound) && shadowDate.compare(comparison + " lesser equal", upperBound);
     },
     /**
-     * Simplify comparison of dates.
+     * Get the date’s time value.
+     *
+     * @example
+     *
+     * ```javascript
+     * shadow.Date.create([2013, 3, 20]).valueOf()
+     * // returns 1366430400000
+     * ```
+     *
+     * This allows for easy comparison of dates.
      *
      * ```javascript
      * shadow.Date.create([2013, 3, 20]) > shadow.Date.create([2014, 8, 14])
@@ -825,7 +1050,7 @@ shadow.Object.extend({
      * ```
      *
      * @method valueOf
-     * @return {Number} The time of the date to make comparisons easier.
+     * @return {Number} The time of the date.
      */
     valueOf: function() {
         return this.time;
@@ -893,20 +1118,51 @@ shadow.Object.extend({
      *
      * If it is a string, the value will be used as a jQuery selector.
      *
-     * @attribute $el
+     * @example
+     *
+     * ```javascript
+     * var $target = $('#target')
+     * var shadowEl = shadow.Element.create({
+     *     $el: $target
+     * })
+     * shadowEl.$el[0] === $target[0] // returns true
+     * ```
+     *
+     * @property $el
      * @type jQuery|HTMLElement|String
      * @default null
+     * @required
      */
     $el: null,
     /**
-     * The host element that contains the shadow element within.
-     *
-     * This is usually the same as the `$el` - unless if it’s an element
-     * that cannot contain elements, such as an `input`.
+     * The host element that contains the shadow element and content within.
      *
      * If it is a string, the value will be used as a jQuery selector.
      *
-     * @attribute $host
+     * @example
+     *
+     * With a source element that can contain DOM nodes, the host remains the same:
+     *
+     * ```javascript
+     * var $target = $('<div id="target"></div>')
+     * var shadowEl = shadow.Element.create({
+     *     $el: $target
+     * })
+     * shadowEl.$el[0] === shadowEl.$host[0] // returns true
+     * ```
+     *
+     * For a source element that cannot contain DOM nodes, the host is generated
+     * (unless if specified):
+     *
+     * ```javascript
+     * var $target = $('<input id="target">')
+     * var shadowEl = shadow.Element.create({
+     *     $el: $target
+     * })
+     * shadowEl.$el[0] === shadowEl.$host[0] // returns false
+     * ```
+     *
+     * @property $host
      * @type jQuery|HTMLElement|String
      * @default null
      */
@@ -916,26 +1172,60 @@ shadow.Object.extend({
     /**
      * A unique ID for the element; constructed when the element is created.
      *
-     * @attribute id
+     * @property id
      * @type String
      * @default null
      * @readOnly
      */
     id: null,
     /**
-     * An hash mapping of an element’s attributes.
+     * A hash mapping of an element’s attributes.
      *
-     * This object also gets populated with any `data-ui-*` attributes
-     * on the source element.
+     * <div class="notification">
+     * Each attribute is wrapped with a getter/setter when the object
+     * is created. This allows the attributes to be observed using the
+     * {{#link-to "class" "shadow.Element" (query-params itemtype="method" name="on(events-selector-data-handler)")}}
+     * `on`{{/link-to}} method.
+     * </div>
+     *
+     * @example
+     *
+     * The `attrs` object gets populated with any `data-ui-*` attributes
+     * on the source element as well as the shadow object’s own `attrs`.
+     *
+     * With the following markup:
      *
      * ```html
-     * <div data-ui-prop="false" data-ui-another-prop="[1,3,4]"></div>
+     * <div data-ui="attrs-component"
+     *      data-ui-prop="false"
+     *      data-ui-another-prop="[1,3,4]">
+     * </div>
      * ```
      *
-     * Becomes
+     * ...and the following scripts:
      *
      * ```javascript
-     * attrs: { prop: false, anotherProp: [1,3,4] }
+     * var AttrsComponent = shadow.Element.extend({
+     *     name: 'AttrsComponent',
+     *     attrs: {
+     *         prop: null,
+     *         anotherProp: null,
+     *         aThirdProp: 'some value'
+     *     }
+     * })
+     * ```
+     *
+     * The resulting shadow object looks like this:
+     *
+     * ```javascript
+     * {
+     *     name: 'attrsComponent',
+     *     attrs: {
+     *         prop: false,
+     *         anotherProp: [1,3,4],
+     *         aThirdProp: 'some value'
+     *     }
+     * }
      * ```
      *
      * @attribute attrs
@@ -946,7 +1236,7 @@ shadow.Object.extend({
     /**
      * An hash mapping of an element’s dictionary to be used in templating.
      *
-     * @attribute dict
+     * @property dict
      * @type Hash
      * @default null
      */
@@ -954,7 +1244,7 @@ shadow.Object.extend({
     /**
      * An hash mapping of an element’s class names to be used in templating.
      *
-     * @attribute classNames
+     * @property classNames
      * @type Hash
      * @default null
      */
@@ -962,26 +1252,33 @@ shadow.Object.extend({
     /**
      * A prefix to use on all the class names of an element.
      *
+     * @example
+     *
+     * When creating an element with a prefix:
+     *
      * ```javascript
-     * classNames: {
-     *     root: ' --root',
-     *     box: 'box',
-     *     button: 'button'
-     * },
-     * classNamesPrefix: 'my-prefix'
+     * var shadowEl = shadow.Element.create({
+     *     $el: $('<div>'),
+     *     classNames: {
+     *         root: ' --root',
+     *         box: 'box',
+     *         button: 'button'
+     *     },
+     *     classNamesPrefix: 'my-prefix'
+     * })
      * ```
      *
-     * Becomes
+     * ...the `shadowEl.classNames` hash becomes:
      *
      * ```javascript
-     * classNames: {
+     * {
      *     root: 'my-prefix my-prefix--root',
      *     box: 'my-prefix__box',
      *     button: 'my-prefix__button'
      * }
      * ```
      *
-     * @attribute classNamesPrefix
+     * @property classNamesPrefix
      * @type String
      * @default null
      */
@@ -991,7 +1288,7 @@ shadow.Object.extend({
      *
      * This default to using anything within the source element as the `content`.
      *
-     * @attribute content
+     * @property content
      * @type Node|DocumentFragment
      * @default null
      */
@@ -1006,8 +1303,10 @@ shadow.Object.extend({
     /**
      * Create a template for the shadow element.
      *
-     * @attribute template
-     * @type Function|String|Node|jQuery
+     * If it’s a function, the return value must be one of the other valid types.
+     *
+     * @property template
+     * @type Function|String|Node|DocumentFragment|jQuery
      * @default null
      */
     template: null,
@@ -1094,12 +1393,12 @@ shadow.Object.extend({
         return ElementInstance;
     },
     /**
-     * Bind events to fire during the element’s lifecycle.
+     * Bind events to fire as the user interacts with the shadow element.
      *
      * This method is basically a wrapper for jQuery’s `$.fn.on` method
      * and uses the source element (`$el`) as the target.
      *
-     * Check out the [documentation here](http://api.jquery.com/on/#on-events-selector-data).
+     * Check out the [method’s documentation here](http://api.jquery.com/on/#on-events-selector-data).
      *
      * @method on
      * @param {String|Object} events Unlike with jQuery, each event’s namespace is **required**.
@@ -1419,7 +1718,7 @@ shadow.Element.extend({
      *
      * If it is a string, the value will be used as a jQuery selector.
      *
-     * @attribute $input
+     * @property $input
      * @type jQuery|HTMLInputElement|HTMLTextAreaElement|String
      * @default null
      */
@@ -1439,7 +1738,7 @@ shadow.Element.extend({
          * @attribute attrs.value
          * @type String
          * @default null
-         * @readonly
+         * @writeOnce
          */
         value: null,
         /**
@@ -1506,14 +1805,14 @@ shadow.Element.extend({
      * {{#link-to "class" "shadow.DataElement" (query-params itemtype="attribute" name="attrs.format")}}`attrs.format`{{/link-to}}
      * attribute.
      *
-     * @attribute formats
+     * @property formats
      * @type Hash
      * @default null
      */
     formats: null,
     classNames: {
         /**
-         * @attribute classNames.input
+         * @property classNames.input
          * @type {String}
          * @default 'input'
          */

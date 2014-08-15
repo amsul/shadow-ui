@@ -16,22 +16,53 @@ shadow.Object.extend({
      *
      * If it is a string, the value will be used as a jQuery selector.
      *
-     * @attribute $el
+     * @example
+     *
+     * ```javascript
+     * var $target = $('#target')
+     * var shadowEl = shadow.Element.create({
+     *     $el: $target
+     * })
+     * shadowEl.$el[0] === $target[0] // returns true
+     * ```
+     *
+     * @property $el
      * @type jQuery|HTMLElement|String
      * @default null
+     * @required
      */
     $el: null,
 
 
     /**
-     * The host element that contains the shadow element within.
-     *
-     * This is usually the same as the `$el` - unless if it’s an element
-     * that cannot contain elements, such as an `input`.
+     * The host element that contains the shadow element and content within.
      *
      * If it is a string, the value will be used as a jQuery selector.
      *
-     * @attribute $host
+     * @example
+     *
+     * With a source element that can contain DOM nodes, the host remains the same:
+     *
+     * ```javascript
+     * var $target = $('<div id="target"></div>')
+     * var shadowEl = shadow.Element.create({
+     *     $el: $target
+     * })
+     * shadowEl.$el[0] === shadowEl.$host[0] // returns true
+     * ```
+     *
+     * For a source element that cannot contain DOM nodes, the host is generated
+     * (unless if specified):
+     *
+     * ```javascript
+     * var $target = $('<input id="target">')
+     * var shadowEl = shadow.Element.create({
+     *     $el: $target
+     * })
+     * shadowEl.$el[0] === shadowEl.$host[0] // returns false
+     * ```
+     *
+     * @property $host
      * @type jQuery|HTMLElement|String
      * @default null
      */
@@ -45,7 +76,7 @@ shadow.Object.extend({
     /**
      * A unique ID for the element; constructed when the element is created.
      *
-     * @attribute id
+     * @property id
      * @type String
      * @default null
      * @readOnly
@@ -54,19 +85,53 @@ shadow.Object.extend({
 
 
     /**
-     * An hash mapping of an element’s attributes.
+     * A hash mapping of an element’s attributes.
      *
-     * This object also gets populated with any `data-ui-*` attributes
-     * on the source element.
+     * <div class="notification">
+     * Each attribute is wrapped with a getter/setter when the object
+     * is created. This allows the attributes to be observed using the
+     * {{#link-to "class" "shadow.Element" (query-params itemtype="method" name="on(events-selector-data-handler)")}}
+     * `on`{{/link-to}} method.
+     * </div>
+     *
+     * @example
+     *
+     * The `attrs` object gets populated with any `data-ui-*` attributes
+     * on the source element as well as the shadow object’s own `attrs`.
+     *
+     * With the following markup:
      *
      * ```html
-     * <div data-ui-prop="false" data-ui-another-prop="[1,3,4]"></div>
+     * <div data-ui="attrs-component"
+     *      data-ui-prop="false"
+     *      data-ui-another-prop="[1,3,4]">
+     * </div>
      * ```
      *
-     * Becomes
+     * ...and the following scripts:
      *
      * ```javascript
-     * attrs: { prop: false, anotherProp: [1,3,4] }
+     * var AttrsComponent = shadow.Element.extend({
+     *     name: 'AttrsComponent',
+     *     attrs: {
+     *         prop: null,
+     *         anotherProp: null,
+     *         aThirdProp: 'some value'
+     *     }
+     * })
+     * ```
+     *
+     * The resulting shadow object looks like this:
+     *
+     * ```javascript
+     * {
+     *     name: 'attrsComponent',
+     *     attrs: {
+     *         prop: false,
+     *         anotherProp: [1,3,4],
+     *         aThirdProp: 'some value'
+     *     }
+     * }
      * ```
      *
      * @attribute attrs
@@ -79,7 +144,7 @@ shadow.Object.extend({
     /**
      * An hash mapping of an element’s dictionary to be used in templating.
      *
-     * @attribute dict
+     * @property dict
      * @type Hash
      * @default null
      */
@@ -89,7 +154,7 @@ shadow.Object.extend({
     /**
      * An hash mapping of an element’s class names to be used in templating.
      *
-     * @attribute classNames
+     * @property classNames
      * @type Hash
      * @default null
      */
@@ -99,26 +164,33 @@ shadow.Object.extend({
     /**
      * A prefix to use on all the class names of an element.
      *
+     * @example
+     *
+     * When creating an element with a prefix:
+     *
      * ```javascript
-     * classNames: {
-     *     root: ' --root',
-     *     box: 'box',
-     *     button: 'button'
-     * },
-     * classNamesPrefix: 'my-prefix'
+     * var shadowEl = shadow.Element.create({
+     *     $el: $('<div>'),
+     *     classNames: {
+     *         root: ' --root',
+     *         box: 'box',
+     *         button: 'button'
+     *     },
+     *     classNamesPrefix: 'my-prefix'
+     * })
      * ```
      *
-     * Becomes
+     * ...the `shadowEl.classNames` hash becomes:
      *
      * ```javascript
-     * classNames: {
+     * {
      *     root: 'my-prefix my-prefix--root',
      *     box: 'my-prefix__box',
      *     button: 'my-prefix__button'
      * }
      * ```
      *
-     * @attribute classNamesPrefix
+     * @property classNamesPrefix
      * @type String
      * @default null
      */
@@ -130,7 +202,7 @@ shadow.Object.extend({
      *
      * This default to using anything within the source element as the `content`.
      *
-     * @attribute content
+     * @property content
      * @type Node|DocumentFragment
      * @default null
      */
@@ -149,8 +221,10 @@ shadow.Object.extend({
     /**
      * Create a template for the shadow element.
      *
-     * @attribute template
-     * @type Function|String|Node|jQuery
+     * If it’s a function, the return value must be one of the other valid types.
+     *
+     * @property template
+     * @type Function|String|Node|DocumentFragment|jQuery
      * @default null
      */
     template: null,
@@ -269,12 +343,12 @@ shadow.Object.extend({
 
 
     /**
-     * Bind events to fire during the element’s lifecycle.
+     * Bind events to fire as the user interacts with the shadow element.
      *
      * This method is basically a wrapper for jQuery’s `$.fn.on` method
      * and uses the source element (`$el`) as the target.
      *
-     * Check out the [documentation here](http://api.jquery.com/on/#on-events-selector-data).
+     * Check out the [method’s documentation here](http://api.jquery.com/on/#on-events-selector-data).
      *
      * @method on
      * @param {String|Object} events Unlike with jQuery, each event’s namespace is **required**.

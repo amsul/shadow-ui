@@ -167,7 +167,7 @@
             "file": "js/source/objects/DataElement.js",
             "line": 14,
             "description": "An optional `input` element that holds the `attrs.value` as it's `value`\n\nIf it is a string, the value will be used as a jQuery selector.",
-            "itemtype": "attribute",
+            "itemtype": "property",
             "name": "$input",
             "type": "jQuery|HTMLInputElement|HTMLTextAreaElement|String",
             "default": "null",
@@ -191,7 +191,7 @@
             "name": "attrs.value",
             "type": "String",
             "default": "null",
-            "readonly": "",
+            "writeonce": "",
             "class": "shadow.DataElement"
         },
         {
@@ -258,7 +258,7 @@
             "file": "js/source/objects/DataElement.js",
             "line": 121,
             "description": "A formatting is used to stringify and parse values. It is used in conjunction with the\n{{#link-to \"class\" \"shadow.DataElement\" (query-params itemtype=\"attribute\" name=\"attrs.format\")}}`attrs.format`{{/link-to}}\nattribute.",
-            "itemtype": "attribute",
+            "itemtype": "property",
             "name": "formats",
             "type": "Hash",
             "default": "null",
@@ -267,7 +267,7 @@
         {
             "file": "js/source/objects/DataElement.js",
             "line": 135,
-            "itemtype": "attribute",
+            "itemtype": "property",
             "name": "classNames.input",
             "type": "{String}",
             "default": "'input'",
@@ -440,7 +440,7 @@
             "file": "js/source/objects/Date.js",
             "line": 14,
             "description": "The value of the date represented as an array.\n\n```javascript\nvar date = shadow.Date.create(new Date(2013, 3, 20))\ndate.value\n// returns [2013, 3, 20]\n```",
-            "itemtype": "attribute",
+            "itemtype": "property",
             "name": "value",
             "type": "{Array}",
             "default": "null",
@@ -451,7 +451,7 @@
             "file": "js/source/objects/Date.js",
             "line": 31,
             "description": "The year of the shadow date object.",
-            "itemtype": "attribute",
+            "itemtype": "property",
             "name": "year",
             "type": "{Number}",
             "default": "null",
@@ -462,7 +462,7 @@
             "file": "js/source/objects/Date.js",
             "line": 42,
             "description": "The month of the shadow date object.",
-            "itemtype": "attribute",
+            "itemtype": "property",
             "name": "month",
             "type": "{Number}",
             "default": "null",
@@ -473,7 +473,7 @@
             "file": "js/source/objects/Date.js",
             "line": 53,
             "description": "The date of the shadow date object.",
-            "itemtype": "attribute",
+            "itemtype": "property",
             "name": "date",
             "type": "{Number}",
             "default": "null",
@@ -483,17 +483,21 @@
         {
             "file": "js/source/objects/Date.js",
             "line": 64,
-            "description": "A flag to set the date to the first of the month upon creation.\n\n```javascript\nvar date = shadow.Date.create([2013, 3, 20], {\n    setToTheFirst: true\n})\ndate.value\n// returns [2013, 3, 1]\n```",
-            "itemtype": "attribute",
+            "description": "A flag to set the date to the first of the month upon creation.\n\n```javascript\nshadow.Date.create([2013, 3, 20], {\n    setToTheFirst: true\n})\n// returns { year: 2013, month: 3, date: 1, ... }\n```",
+            "itemtype": "property",
             "name": "setToTheFirst",
             "type": "{Boolean}",
             "default": "false",
+            "writeonce": "",
             "class": "shadow.Date"
         },
         {
             "file": "js/source/objects/Date.js",
             "line": 82,
-            "description": "Create an instance of a shadow date.",
+            "description": "Create an instance of a shadow date by passing a date value representation.",
+            "example": [
+                "\n\nThe value as an array:\n\n```javascript\nshadow.Date.create([2014, 3, 20])\n// returns { year: 2014, month: 3, date: 20, ... }\n```\n\nThe value as a JavaScript date object:\n\n```javascript\nshadow.Date.create(new Date(2014, 3, 20))\n// returns { year: 2014, month: 3, date: 20, ... }\n```\n\nThe value as a UNIX time stamp:\n\n```javascript\nshadow.Date.create(1397966400000)\n// returns { year: 2014, month: 3, date: 20, ... }\n```\n\nThe value as an ISO string:\n\n```javascript\nshadow.Date.create('2014-04-20T16:20:00.000Z')\n// returns { year: 2014, month: 3, date: 20, ... }\n```"
+            ],
             "itemtype": "method",
             "name": "create",
             "params": [
@@ -505,7 +509,8 @@
                 {
                     "name": "options",
                     "description": "Options for the date’s prototype.",
-                    "type": "Object"
+                    "type": "Object",
+                    "optional": true
                 }
             ],
             "return": {
@@ -517,14 +522,17 @@
         },
         {
             "file": "js/source/objects/Date.js",
-            "line": 124,
+            "line": 154,
             "description": "Compare the shadow date’s value with another date.",
+            "example": [
+                "\n\nGiven the following two dates:\n\n```javascript\nvar one = shadow.Date.create([2013, 3, 20])\nvar two = new Date(2014, 3, 20)\n```\n\n...we can compare them in various ways (all the following conditions resolve to `true`):\n\n```javascript\n// Compare the two for equality\none.compare(two) == false\n\n// Compare the first as being greater than the second\none.compare('greater', two) == false\n\n// Compare the first as being lesser than the second\none.compare('lesser', two) == true\n```\n\n...or we can scope the comparison to time units:\n\n```javascript\n// Compare the months\none.compare('month', two) == false\none.compare('month greater', two) == false\none.compare('month lesser', two) == true\n\n// Compare the years\none.compare('year', two) == false\none.compare('year greater', two) == false\none.compare('year lesser', two) == true\n\n// Compare the decade\none.compare('decade', two) == true\none.compare('decade greater', two) == false\none.compare('decade lesser', two) == false\n```"
+            ],
             "itemtype": "method",
             "name": "compare",
             "params": [
                 {
                     "name": "comparison",
-                    "description": "A “scope” to compare within.",
+                    "description": "A comparison scope. Valid values are:\n\n- `'date'`\n- `'date greater'`\n- `'date lesser'`\n- `'date greater equal'`\n- `'date lesser equal'`\n- `'month'`\n- `'month greater'`\n- `'month lesser'`\n- `'month greater equal'`\n- `'month lesser equal'`\n- `'year'`\n- `'year greater'`\n- `'year lesser'`\n- `'year greater equal'`\n- `'year lesser equal'`\n- `'decade'`\n- `'decade greater'`\n- `'decade lesser'`\n- `'decade greater equal'`\n- `'decade lesser equal'`",
                     "type": "String",
                     "optional": true
                 },
@@ -542,14 +550,17 @@
         },
         {
             "file": "js/source/objects/Date.js",
-            "line": 190,
-            "description": "Compare a date with a range in various ways.",
+            "line": 283,
+            "description": "Compare a date with a range to see if it falls within the bounds\nof the range in various different comparison scopes.",
+            "example": [
+                "\n\nGiven the following date and range:\n\n```javascript\nvar date = shadow.Date.create([2014, 3, 20])\nvar range = [new Date(2014, 4, 27), [2015, 2, 4]]\n```\n\n...we can compare them in various ways (all the following conditions resolve to `true`):\n\n```javascript\ndate.compareRange(range) == false\ndate.compareRange('month', range) == false\ndate.compareRange('year', range) == true\ndate.compareRange('decade', range) == true\n```"
+            ],
             "itemtype": "method",
             "name": "compareRange",
             "params": [
                 {
                     "name": "comparison",
-                    "description": "A “scope” to compare within.",
+                    "description": "A comparison scope. Valid values are:\n\n- `'date'`\n- `'month'`\n- `'year'`\n- `'decade'`",
                     "type": "String",
                     "optional": true
                 },
@@ -567,19 +578,22 @@
         },
         {
             "file": "js/source/objects/Date.js",
-            "line": 230,
-            "description": "Simplify comparison of dates.\n\n```javascript\nshadow.Date.create([2013, 3, 20]) > shadow.Date.create([2014, 8, 14])\n// returns false\n\nshadow.Date.create([2013, 3, 20]) < shadow.Date.create([2014, 8, 14])\n// returns true\n```",
+            "line": 348,
+            "description": "Get the date’s time value.",
+            "example": [
+                "\n\n```javascript\nshadow.Date.create([2013, 3, 20]).valueOf()\n// returns 1366430400000\n```\n\nThis allows for easy comparison of dates.\n\n```javascript\nshadow.Date.create([2013, 3, 20]) > shadow.Date.create([2014, 8, 14])\n// returns false\n\nshadow.Date.create([2013, 3, 20]) < shadow.Date.create([2014, 8, 14])\n// returns true\n```"
+            ],
             "itemtype": "method",
             "name": "valueOf",
             "return": {
-                "description": "The time of the date to make comparisons easier.",
+                "description": "The time of the date.",
                 "type": "Number"
             },
             "class": "shadow.Date"
         },
         {
             "file": "js/source/objects/Date.js",
-            "line": 249,
+            "line": 376,
             "description": "Simplify stringification of the shadow date.\n\n```javascript\nvar date = shadow.Date.create([2013, 3, 20])\nJSON.stringify(date)\n// returns \"[2013,3,20]\"\n```",
             "itemtype": "method",
             "name": "toJSON",
@@ -591,13 +605,13 @@
         },
         {
             "file": "js/source/objects/Date.js",
-            "line": 268,
+            "line": 395,
             "description": "Convert a date representation into a date.",
             "class": "shadow.Date"
         },
         {
             "file": "js/source/objects/Date.js",
-            "line": 286,
+            "line": 413,
             "description": "Get the decade a year belongs to.",
             "class": "shadow.Date"
         },
@@ -605,17 +619,24 @@
             "file": "js/source/objects/Element.js",
             "line": 14,
             "description": "The source element to bind the shadow data to.\n\nIf it is a string, the value will be used as a jQuery selector.",
-            "itemtype": "attribute",
+            "example": [
+                "\n\n```javascript\nvar $target = $('#target')\nvar shadowEl = shadow.Element.create({\n    $el: $target\n})\nshadowEl.$el[0] === $target[0] // returns true\n```"
+            ],
+            "itemtype": "property",
             "name": "$el",
             "type": "jQuery|HTMLElement|String",
             "default": "null",
+            "required": 1,
             "class": "shadow.Element"
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 26,
-            "description": "The host element that contains the shadow element within.\n\nThis is usually the same as the `$el` - unless if it’s an element\nthat cannot contain elements, such as an `input`.\n\nIf it is a string, the value will be used as a jQuery selector.",
-            "itemtype": "attribute",
+            "line": 37,
+            "description": "The host element that contains the shadow element and content within.\n\nIf it is a string, the value will be used as a jQuery selector.",
+            "example": [
+                "\n\nWith a source element that can contain DOM nodes, the host remains the same:\n\n```javascript\nvar $target = $('<div id=\"target\"></div>')\nvar shadowEl = shadow.Element.create({\n    $el: $target\n})\nshadowEl.$el[0] === shadowEl.$host[0] // returns true\n```\n\nFor a source element that cannot contain DOM nodes, the host is generated\n(unless if specified):\n\n```javascript\nvar $target = $('<input id=\"target\">')\nvar shadowEl = shadow.Element.create({\n    $el: $target\n})\nshadowEl.$el[0] === shadowEl.$host[0] // returns false\n```"
+            ],
+            "itemtype": "property",
             "name": "$host",
             "type": "jQuery|HTMLElement|String",
             "default": "null",
@@ -623,9 +644,9 @@
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 45,
+            "line": 76,
             "description": "A unique ID for the element; constructed when the element is created.",
-            "itemtype": "attribute",
+            "itemtype": "property",
             "name": "id",
             "type": "String",
             "default": "null",
@@ -634,8 +655,11 @@
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 56,
-            "description": "An hash mapping of an element’s attributes.\n\nThis object also gets populated with any `data-ui-*` attributes\non the source element.\n\n```html\n<div data-ui-prop=\"false\" data-ui-another-prop=\"[1,3,4]\"></div>\n```\n\nBecomes\n\n```javascript\nattrs: { prop: false, anotherProp: [1,3,4] }\n```",
+            "line": 87,
+            "description": "A hash mapping of an element’s attributes.\n\n<div class=\"notification\">\nEach attribute is wrapped with a getter/setter when the object\nis created. This allows the attributes to be observed using the\n{{#link-to \"class\" \"shadow.Element\" (query-params itemtype=\"method\" name=\"on(events-selector-data-handler)\")}}\n`on`{{/link-to}} method.\n</div>",
+            "example": [
+                "\n\nThe `attrs` object gets populated with any `data-ui-*` attributes\non the source element as well as the shadow object’s own `attrs`.\n\nWith the following markup:\n\n```html\n<div data-ui=\"attrs-component\"\n     data-ui-prop=\"false\"\n     data-ui-another-prop=\"[1,3,4]\">\n</div>\n```\n\n...and the following scripts:\n\n```javascript\nvar AttrsComponent = shadow.Element.extend({\n    name: 'AttrsComponent',\n    attrs: {\n        prop: null,\n        anotherProp: null,\n        aThirdProp: 'some value'\n    }\n})\n```\n\nThe resulting shadow object looks like this:\n\n```javascript\n{\n    name: 'attrsComponent',\n    attrs: {\n        prop: false,\n        anotherProp: [1,3,4],\n        aThirdProp: 'some value'\n    }\n}\n```"
+            ],
             "itemtype": "attribute",
             "name": "attrs",
             "type": "Hash",
@@ -644,9 +668,9 @@
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 79,
+            "line": 144,
             "description": "An hash mapping of an element’s dictionary to be used in templating.",
-            "itemtype": "attribute",
+            "itemtype": "property",
             "name": "dict",
             "type": "Hash",
             "default": "null",
@@ -654,9 +678,9 @@
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 89,
+            "line": 154,
             "description": "An hash mapping of an element’s class names to be used in templating.",
-            "itemtype": "attribute",
+            "itemtype": "property",
             "name": "classNames",
             "type": "Hash",
             "default": "null",
@@ -664,9 +688,12 @@
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 99,
-            "description": "A prefix to use on all the class names of an element.\n\n```javascript\nclassNames: {\n    root: ' --root',\n    box: 'box',\n    button: 'button'\n},\nclassNamesPrefix: 'my-prefix'\n```\n\nBecomes\n\n```javascript\nclassNames: {\n    root: 'my-prefix my-prefix--root',\n    box: 'my-prefix__box',\n    button: 'my-prefix__button'\n}\n```",
-            "itemtype": "attribute",
+            "line": 164,
+            "description": "A prefix to use on all the class names of an element.",
+            "example": [
+                "\n\nWhen creating an element with a prefix:\n\n```javascript\nvar shadowEl = shadow.Element.create({\n    $el: $('<div>'),\n    classNames: {\n        root: ' --root',\n        box: 'box',\n        button: 'button'\n    },\n    classNamesPrefix: 'my-prefix'\n})\n```\n\n...the `shadowEl.classNames` hash becomes:\n\n```javascript\n{\n    root: 'my-prefix my-prefix--root',\n    box: 'my-prefix__box',\n    button: 'my-prefix__button'\n}\n```"
+            ],
+            "itemtype": "property",
             "name": "classNamesPrefix",
             "type": "String",
             "default": "null",
@@ -674,9 +701,9 @@
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 128,
+            "line": 200,
             "description": "The contents to put within the shadow element during templating.\n\nThis default to using anything within the source element as the `content`.",
-            "itemtype": "attribute",
+            "itemtype": "property",
             "name": "content",
             "type": "Node|DocumentFragment",
             "default": "null",
@@ -684,7 +711,7 @@
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 140,
+            "line": 212,
             "description": "Set up any listeners, configurations, attributes, etc. before\nthey all are sealed and frozen.",
             "itemtype": "method",
             "name": "setup",
@@ -692,17 +719,17 @@
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 149,
-            "description": "Create a template for the shadow element.",
-            "itemtype": "attribute",
+            "line": 221,
+            "description": "Create a template for the shadow element.\n\nIf it’s a function, the return value must be one of the other valid types.",
+            "itemtype": "property",
             "name": "template",
-            "type": "Function|String|Node|jQuery",
+            "type": "Function|String|Node|DocumentFragment|jQuery",
             "default": "null",
             "class": "shadow.Element"
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 159,
+            "line": 233,
             "description": "Create an instance of a shadow element.",
             "itemtype": "method",
             "name": "create",
@@ -729,7 +756,7 @@
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 255,
+            "line": 329,
             "description": "After extending the shadow element class, build all the occurrences\nof the element in the DOM.",
             "itemtype": "method",
             "name": "extend",
@@ -749,8 +776,8 @@
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 271,
-            "description": "Bind events to fire during the element’s lifecycle.\n\nThis method is basically a wrapper for jQuery’s `$.fn.on` method\nand uses the source element (`$el`) as the target.\n\nCheck out the [documentation here](http://api.jquery.com/on/#on-events-selector-data).",
+            "line": 345,
+            "description": "Bind events to fire as the user interacts with the shadow element.\n\nThis method is basically a wrapper for jQuery’s `$.fn.on` method\nand uses the source element (`$el`) as the target.\n\nCheck out the [method’s documentation here](http://api.jquery.com/on/#on-events-selector-data).",
             "itemtype": "method",
             "name": "on",
             "params": [
@@ -781,7 +808,7 @@
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 295,
+            "line": 369,
             "description": "Unbind events from firing during the element’s lifecycle.\n\nThis method is basically a wrapper for jQuery’s `$.fn.off` method\nand uses the source element (`$el`) as the target.\n\nCheck out the [documentation here](http://api.jquery.com/on/#on-events-selector-data).",
             "itemtype": "method",
             "name": "off",
@@ -808,7 +835,7 @@
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 318,
+            "line": 392,
             "description": "Get the value of an attribute of the shadow element.\n\n```javascript\nvar element = shadow.Element.create({\n    //...\n    attrs: {\n        myAttr: true,\n        myOtherAttr: { niceness: 10 }\n    }\n})\n```\n\nWe can use the `get` method:\n\n```javascript\nelement.get('myAttr')\n// returns true\n\nelement.get('myOtherAttr')\n// returns { niceness: 10 }\n```\n\nOr, we can directly access the `attrs` object:\n\n```javascript\nelement.attrs.myAttr\n// returns true\n\nelement.attrs.myOtherAttr\n// returns { niceness: 10 }\n```",
             "itemtype": "method",
             "name": "get",
@@ -827,7 +854,7 @@
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 360,
+            "line": 434,
             "description": "Set the value of an attribute of the shadow element.",
             "itemtype": "method",
             "name": "set",
@@ -847,7 +874,7 @@
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 374,
+            "line": 448,
             "description": "Add a unit to an attribute of the shadow element.\n\nThe attribute **must** be an array containing the same types of units.\n\n```js\nvar element = shadow.Element.create({\n    //...\n    attrs: {\n        myCollection: [{ value: 6 }, { value: 14 }, { value: 19 }]\n    }\n})\n```\n\nTo add a value, we’d do something like this:\n\n```js\nelement.get('myCollection')\n// returns [{ value: 6 }, { value: 14 }, { value: 19 }]\n\nelement.add('myCollection', { value: 24 }, function(unit, loopedUnit) {\n    return unit.value === loopedUnit.value\n})\n\nelement.get('myCollection')\n// returns [{ value: 6 }, { value: 14 }, { value: 19 }, { value: 24 }]\n```",
             "itemtype": "method",
             "name": "add",
@@ -873,7 +900,7 @@
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 424,
+            "line": 498,
             "description": "Remove a unit from an attribute of the shadow element.\n\nThe attribute **must** be an array containing the same types of units.",
             "itemtype": "method",
             "name": "remove",
@@ -899,66 +926,73 @@
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 454,
+            "line": 528,
             "description": "Get the shadow ui attributes from an element.",
             "class": "shadow.Element"
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 476,
+            "line": 550,
             "description": "Attach nodes relevant to the shadow element.",
             "class": "shadow.Element"
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 510,
+            "line": 584,
             "description": "Build out the template contents.",
             "class": "shadow.Element"
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 527,
+            "line": 601,
             "description": "Define the relationship between the element and the host.",
             "class": "shadow.Element"
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 540,
+            "line": 614,
             "description": "Copy shadow ui attributes to the source element.",
             "class": "shadow.Element"
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 558,
+            "line": 632,
             "description": "Decorate a shadow attribute with a getter and setter.",
             "class": "shadow.Element"
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 590,
+            "line": 664,
             "description": "Update a shadow attribute on an element.",
             "class": "shadow.Element"
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 606,
+            "line": 680,
             "description": "Prefix each class name in a hash of class names with a prefix.",
             "class": "shadow.Element"
         },
         {
             "file": "js/source/objects/Object.js",
             "line": 11,
-            "description": "The name of the object.\n\nClasses are `PascalCased` and objects are `camelCased`.",
-            "itemtype": "attribute",
+            "description": "The name of the shadow object.\n\nNames of classes are `PascalCased` and objects are `camelCased`:\n\n```javascript\nshadow.Object.name == 'Object' // returns true\nshadow.Object.create().name == 'object' // returns true\n```\n\nValues of `data-ui` attributes are `dash-cased`:\n\n```html\n<div data-ui=\"data-element\"></div>\n```\n\nThis initializes the shadow element on page load.",
+            "example": [
+                "\n\nThe only time the `name` is writable is during extension:\n\n```javascript\nvar MyExtension = shadow.Object.extend({\n    name: 'MyExtension'\n})\nMyExtension.name == 'MyExtension' // returns true\nMyExtension.create().name == 'myExtension' // returns true\n```\n\nThis name is used to keep a reference of the classes under the `shadow` namespace."
+            ],
+            "itemtype": "property",
             "name": "name",
             "type": "String",
-            "readonly": "",
+            "writeonce": "",
+            "required": 1,
             "class": "shadow.Object"
         },
         {
             "file": "js/source/objects/Object.js",
-            "line": 26,
+            "line": 54,
             "description": "Create an instance of the shadow object.",
+            "example": [
+                "\n\nA plain shadow object:\n\n```javascript\nvar object = shadow.Object.create()\nobject.isInstanceOf(shadow.Object) // returns true\nobject.name == 'object' // returns true\n```\n\nA custom shadow object with overriding properties:\n\n```javascript\nvar MyObject = shadow.Object.extend({\n    name: 'MyObject',\n    someProperty: false\n})\nvar myObject = MyObject.create({\n    someProperty: true\n})\nmyObject.isInstanceOf(MyObject) // returns true\nmyObject.someProperty === true // returns true\n```"
+            ],
             "itemtype": "method",
             "name": "create",
             "params": [
@@ -977,8 +1011,11 @@
         },
         {
             "file": "js/source/objects/Object.js",
-            "line": 65,
+            "line": 117,
             "description": "Extend the object using prototypes. Based on:\nhttp://aaditmshah.github.io/why-prototypal-inheritance-matters/#inheriting_from_multiple_prototypes",
+            "todo": [
+                "Document an example."
+            ],
             "itemtype": "method",
             "name": "extend",
             "params": [
@@ -997,8 +1034,11 @@
         },
         {
             "file": "js/source/objects/Object.js",
-            "line": 122,
+            "line": 176,
             "description": "Check if the object is a class.",
+            "example": [
+                "\n\n```javascript\nshadow.Object.isClass() // returns true\nshadow.Object.create().isClass() // returns false\n```"
+            ],
             "itemtype": "method",
             "name": "isClass",
             "return": {
@@ -1009,7 +1049,7 @@
         },
         {
             "file": "js/source/objects/Object.js",
-            "line": 138,
+            "line": 199,
             "description": "Check if the object inherits from the class of another. Inspiration from:\nhttp://aaditmshah.github.io/why-prototypal-inheritance-matters/#fixing_the_instanceof_operator",
             "itemtype": "method",
             "name": "isClassOf",
@@ -1028,7 +1068,7 @@
         },
         {
             "file": "js/source/objects/Object.js",
-            "line": 161,
+            "line": 222,
             "description": "Check if the object is an instance of another. Inspiration from:\nhttp://aaditmshah.github.io/why-prototypal-inheritance-matters/#fixing_the_instanceof_operator",
             "itemtype": "method",
             "name": "isInstanceOf",
@@ -1047,7 +1087,7 @@
         },
         {
             "file": "js/source/objects/Object.js",
-            "line": 177,
+            "line": 238,
             "description": "Check if the object is the prototype of another.",
             "itemtype": "method",
             "name": "isPrototypeOf",
@@ -1066,8 +1106,11 @@
         },
         {
             "file": "js/source/objects/Object.js",
-            "line": 195,
-            "description": "Cast the object into a string representation.",
+            "line": 256,
+            "description": "Cast the object into a string representation.\n\nIf `shadow.IS_DEBUGGING` is set to `true`, the\n{{#link-to \"class\" \"shadow.Object\" (query-params itemtype=\"method\" name=\"toFullString\")}}\n`toFullString`{{/link-to}} response is returned instead.",
+            "example": [
+                "\n\n```javascript\nshadow.Object.toString()               // returns '{class Object}'\nshadow.DataElement.toString()          // returns '{class DataElement}'\nshadow.Object.create().toString()      // returns '{object Object}'\nshadow.DataElement.create().toString() // returns '{object DataElement}'\n```\n\nThis allows you to add easy debugging:\n\n```javascript\nconsole.debug('Creating: ' + shadow.DataElement)\n// logs 'Creating: {class DataElement}'\n\nconsole.debug('Created: ' + shadow.Object.create())\n// logs 'Created: {object Object}'\n```\n\n<div class=\"notification\">\n**Note**: This only works if the class or object does not have a `valueOf` method. Those\nthat do have a `valueOf` method will use that return value instead, such as `shadow.Date`.\n</div>"
+            ],
             "itemtype": "method",
             "name": "toString",
             "return": {
@@ -1078,8 +1121,11 @@
         },
         {
             "file": "js/source/objects/Object.js",
-            "line": 216,
+            "line": 305,
             "description": "Cast the object into a full string representation.",
+            "example": [
+                "\n\n```javascript\nshadow.Object.toFullString()               // returns '{class Object}'\nshadow.DataElement.toFullString()          // returns '{class DataElement:Element:Object}'\nshadow.Object.create().toFullString()      // returns '{object Object}'\nshadow.DataElement.create().toFullString() // returns '{object DataElement:Element:Object}'\n```"
+            ],
             "itemtype": "method",
             "name": "toFullString",
             "return": {
@@ -1429,43 +1475,43 @@
         },
         {
             "message": "Missing item type\nConvert a date representation into a date.",
-            "line": " js/source/objects/Date.js:268"
+            "line": " js/source/objects/Date.js:395"
         },
         {
             "message": "Missing item type\nGet the decade a year belongs to.",
-            "line": " js/source/objects/Date.js:286"
+            "line": " js/source/objects/Date.js:413"
         },
         {
             "message": "Missing item type\nGet the shadow ui attributes from an element.",
-            "line": " js/source/objects/Element.js:454"
+            "line": " js/source/objects/Element.js:528"
         },
         {
             "message": "Missing item type\nAttach nodes relevant to the shadow element.",
-            "line": " js/source/objects/Element.js:476"
+            "line": " js/source/objects/Element.js:550"
         },
         {
             "message": "Missing item type\nBuild out the template contents.",
-            "line": " js/source/objects/Element.js:510"
+            "line": " js/source/objects/Element.js:584"
         },
         {
             "message": "Missing item type\nDefine the relationship between the element and the host.",
-            "line": " js/source/objects/Element.js:527"
+            "line": " js/source/objects/Element.js:601"
         },
         {
             "message": "Missing item type\nCopy shadow ui attributes to the source element.",
-            "line": " js/source/objects/Element.js:540"
+            "line": " js/source/objects/Element.js:614"
         },
         {
             "message": "Missing item type\nDecorate a shadow attribute with a getter and setter.",
-            "line": " js/source/objects/Element.js:558"
+            "line": " js/source/objects/Element.js:632"
         },
         {
             "message": "Missing item type\nUpdate a shadow attribute on an element.",
-            "line": " js/source/objects/Element.js:590"
+            "line": " js/source/objects/Element.js:664"
         },
         {
             "message": "Missing item type\nPrefix each class name in a hash of class names with a prefix.",
-            "line": " js/source/objects/Element.js:606"
+            "line": " js/source/objects/Element.js:680"
         },
         {
             "message": "Missing item type\nBuild a shadow element.",

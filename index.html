@@ -39,7 +39,7 @@
 
             <div class="container  container--padded">
                 <div class="container__box">
-                    <h2 class="heading  heading--three  heading--flat"><code>{{name}}</code> <span class="is-thin">module</span></h2>
+                    <h2 class="heading  heading--two  heading--flat"><code>{{name}}</code> <span class="is-thin">module</span></h2>
                     <h6 class="heading  is-thin  is-dimmed">Defined in {{#link-to-github file=file line=line}}<code>{{file}}:{{line}}</code>{{/link-to-github}}</h6>
                     {{md content=description}}
                 </div>
@@ -65,8 +65,8 @@
 
             <div class="container  container--padded">
                 <div class="container__box">
-                    <h2 class="heading  heading--three  heading--flat">
-                        <code>{{class.name}}</code> <span class="is-thin">class</span>{{#if class.isStatic}} &nbsp; <span class="capsule  capsule--static">Static</span>{{/if}}
+                    <h2 class="heading  heading--two  heading--flat">
+                        <code>{{class.name}}</code> <span class="is-thin">class</span>{{#if class.isStatic}} &nbsp;<span class="capsule  capsule--static">Static</span>{{/if}}
                     </h2>
                     {{#if class.isExtended}}
                         <h6 class="heading  heading--flat  is-thin  is-dimmed">Extends {{#link-to "class" class.extends}}<code>{{class.extends}}</code>{{/link-to}}</h6>
@@ -106,7 +106,11 @@
                                     <h3>{{category.title}}</h3>
                                     <ul>
                                         {{#each unit in category.data}}
-                                            <li>{{#link-to "class" unit.class (query-params itemtype=unit.itemtype name=unit.queryName)}}{{unit.name}}{{/link-to}}</li>
+                                            <li>
+                                                {{#link-to "class" unit.class (query-params itemtype=unit.itemtype name=unit.queryName)}}
+                                                    <code>{{unit.name}}</code>
+                                                {{/link-to}}
+                                            </li>
                                         {{/each}}
                                     </ul>
                                 {{/each}}
@@ -126,13 +130,13 @@
     </script>
     <script type="text/x-handlebars" data-template-name="classitem">
         <div class="container__box  container__box--bordered" {{bind-attr data-query-name=queryName}}>
-            <h3 class="heading  heading--flat">
+            <h3 class="heading  heading--three  heading--flat">
                 {{#link-to "class" class (query-params itemtype=itemtype name=queryName)
                     class="container__link-hook"}}&sect;{{/link-to}}
                 {{#if isMethod}}
-                    <code>{{name}}{{#if params}} <small>({{list-params data=params}})</small>{{/if}}</code>{{#if isStatic}} &nbsp; <span class="capsule capsule--static">Static</span>{{/if}}{{#if access}} &nbsp; <span class="capsule capsule--access">{{access}}</span>{{/if}}
+                    <code>{{name}}{{#if params}} <small>({{list-params data=params}})</small>{{/if}}</code>{{#if isStatic}} &nbsp;<span class="capsule capsule--static">Static</span>{{/if}}{{#if access}} &nbsp;<span class="capsule capsule--access">{{access}}</span>{{/if}}
                 {{else}}
-                    <code>{{name}}</code> &nbsp; <code class="is-size-five  is-thin  is-dimmed">{{type}}</code>{{#if readonly}} &nbsp; <span class="capsule capsule--access">Readonly</span>{{/if}}
+                    <code>{{name}}</code> &nbsp;<code class="is-size-four  is-thin  is-dimmed">{{type}}</code>{{#if isRequired}} &nbsp;<span class="capsule capsule--required">Required</span>{{/if}}{{#if isWriteOnce}} &nbsp;<span class="capsule capsule--access-two">Write-once</span>{{/if}}{{#if isReadOnly}} &nbsp;<span class="capsule capsule--access-three">Read-only</span>{{/if}}
                 {{/if}}
             </h3>
             {{#if isExtended}}
@@ -143,9 +147,6 @@
                 <h6 class="heading  is-thin  is-dimmed">Defined in {{#link-to-github file=file line=line}}<code>{{file}}:{{line}}</code>{{/link-to-github}}</h6>
             {{/if}}{{/if}}
             {{md content=description}}
-            {{#if example}}
-                {{#each example}}{{md content=.}}{{/each}}
-            {{/if}}
             {{#if todo}}
                 <h4>To-dos:</h4>
                 <ol>
@@ -159,7 +160,7 @@
                 <ol class="list--plain">
                     {{#each param in params}}
                         <li>
-                            <div><code>{{param.name}}</code> &nbsp; <code class="is-size-six  is-dimmed">{{param.type}}</code>{{#if param.optional}} &nbsp; <span class="capsule capsule--optional">Optional</span>{{/if}}</div>
+                            <p class="heading--flat"><code>{{param.name}}</code> &nbsp;<code class="is-size-six  is-dimmed">{{param.type}}</code>{{#if param.optional}} &nbsp;<span class="capsule capsule--optional">Optional</span>{{/if}}</p>
                             {{md content=param.description}}
                         </li>
                     {{/each}}
@@ -172,10 +173,14 @@
                 <h4>Returns:</h4>
                 <ol class="list--plain">
                     <li>
-                        <div><code>{{return.type}}</code></div>
+                        <p class="heading--flat"><code>{{return.type}}</code></p>
                         {{md content=return.description}}
                     </li>
                 </ol>
+            {{/if}}
+            {{#if example}}
+                <h4>Example:</h4>
+                {{#each example}}{{md content=.}}{{/each}}
             {{/if}}
         </div>
     </script>

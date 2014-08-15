@@ -9,13 +9,41 @@ shadow.Object = Object.create({}, {
 
 
     /**
-     * The name of the object.
+     * The name of the shadow object.
      *
-     * Classes are `PascalCased` and objects are `camelCased`.
+     * Names of classes are `PascalCased` and objects are `camelCased`:
      *
-     * @attribute name
+     * ```javascript
+     * shadow.Object.name == 'Object' // returns true
+     * shadow.Object.create().name == 'object' // returns true
+     * ```
+     *
+     * Values of `data-ui` attributes are `dash-cased`:
+     *
+     * ```html
+     * <div data-ui="data-element"></div>
+     * ```
+     *
+     * This initializes the shadow element on page load.
+     *
+     * @example
+     *
+     * The only time the `name` is writable is during extension:
+     *
+     * ```javascript
+     * var MyExtension = shadow.Object.extend({
+     *     name: 'MyExtension'
+     * })
+     * MyExtension.name == 'MyExtension' // returns true
+     * MyExtension.create().name == 'myExtension' // returns true
+     * ```
+     *
+     * This name is used to keep a reference of the classes under the `shadow` namespace.
+     *
+     * @property name
      * @type String
-     * @readOnly
+     * @writeOnce
+     * @required
      */
     name: {
         enumerable: true,
@@ -25,6 +53,30 @@ shadow.Object = Object.create({}, {
 
     /**
      * Create an instance of the shadow object.
+     *
+     * @example
+     *
+     * A plain shadow object:
+     *
+     * ```javascript
+     * var object = shadow.Object.create()
+     * object.isInstanceOf(shadow.Object) // returns true
+     * object.name == 'object' // returns true
+     * ```
+     *
+     * A custom shadow object with overriding properties:
+     *
+     * ```javascript
+     * var MyObject = shadow.Object.extend({
+     *     name: 'MyObject',
+     *     someProperty: false
+     * })
+     * var myObject = MyObject.create({
+     *     someProperty: true
+     * })
+     * myObject.isInstanceOf(MyObject) // returns true
+     * myObject.someProperty === true // returns true
+     * ```
      *
      * @method create
      * @param {Object} options Options to extend the object’s prototype.
@@ -65,6 +117,8 @@ shadow.Object = Object.create({}, {
     /**
      * Extend the object using prototypes. Based on:
      * http://aaditmshah.github.io/why-prototypal-inheritance-matters/#inheriting_from_multiple_prototypes
+     *
+     * @todo Document an example.
      *
      * @method extend
      * @param {Object} options Options to extend the object’s prototype.
@@ -121,6 +175,13 @@ shadow.Object = Object.create({}, {
 
     /**
      * Check if the object is a class.
+     *
+     * @example
+     *
+     * ```javascript
+     * shadow.Object.isClass() // returns true
+     * shadow.Object.create().isClass() // returns false
+     * ```
      *
      * @method isClass
      * @return {Boolean}
@@ -195,6 +256,34 @@ shadow.Object = Object.create({}, {
     /**
      * Cast the object into a string representation.
      *
+     * If `shadow.IS_DEBUGGING` is set to `true`, the
+     * {{#link-to "class" "shadow.Object" (query-params itemtype="method" name="toFullString")}}
+     * `toFullString`{{/link-to}} response is returned instead.
+     *
+     * @example
+     *
+     * ```javascript
+     * shadow.Object.toString()               // returns '{class Object}'
+     * shadow.DataElement.toString()          // returns '{class DataElement}'
+     * shadow.Object.create().toString()      // returns '{object Object}'
+     * shadow.DataElement.create().toString() // returns '{object DataElement}'
+     * ```
+     *
+     * This allows you to add easy debugging:
+     *
+     * ```javascript
+     * console.debug('Creating: ' + shadow.DataElement)
+     * // logs 'Creating: {class DataElement}'
+     *
+     * console.debug('Created: ' + shadow.Object.create())
+     * // logs 'Created: {object Object}'
+     * ```
+     *
+     * <div class="notification">
+     * **Note**: This only works if the class or object does not have a `valueOf` method. Those
+     * that do have a `valueOf` method will use that return value instead, such as `shadow.Date`.
+     * </div>
+     *
      * @method toString
      * @return {String} A string representation of the shadow object.
      */
@@ -215,6 +304,15 @@ shadow.Object = Object.create({}, {
 
     /**
      * Cast the object into a full string representation.
+     *
+     * @example
+     *
+     * ```javascript
+     * shadow.Object.toFullString()               // returns '{class Object}'
+     * shadow.DataElement.toFullString()          // returns '{class DataElement:Element:Object}'
+     * shadow.Object.create().toFullString()      // returns '{object Object}'
+     * shadow.DataElement.create().toFullString() // returns '{object DataElement:Element:Object}'
+     * ```
      *
      * @method toFullString
      * @return {String} A full trace string representation of the shadow object.

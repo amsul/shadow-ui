@@ -99,8 +99,8 @@
             "file": "js/source/objects/DataElement.js",
             "line": 2,
             "description": "Construct a shadow data element object.",
-            "extends": "shadow.Element",
             "static": 1,
+            "extends": "shadow.Element",
             "since": "0.6.0"
         },
         "shadow.Date": {
@@ -115,8 +115,8 @@
             "file": "js/source/objects/Date.js",
             "line": 2,
             "description": "Construct a shadow date object.",
-            "extends": "shadow.Object",
-            "static": 1
+            "static": 1,
+            "extends": "shadow.Object"
         },
         "shadow.Element": {
             "name": "shadow.Element",
@@ -130,8 +130,8 @@
             "file": "js/source/objects/Element.js",
             "line": 2,
             "description": "Construct a shadow element object.",
-            "extends": "shadow.Object",
-            "static": 1
+            "static": 1,
+            "extends": "shadow.Object"
         },
         "shadow.Object": {
             "name": "shadow.Object",
@@ -188,11 +188,11 @@
             "file": "js/source/objects/DataElement.js",
             "line": 39,
             "description": "The stringified “selection” of the data element's `attrs.select`.",
+            "writeonce": "",
             "itemtype": "attribute",
             "name": "attrs.value",
             "type": "String",
             "default": "null",
-            "writeonce": "",
             "class": "shadow.DataElement"
         },
         {
@@ -228,7 +228,7 @@
         {
             "file": "js/source/objects/DataElement.js",
             "line": 80,
-            "description": "Formatting to use when stringifying `attrs.select` into `attrs.value`.\n\nThis has to be used in conjunction with the data element's\n{{#link-to \"class\" \"shadow.DataElement\" (query-params itemtype=\"attribute\" name=\"formats\")}}`formats`{{/link-to}}\nhash.",
+            "description": "Formatting to use when stringifying `attrs.select` into `attrs.value`.\n\nThis has to be used in conjunction with the data element's\n{{#cross-link to=\"shadow.DataElement#formats\"}}`formats`{{/cross-link}} hash.",
             "itemtype": "attribute",
             "name": "attrs.format",
             "type": "String",
@@ -237,7 +237,7 @@
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 94,
+            "line": 93,
             "description": "Formatting to use when stringifying `attrs.select` into `attrs.value`\nwith `attrs.allowMultiple` set to `true`.\n\nIf `attrs.allowMultiple` is `false`, this defaults to `null`.",
             "itemtype": "attribute",
             "name": "attrs.formatMultiple",
@@ -247,7 +247,7 @@
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 107,
+            "line": 106,
             "description": "Formatting to use when stringifying `attrs.select` into `attrs.value`\nwith `attrs.allowRange` set to `true`.\n\nIf `attrs.allowRange` is `false`, this defaults to `null`.",
             "itemtype": "attribute",
             "name": "attrs.formatRange",
@@ -257,8 +257,8 @@
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 122,
-            "description": "A formatting is used to stringify and parse values. It is used in conjunction with the\n{{#link-to \"class\" \"shadow.DataElement\" (query-params itemtype=\"attribute\" name=\"attrs.format\")}}`attrs.format`{{/link-to}}\nattribute.",
+            "line": 121,
+            "description": "A formatting is used to stringify and parse values. It is used in conjunction with the\n{{#cross-link to=\"shadow.DataElement#attrs.format\"}}`attrs.format`{{/cross-link}} attribute.",
             "itemtype": "property",
             "name": "formats",
             "type": "Hash",
@@ -267,7 +267,7 @@
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 136,
+            "line": 134,
             "itemtype": "property",
             "name": "classNames.input",
             "type": "{String}",
@@ -276,7 +276,7 @@
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 146,
+            "line": 144,
             "description": "Setup the data element’s attributes before everything gets sealed\nand before getters and setters are bound onto the attributes.\n\nFor an instance-specific setup, safely override the method:\n\n```javascript\nvar dataEl = shadow.DataElement.create({\n    setup: function() {\n        this._super()\n        // carry on with any setup here\n    }\n})\n```",
             "itemtype": "method",
             "name": "setup",
@@ -284,8 +284,9 @@
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 229,
+            "line": 227,
             "description": "Create an instance of a data element object.",
+            "static": 1,
             "itemtype": "method",
             "name": "create",
             "params": [
@@ -299,13 +300,15 @@
                 "description": "An instance of the shadow element.",
                 "type": "shadow.DataElement"
             },
-            "static": 1,
             "class": "shadow.DataElement"
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 308,
+            "line": 306,
             "description": "Convert a value into a formatted string.",
+            "todo": [
+                "Implement the `options` argument."
+            ],
             "itemtype": "method",
             "name": "format",
             "params": [
@@ -324,14 +327,11 @@
                 "description": "The formatted string.",
                 "type": "String"
             },
-            "todo": [
-                "Implement the `options` argument."
-            ],
             "class": "shadow.DataElement"
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 371,
+            "line": 369,
             "description": "Convert a formatted string into a parsed value.",
             "itemtype": "method",
             "name": "parse",
@@ -350,8 +350,10 @@
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 434,
+            "line": 432,
             "description": "Convert a formatted unit string into a parsed unit hash.",
+            "access": "private",
+            "tagname": "",
             "itemtype": "method",
             "name": "parseUnit",
             "params": [
@@ -365,13 +367,11 @@
                 "description": "The parsed formatting-unit hash.",
                 "type": "Hash"
             },
-            "access": "private",
-            "tagname": "",
             "class": "shadow.DataElement"
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 479,
+            "line": 477,
             "description": "Get a data element’s attribute with certain options.",
             "itemtype": "method",
             "name": "get",
@@ -391,49 +391,49 @@
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 503,
+            "line": 501,
             "description": "Format multiple units of value.",
             "class": "shadow.DataElement"
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 542,
+            "line": 540,
             "description": "Format a range’s units.",
             "class": "shadow.DataElement"
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 567,
+            "line": 565,
             "description": "Convert a formatting string into a formatting array.",
             "class": "shadow.DataElement"
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 612,
+            "line": 610,
             "description": "Parse multiple units of value.",
             "class": "shadow.DataElement"
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 673,
+            "line": 671,
             "description": "Parse a range’s units.",
             "class": "shadow.DataElement"
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 720,
+            "line": 718,
             "description": "Escape any regular expression special characters.",
             "class": "shadow.DataElement"
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 728,
+            "line": 726,
             "description": "Slice a string up to a string marked as a starting point.",
             "class": "shadow.DataElement"
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 740,
+            "line": 738,
             "description": "Slice a string up to a string marked as the ending point.",
             "class": "shadow.DataElement"
         },
@@ -441,55 +441,55 @@
             "file": "js/source/objects/Date.js",
             "line": 14,
             "description": "The value of the date represented as an array.\n\n```javascript\nvar date = shadow.Date.create(new Date(2013, 3, 20))\ndate.value\n// returns [2013, 3, 20]\n```",
+            "readonly": "",
             "itemtype": "property",
             "name": "value",
             "type": "{Array}",
             "default": "null",
-            "readonly": "",
             "class": "shadow.Date"
         },
         {
             "file": "js/source/objects/Date.js",
             "line": 31,
             "description": "The year of the shadow date object.",
+            "readonly": "",
             "itemtype": "property",
             "name": "year",
             "type": "{Number}",
             "default": "null",
-            "readonly": "",
             "class": "shadow.Date"
         },
         {
             "file": "js/source/objects/Date.js",
             "line": 42,
             "description": "The month of the shadow date object.",
+            "readonly": "",
             "itemtype": "property",
             "name": "month",
             "type": "{Number}",
             "default": "null",
-            "readonly": "",
             "class": "shadow.Date"
         },
         {
             "file": "js/source/objects/Date.js",
             "line": 53,
             "description": "The date of the shadow date object.",
+            "readonly": "",
             "itemtype": "property",
             "name": "date",
             "type": "{Number}",
             "default": "null",
-            "readonly": "",
             "class": "shadow.Date"
         },
         {
             "file": "js/source/objects/Date.js",
             "line": 64,
             "description": "A flag to set the date to the first of the month upon creation.\n\n```javascript\nshadow.Date.create([2013, 3, 20], {\n    setToTheFirst: true\n})\n// returns { year: 2013, month: 3, date: 1, ... }\n```",
+            "writeonce": "",
             "itemtype": "property",
             "name": "setToTheFirst",
             "type": "{Boolean}",
             "default": "false",
-            "writeonce": "",
             "class": "shadow.Date"
         },
         {
@@ -499,6 +499,7 @@
             "example": [
                 "\n\nThe value as an array:\n\n```javascript\nshadow.Date.create([2014, 3, 20])\n// returns { year: 2014, month: 3, date: 20, ... }\n```\n\nThe value as a JavaScript date object:\n\n```javascript\nshadow.Date.create(new Date(2014, 3, 20))\n// returns { year: 2014, month: 3, date: 20, ... }\n```\n\nThe value as a UNIX time stamp:\n\n```javascript\nshadow.Date.create(1397966400000)\n// returns { year: 2014, month: 3, date: 20, ... }\n```\n\nThe value as an ISO string:\n\n```javascript\nshadow.Date.create('2014-04-20T16:20:00.000Z')\n// returns { year: 2014, month: 3, date: 20, ... }\n```"
             ],
+            "static": 1,
             "itemtype": "method",
             "name": "create",
             "params": [
@@ -518,7 +519,6 @@
                 "description": "An instance of the shadow date.",
                 "type": "shadow.Date"
             },
-            "static": 1,
             "class": "shadow.Date"
         },
         {
@@ -623,11 +623,11 @@
             "example": [
                 "\n\n```javascript\nvar $target = $('#target')\nvar shadowEl = shadow.Element.create({\n    $el: $target\n})\nshadowEl.$el[0] === $target[0] // returns true\n```"
             ],
+            "required": 1,
             "itemtype": "property",
             "name": "$el",
             "type": "jQuery|HTMLElement|String",
             "default": "null",
-            "required": 1,
             "class": "shadow.Element"
         },
         {
@@ -647,17 +647,17 @@
             "file": "js/source/objects/Element.js",
             "line": 76,
             "description": "A unique ID for the element; constructed when the element is created.",
+            "readonly": "",
             "itemtype": "property",
             "name": "id",
             "type": "String",
             "default": "null",
-            "readonly": "",
             "class": "shadow.Element"
         },
         {
             "file": "js/source/objects/Element.js",
             "line": 87,
-            "description": "A hash mapping of an element’s attributes.\n\n<div class=\"notification\">\nEach attribute is wrapped with a getter/setter when the object\nis created. This allows the attributes to be observed using the\n{{#link-to \"class\" \"shadow.Element\" (query-params itemtype=\"method\" name=\"on(events-selector-data-handler)\")}}\n`on`{{/link-to}} method.\n</div>",
+            "description": "A hash mapping of an element’s attributes.\n\n{{#block-note}}\nEach attribute is wrapped with a getter/setter when the object\nis created. This allows the attributes to be observed using the\n{{#cross-link to=\"shadow.Element#on(events-selector-data-handler)\"}}\n`on`{{/cross-link}} method.\n{{/block-note}}",
             "example": [
                 "\n\nThe `attrs` object gets populated with any `data-ui-*` attributes\non the source element as well as the shadow object’s own `attrs`.\n\nWith the following markup:\n\n```html\n<div data-ui=\"attrs-component\"\n     data-ui-prop=\"false\"\n     data-ui-another-prop=\"[1,3,4]\">\n</div>\n```\n\n...and the following scripts:\n\n```javascript\nvar AttrsComponent = shadow.Element.extend({\n    name: 'AttrsComponent',\n    attrs: {\n        prop: null,\n        anotherProp: null,\n        aThirdProp: 'some value'\n    }\n})\n```\n\nThe resulting shadow object looks like this:\n\n```javascript\n{\n    name: 'attrsComponent',\n    attrs: {\n        prop: false,\n        anotherProp: [1,3,4],\n        aThirdProp: 'some value'\n    }\n}\n```"
             ],
@@ -732,6 +732,7 @@
             "file": "js/source/objects/Element.js",
             "line": 233,
             "description": "Create an instance of a shadow element.",
+            "static": 1,
             "itemtype": "method",
             "name": "create",
             "params": [
@@ -752,13 +753,13 @@
                 "description": "An instance of the shadow element.",
                 "type": "shadow.Element"
             },
-            "static": 1,
             "class": "shadow.Element"
         },
         {
             "file": "js/source/objects/Element.js",
             "line": 329,
             "description": "After extending the shadow element class, build all the occurrences\nof the element in the DOM.",
+            "static": 1,
             "itemtype": "method",
             "name": "extend",
             "params": [
@@ -772,7 +773,6 @@
                 "description": "An extension of the shadow element class.",
                 "type": "shadow.Object"
             },
-            "static": 1,
             "class": "shadow.Element"
         },
         {
@@ -980,11 +980,11 @@
             "example": [
                 "\n\nThe only time the `name` is writable is during extension:\n\n```javascript\nvar MyExtension = shadow.Object.extend({\n    name: 'MyExtension'\n})\nMyExtension.name == 'MyExtension' // returns true\nMyExtension.create().name == 'myExtension' // returns true\n```\n\nThis name is used to keep a reference of the classes under the `shadow` namespace."
             ],
+            "writeonce": "",
+            "required": 1,
             "itemtype": "property",
             "name": "name",
             "type": "String",
-            "writeonce": "",
-            "required": 1,
             "class": "shadow.Object"
         },
         {
@@ -994,6 +994,7 @@
             "example": [
                 "\n\nA plain shadow object:\n\n```javascript\nvar object = shadow.Object.create()\nobject.isInstanceOf(shadow.Object) // returns true\nobject.name == 'object' // returns true\n```\n\nA custom shadow object with overriding properties:\n\n```javascript\nvar MyObject = shadow.Object.extend({\n    name: 'MyObject',\n    someProperty: false\n})\nvar myObject = MyObject.create({\n    someProperty: true\n})\nmyObject.isInstanceOf(MyObject) // returns true\nmyObject.someProperty === true // returns true\n```"
             ],
+            "static": 1,
             "itemtype": "method",
             "name": "create",
             "params": [
@@ -1007,7 +1008,6 @@
                 "description": "An instance of the shadow object.",
                 "type": "shadow.Object"
             },
-            "static": 1,
             "class": "shadow.Object"
         },
         {
@@ -1017,6 +1017,7 @@
             "todo": [
                 "Document an example."
             ],
+            "static": 1,
             "itemtype": "method",
             "name": "extend",
             "params": [
@@ -1030,7 +1031,6 @@
                 "description": "An extension of the shadow object class.",
                 "type": "shadow.Object"
             },
-            "static": 1,
             "class": "shadow.Object"
         },
         {
@@ -1108,9 +1108,9 @@
         {
             "file": "js/source/objects/Object.js",
             "line": 256,
-            "description": "Cast the object into a string representation.\n\nIf `shadow.IS_DEBUGGING` is set to `true`, the\n{{#link-to \"class\" \"shadow.Object\" (query-params itemtype=\"method\" name=\"toFullString\")}}\n`toFullString`{{/link-to}} response is returned instead.",
+            "description": "Cast the object into a string representation.\n\nIf `shadow.IS_DEBUGGING` is set to `true`, the\n{{#cross-link to=\"shadow.Object#toFullString\"}}\n`toFullString`{{/cross-link}} response is returned instead.",
             "example": [
-                "\n\n```javascript\nshadow.Object.toString()               // returns '{class Object}'\nshadow.DataElement.toString()          // returns '{class DataElement}'\nshadow.Object.create().toString()      // returns '{object Object}'\nshadow.DataElement.create().toString() // returns '{object DataElement}'\n```\n\nThis allows you to add easy debugging:\n\n```javascript\nconsole.debug('Creating: ' + shadow.DataElement)\n// logs 'Creating: {class DataElement}'\n\nconsole.debug('Created: ' + shadow.Object.create())\n// logs 'Created: {object Object}'\n```\n\n<div class=\"notification\">\n**Note**: This only works if the class or object does not have a `valueOf` method. Those\nthat do have a `valueOf` method will use that return value instead, such as `shadow.Date`.\n</div>"
+                "\n\n```javascript\nshadow.Object.toString()               // returns '{class Object}'\nshadow.DataElement.toString()          // returns '{class DataElement}'\nshadow.Object.create().toString()      // returns '{object Object}'\nshadow.DataElement.create().toString() // returns '{object DataElement}'\n```\n\nThis allows you to add easy debugging:\n\n```javascript\nconsole.debug('Creating: ' + shadow.DataElement)\n// logs 'Creating: {class DataElement}'\n\nconsole.debug('Created: ' + shadow.Object.create())\n// logs 'Created: {object Object}'\n```\n\n{{#block-note}}\nThis only works if the class or object does not have a `valueOf` method. Those\nthat do have a `valueOf` method will use that return value instead, such as `shadow.Date`.\n{{/block-note}}"
             ],
             "itemtype": "method",
             "name": "toString",
@@ -1127,14 +1127,14 @@
             "example": [
                 "\n\n```javascript\nshadow.Object.toFullString()               // returns '{class Object}'\nshadow.DataElement.toFullString()          // returns '{class DataElement:Element:Object}'\nshadow.Object.create().toFullString()      // returns '{object Object}'\nshadow.DataElement.create().toFullString() // returns '{object DataElement:Element:Object}'\n```"
             ],
+            "access": "private",
+            "tagname": "",
             "itemtype": "method",
             "name": "toFullString",
             "return": {
                 "description": "A full trace string representation of the shadow object.",
                 "type": "String"
             },
-            "access": "private",
-            "tagname": "",
             "class": "shadow.Object"
         },
         {
@@ -1444,35 +1444,35 @@
     "warnings": [
         {
             "message": "Missing item type\nFormat multiple units of value.",
-            "line": " js/source/objects/DataElement.js:503"
+            "line": " js/source/objects/DataElement.js:501"
         },
         {
             "message": "Missing item type\nFormat a range’s units.",
-            "line": " js/source/objects/DataElement.js:542"
+            "line": " js/source/objects/DataElement.js:540"
         },
         {
             "message": "Missing item type\nConvert a formatting string into a formatting array.",
-            "line": " js/source/objects/DataElement.js:567"
+            "line": " js/source/objects/DataElement.js:565"
         },
         {
             "message": "Missing item type\nParse multiple units of value.",
-            "line": " js/source/objects/DataElement.js:612"
+            "line": " js/source/objects/DataElement.js:610"
         },
         {
             "message": "Missing item type\nParse a range’s units.",
-            "line": " js/source/objects/DataElement.js:673"
+            "line": " js/source/objects/DataElement.js:671"
         },
         {
             "message": "Missing item type\nEscape any regular expression special characters.",
-            "line": " js/source/objects/DataElement.js:720"
+            "line": " js/source/objects/DataElement.js:718"
         },
         {
             "message": "Missing item type\nSlice a string up to a string marked as a starting point.",
-            "line": " js/source/objects/DataElement.js:728"
+            "line": " js/source/objects/DataElement.js:726"
         },
         {
             "message": "Missing item type\nSlice a string up to a string marked as the ending point.",
-            "line": " js/source/objects/DataElement.js:740"
+            "line": " js/source/objects/DataElement.js:738"
         },
         {
             "message": "Missing item type\nConvert a date representation into a date.",

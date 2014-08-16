@@ -9,6 +9,8 @@ define(function(require) {
 
         // Component views.
         'components/list-params',
+        'components/block-note',
+        'components/cross-link',
 
         // Route based views.
         'application',

@@ -2,9 +2,9 @@
 /**
  * Construct a shadow element object.
  *
+ * @static
  * @class shadow.Element
  * @extends shadow.Object
- * @static
  */
 shadow.Object.extend({
 
@@ -26,10 +26,10 @@ shadow.Object.extend({
      * shadowEl.$el[0] === $target[0] // returns true
      * ```
      *
+     * @required
      * @property $el
      * @type jQuery|HTMLElement|String
      * @default null
-     * @required
      */
     $el: null,
 
@@ -76,10 +76,10 @@ shadow.Object.extend({
     /**
      * A unique ID for the element; constructed when the element is created.
      *
+     * @readOnly
      * @property id
      * @type String
      * @default null
-     * @readOnly
      */
     id: null,
 
@@ -87,12 +87,12 @@ shadow.Object.extend({
     /**
      * A hash mapping of an element’s attributes.
      *
-     * <div class="notification">
+     * {{#block-note}}
      * Each attribute is wrapped with a getter/setter when the object
      * is created. This allows the attributes to be observed using the
-     * {{#link-to "class" "shadow.Element" (query-params itemtype="method" name="on(events-selector-data-handler)")}}
-     * `on`{{/link-to}} method.
-     * </div>
+     * {{#cross-link to="shadow.Element#on(events-selector-data-handler)"}}
+     * `on`{{/cross-link}} method.
+     * {{/block-note}}
      *
      * @example
      *
@@ -233,11 +233,11 @@ shadow.Object.extend({
     /**
      * Create an instance of a shadow element.
      *
+     * @static
      * @method create
      * @param {Object} options Options for the element’s prototype.
      * @param {HTMLElement|jQuery} options.$el The source element of the shadow element.
      * @return {shadow.Element} An instance of the shadow element.
-     * @static
      */
     create: function(options) {
 
@@ -330,10 +330,10 @@ shadow.Object.extend({
      * After extending the shadow element class, build all the occurrences
      * of the element in the DOM.
      *
+     * @static
      * @method extend
      * @param {Object} options Options to extend the element’s prototype.
      * @return {shadow.Object} An extension of the shadow element class.
-     * @static
      */
     extend: function() {
         var ElementInstance = this._super.apply(this, arguments)

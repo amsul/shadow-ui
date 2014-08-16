@@ -11,7 +11,7 @@
                 {{else}}{{#if class.isInherited}}
                     <div class="meta__info">Extends {{#link-to "class" class.inherits}}<code>{{class.inherits}}</code>{{/link-to}}</div>
                 {{/if}}{{/if}}
-                <div class="meta__info">Defined in {{#link-to-github file=class.file line=class.line}}<code>{{class.file}}:{{class.line}}</code>{{/link-to-github}}</div>
+                <div class="meta__info">Defined in {{#cross-link file=class.file line=class.line}}<code>{{class.file}}:{{class.line}}</code>{{/cross-link}}</div>
                 {{#if class.module}}
                     <div class="meta__info">Module {{#link-to "module" class.module}}<code>{{class.module}}</code>{{/link-to}}</div>
                 {{/if}}

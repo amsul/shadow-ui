@@ -2,8 +2,8 @@
 /**
  * The core shadow object prototype.
  *
- * @class shadow.Object
  * @static
+ * @class shadow.Object
  */
 shadow.Object = Object.create({}, {
 
@@ -40,10 +40,10 @@ shadow.Object = Object.create({}, {
      *
      * This name is used to keep a reference of the classes under the `shadow` namespace.
      *
-     * @property name
-     * @type String
      * @writeOnce
      * @required
+     * @property name
+     * @type String
      */
     name: {
         enumerable: true,
@@ -78,10 +78,10 @@ shadow.Object = Object.create({}, {
      * myObject.someProperty === true // returns true
      * ```
      *
+     * @static
      * @method create
      * @param {Object} options Options to extend the object’s prototype.
      * @return {shadow.Object} An instance of the shadow object.
-     * @static
      */
     create: {
         enumerable: true,
@@ -120,10 +120,10 @@ shadow.Object = Object.create({}, {
      *
      * @todo Document an example.
      *
+     * @static
      * @method extend
      * @param {Object} options Options to extend the object’s prototype.
      * @return {shadow.Object} An extension of the shadow object class.
-     * @static
      */
     extend: {
         enumerable: true,
@@ -257,8 +257,8 @@ shadow.Object = Object.create({}, {
      * Cast the object into a string representation.
      *
      * If `shadow.IS_DEBUGGING` is set to `true`, the
-     * {{#link-to "class" "shadow.Object" (query-params itemtype="method" name="toFullString")}}
-     * `toFullString`{{/link-to}} response is returned instead.
+     * {{#cross-link to="shadow.Object#toFullString"}}
+     * `toFullString`{{/cross-link}} response is returned instead.
      *
      * @example
      *
@@ -279,10 +279,10 @@ shadow.Object = Object.create({}, {
      * // logs 'Created: {object Object}'
      * ```
      *
-     * <div class="notification">
-     * **Note**: This only works if the class or object does not have a `valueOf` method. Those
+     * {{#block-note}}
+     * This only works if the class or object does not have a `valueOf` method. Those
      * that do have a `valueOf` method will use that return value instead, such as `shadow.Date`.
-     * </div>
+     * {{/block-note}}
      *
      * @method toString
      * @return {String} A string representation of the shadow object.
@@ -314,9 +314,9 @@ shadow.Object = Object.create({}, {
      * shadow.DataElement.create().toFullString() // returns '{object DataElement:Element:Object}'
      * ```
      *
+     * @private
      * @method toFullString
      * @return {String} A full trace string representation of the shadow object.
-     * @private
      */
     toFullString: {
         enumerable: true,

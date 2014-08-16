@@ -402,8 +402,8 @@ function ariaSet(element, attribute, value) {
 /**
  * The core shadow object prototype.
  *
- * @class shadow.Object
  * @static
+ * @class shadow.Object
  */
 shadow.Object = Object.create({}, {
     /**
@@ -438,10 +438,10 @@ shadow.Object = Object.create({}, {
      *
      * This name is used to keep a reference of the classes under the `shadow` namespace.
      *
-     * @property name
-     * @type String
      * @writeOnce
      * @required
+     * @property name
+     * @type String
      */
     name: {
         enumerable: true,
@@ -474,10 +474,10 @@ shadow.Object = Object.create({}, {
      * myObject.someProperty === true // returns true
      * ```
      *
+     * @static
      * @method create
      * @param {Object} options Options to extend the object’s prototype.
      * @return {shadow.Object} An instance of the shadow object.
-     * @static
      */
     create: {
         enumerable: true,
@@ -520,10 +520,10 @@ shadow.Object = Object.create({}, {
      *
      * @todo Document an example.
      *
+     * @static
      * @method extend
      * @param {Object} options Options to extend the object’s prototype.
      * @return {shadow.Object} An extension of the shadow object class.
-     * @static
      */
     extend: {
         enumerable: true,
@@ -633,8 +633,8 @@ shadow.Object = Object.create({}, {
      * Cast the object into a string representation.
      *
      * If `shadow.IS_DEBUGGING` is set to `true`, the
-     * {{#link-to "class" "shadow.Object" (query-params itemtype="method" name="toFullString")}}
-     * `toFullString`{{/link-to}} response is returned instead.
+     * {{#cross-link to="shadow.Object#toFullString"}}
+     * `toFullString`{{/cross-link}} response is returned instead.
      *
      * @example
      *
@@ -655,10 +655,10 @@ shadow.Object = Object.create({}, {
      * // logs 'Created: {object Object}'
      * ```
      *
-     * <div class="notification">
-     * **Note**: This only works if the class or object does not have a `valueOf` method. Those
+     * {{#block-note}}
+     * This only works if the class or object does not have a `valueOf` method. Those
      * that do have a `valueOf` method will use that return value instead, such as `shadow.Date`.
-     * </div>
+     * {{/block-note}}
      *
      * @method toString
      * @return {String} A string representation of the shadow object.
@@ -688,9 +688,9 @@ shadow.Object = Object.create({}, {
      * shadow.DataElement.create().toFullString() // returns '{object DataElement:Element:Object}'
      * ```
      *
+     * @private
      * @method toFullString
      * @return {String} A full trace string representation of the shadow object.
-     * @private
      */
     toFullString: {
         enumerable: true,
@@ -739,9 +739,9 @@ function superFun(Base, property, fn) {
 /**
  * Construct a shadow date object.
  *
+ * @static
  * @class shadow.Date
  * @extends shadow.Object
- * @static
  */
 shadow.Object.extend({
     name: "Date",
@@ -754,37 +754,37 @@ shadow.Object.extend({
      * // returns [2013, 3, 20]
      * ```
      *
+     * @readOnly
      * @property value
      * @type {Array}
      * @default null
-     * @readOnly
      */
     value: null,
     /**
      * The year of the shadow date object.
      *
+     * @readOnly
      * @property year
      * @type {Number}
      * @default null
-     * @readOnly
      */
     year: null,
     /**
      * The month of the shadow date object.
      *
+     * @readOnly
      * @property month
      * @type {Number}
      * @default null
-     * @readOnly
      */
     month: null,
     /**
      * The date of the shadow date object.
      *
+     * @readOnly
      * @property date
      * @type {Number}
      * @default null
-     * @readOnly
      */
     date: null,
     /**
@@ -797,10 +797,10 @@ shadow.Object.extend({
      * // returns { year: 2013, month: 3, date: 1, ... }
      * ```
      *
+     * @writeOnce
      * @property setToTheFirst
      * @type {Boolean}
      * @default false
-     * @writeOnce
      */
     setToTheFirst: false,
     /**
@@ -836,11 +836,11 @@ shadow.Object.extend({
      * // returns { year: 2014, month: 3, date: 20, ... }
      * ```
      *
+     * @static
      * @method create
      * @param {Array|String|Number|Date|shadow.Date} value The value of the date to create.
      * @param {Object} [options] Options for the date’s prototype.
      * @return {shadow.Date} An instance of the shadow date.
-     * @static
      */
     create: function(value, options) {
         if (!value) {
@@ -1111,9 +1111,9 @@ function getDecade(year) {
 /**
  * Construct a shadow element object.
  *
+ * @static
  * @class shadow.Element
  * @extends shadow.Object
- * @static
  */
 shadow.Object.extend({
     name: "Element",
@@ -1132,10 +1132,10 @@ shadow.Object.extend({
      * shadowEl.$el[0] === $target[0] // returns true
      * ```
      *
+     * @required
      * @property $el
      * @type jQuery|HTMLElement|String
      * @default null
-     * @required
      */
     $el: null,
     /**
@@ -1176,21 +1176,21 @@ shadow.Object.extend({
     /**
      * A unique ID for the element; constructed when the element is created.
      *
+     * @readOnly
      * @property id
      * @type String
      * @default null
-     * @readOnly
      */
     id: null,
     /**
      * A hash mapping of an element’s attributes.
      *
-     * <div class="notification">
+     * {{#block-note}}
      * Each attribute is wrapped with a getter/setter when the object
      * is created. This allows the attributes to be observed using the
-     * {{#link-to "class" "shadow.Element" (query-params itemtype="method" name="on(events-selector-data-handler)")}}
-     * `on`{{/link-to}} method.
-     * </div>
+     * {{#cross-link to="shadow.Element#on(events-selector-data-handler)"}}
+     * `on`{{/cross-link}} method.
+     * {{/block-note}}
      *
      * @example
      *
@@ -1317,11 +1317,11 @@ shadow.Object.extend({
     /**
      * Create an instance of a shadow element.
      *
+     * @static
      * @method create
      * @param {Object} options Options for the element’s prototype.
      * @param {HTMLElement|jQuery} options.$el The source element of the shadow element.
      * @return {shadow.Element} An instance of the shadow element.
-     * @static
      */
     create: function(options) {
         // Make sure the $el is a jQuery DOM element.
@@ -1386,10 +1386,10 @@ shadow.Object.extend({
      * After extending the shadow element class, build all the occurrences
      * of the element in the DOM.
      *
+     * @static
      * @method extend
      * @param {Object} options Options to extend the element’s prototype.
      * @return {shadow.Object} An extension of the shadow element class.
-     * @static
      */
     extend: function() {
         var ElementInstance = this._super.apply(this, arguments);
@@ -1711,9 +1711,9 @@ function prefixifyClassNames(classNames, prefix) {
 /**
  * Construct a shadow data element object.
  *
+ * @static
  * @class shadow.DataElement
  * @extends shadow.Element
- * @static
  * @since 0.6.0
  */
 shadow.Element.extend({
@@ -1740,10 +1740,10 @@ shadow.Element.extend({
         /**
          * The stringified “selection” of the data element's `attrs.select`.
          *
+         * @writeOnce
          * @attribute attrs.value
          * @type String
          * @default null
-         * @writeOnce
          */
         value: null,
         /**
@@ -1774,8 +1774,7 @@ shadow.Element.extend({
          * Formatting to use when stringifying `attrs.select` into `attrs.value`.
          *
          * This has to be used in conjunction with the data element's
-         * {{#link-to "class" "shadow.DataElement" (query-params itemtype="attribute" name="formats")}}`formats`{{/link-to}}
-         * hash.
+         * {{#cross-link to="shadow.DataElement#formats"}}`formats`{{/cross-link}} hash.
          *
          * @attribute attrs.format
          * @type String
@@ -1807,8 +1806,7 @@ shadow.Element.extend({
     },
     /**
      * A formatting is used to stringify and parse values. It is used in conjunction with the
-     * {{#link-to "class" "shadow.DataElement" (query-params itemtype="attribute" name="attrs.format")}}`attrs.format`{{/link-to}}
-     * attribute.
+     * {{#cross-link to="shadow.DataElement#attrs.format"}}`attrs.format`{{/cross-link}} attribute.
      *
      * @property formats
      * @type Hash
@@ -1897,10 +1895,10 @@ shadow.Element.extend({
     /**
      * Create an instance of a data element object.
      *
+     * @static
      * @method create
      * @param {Object} options Options for the data element’s prototype.
      * @return {shadow.DataElement} An instance of the shadow element.
-     * @static
      */
     create: function(options) {
         // Create the shadow object.
@@ -1958,11 +1956,11 @@ shadow.Element.extend({
     /**
      * Convert a value into a formatted string.
      *
+     * @todo Implement the `options` argument.
      * @method format
      * @param {String|Boolean|Number|Array|Hash} value The value to format.
      * @param {Hash} options Options to customize the formatting.
      * @return {String} The formatted string.
-     * @todo Implement the `options` argument.
      */
     format: function(value, options) {
         var dataElement = this;
@@ -2039,10 +2037,10 @@ shadow.Element.extend({
     /**
      * Convert a formatted unit string into a parsed unit hash.
      *
+     * @private
      * @method parseUnit
      * @param {String} stringUnit The string value’s unit to parse.
      * @return {Hash} The parsed formatting-unit hash.
-     * @private
      */
     parseUnit: function(stringUnit) {
         var dataElement = this;

@@ -78,10 +78,90 @@ define(function(require) {
         isNotActive: Em.computed.not('tab.isActive')
     })
 
+    var BlockNoteComponent = Em.Component.extend({
+        classNames: ['notification']
+    })
+
+    var CrossLinkComponent = Em.Component.extend(Ember.ControllerMixin, {
+
+        tagName: 'span',
+
+        needs: ['application'],
+        data: Em.computed.alias('controllers.application.model'),
+
+        file: null,
+        line: null,
+        to: null,
+        section: null,
+
+        fileLink: function() {
+            var file = this.get('file')
+            var line = this.get('line')
+            if ( !file ) {
+                return
+            }
+            var root = 'http://github.com/amsul/shadow-ui/blob'
+            var version = this.get('parentView.controller.model.project.version')
+            return root + '/' + version + '/' + file + (line ? '#L' + line : '')
+        }.property('file', 'line'),
+
+        toSplit: function() {
+            var to = this.get('to')
+            if ( !to ) {
+                throw new Error('A cross-link requires a "to" property.')
+            }
+            return to.split('#')
+        }.property('to'),
+        toNamespace: function() {
+            return this.get('toSplit.0')
+        }.property('toSplit.0'),
+        toSubspace: function() {
+            return this.get('toSplit.1')
+        }.property('toSplit.1'),
+
+        categoryName: Em.computed.alias('toNamespace'),
+        categoryType: function() {
+            var data = this.get('data')
+            var toNamespace = this.get('toNamespace')
+            var categoryClass = data.classes.findBy('name', toNamespace)
+            if ( categoryClass ) {
+                return 'class'
+            }
+            var categoryModule = data.modules.findBy('name', toNamespace)
+            if ( categoryModule ) {
+                return 'module'
+            }
+        }.property('toNamespace', 'data'),
+
+        itemName: Em.computed.alias('toSubspace'),
+        itemType: function() {
+            var data = this.get('data')
+            var toSubspace = this.get('toSubspace')
+            var section = this.get('section')
+            if ( section ) {
+                return section == 'attributes' ? 'attribute' :
+                    section == 'properties' ? 'property' :
+                    section == 'methods' ? 'method' :
+                    section
+            }
+            var itemAttribute = data.attributes.findBy('name', toSubspace)
+            if ( itemAttribute ) {
+                return 'attribute'
+            }
+            var categoryModule = data.properties.findBy('name', toSubspace)
+            if ( categoryModule ) {
+                return 'property'
+            }
+        }.property('toSubspace', 'data')
+
+    })
+
     return {
         ListParamsComponent: ListParamsComponent,
         ToggleTabsComponent: ToggleTabsComponent,
         ToggleTabsButtonComponent: ToggleTabsButtonComponent,
         ToggleTabsBodyComponent: ToggleTabsBodyComponent,
+        BlockNoteComponent: BlockNoteComponent,
+        CrossLinkComponent: CrossLinkComponent,
     }
 })

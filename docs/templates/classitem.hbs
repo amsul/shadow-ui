@@ -18,12 +18,12 @@
         {{#if isExtended}}
             <div class="meta__info">
                 Defined by {{#link-to "class" extends (query-params itemtype=itemtype name=queryName)}}<code>{{extends}}</code>{{/link-to}}
-                and extended in {{#link-to-github file=file line=line}}<code>{{file}}:{{line}}</code>{{/link-to-github}}
+                and extended in {{#cross-link file=file line=line}}<code>{{file}}:{{line}}</code>{{/cross-link}}
             </div>
         {{else}}{{#if isInherited}}
             <div class="meta__info">Inherited from {{#link-to "class" inherits (query-params itemtype=itemtype name=queryName)}}<code>{{inherits}}</code>{{/link-to}}</div>
         {{else}}
-            <div class="meta__info">Defined in {{#link-to-github file=file line=line}}<code>{{file}}:{{line}}</code>{{/link-to-github}}</div>
+            <div class="meta__info">Defined in {{#cross-link file=file line=line}}<code>{{file}}:{{line}}</code>{{/cross-link}}</div>
         {{/if}}{{/if}}
         {{#if since}}
             <div class="meta__info">Added in v{{since}}</div>

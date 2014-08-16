@@ -48,22 +48,7 @@ define(function(require) {
 
     Em.Handlebars.helper('md', MarkdownView)
 
-    var LinkToGithubView = Em.View.extend({
-        tagName: 'a',
-        attributeBindings: ['href'],
-        href: function() {
-            var root = 'http://github.com/amsul/shadow-ui/blob'
-            var version = this.get('parentView.controller.model.project.version')
-            var file = this.get('file')
-            var line = this.get('line')
-            return root + '/' + version + '/' + file + (line ? '#L' + line : '')
-        }.property('file', 'line')
-    })
-
-    Em.Handlebars.helper('link-to-github', LinkToGithubView)
-
     return {
         MarkdownView: MarkdownView,
-        LinkToGithubView: LinkToGithubView
     }
 })

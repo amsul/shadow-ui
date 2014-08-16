@@ -2,9 +2,9 @@
 /**
  * Construct a shadow date object.
  *
+ * @static
  * @class shadow.Date
  * @extends shadow.Object
- * @static
  */
 shadow.Object.extend({
 
@@ -20,10 +20,10 @@ shadow.Object.extend({
      * // returns [2013, 3, 20]
      * ```
      *
+     * @readOnly
      * @property value
      * @type {Array}
      * @default null
-     * @readOnly
      */
     value: null,
 
@@ -31,10 +31,10 @@ shadow.Object.extend({
     /**
      * The year of the shadow date object.
      *
+     * @readOnly
      * @property year
      * @type {Number}
      * @default null
-     * @readOnly
      */
     year: null,
 
@@ -42,10 +42,10 @@ shadow.Object.extend({
     /**
      * The month of the shadow date object.
      *
+     * @readOnly
      * @property month
      * @type {Number}
      * @default null
-     * @readOnly
      */
     month: null,
 
@@ -53,10 +53,10 @@ shadow.Object.extend({
     /**
      * The date of the shadow date object.
      *
+     * @readOnly
      * @property date
      * @type {Number}
      * @default null
-     * @readOnly
      */
     date: null,
 
@@ -71,10 +71,10 @@ shadow.Object.extend({
      * // returns { year: 2013, month: 3, date: 1, ... }
      * ```
      *
+     * @writeOnce
      * @property setToTheFirst
      * @type {Boolean}
      * @default false
-     * @writeOnce
      */
     setToTheFirst: false,
 
@@ -112,11 +112,11 @@ shadow.Object.extend({
      * // returns { year: 2014, month: 3, date: 20, ... }
      * ```
      *
+     * @static
      * @method create
      * @param {Array|String|Number|Date|shadow.Date} value The value of the date to create.
      * @param {Object} [options] Options for the date’s prototype.
      * @return {shadow.Date} An instance of the shadow date.
-     * @static
      */
     create: function(value, options) {
 

@@ -23,7 +23,7 @@
                 'highlight-css': '//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/languages/css.min',
                 'highlight-scss': '//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/languages/scss.min',
                 'highlight-xml': '//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/languages/xml.min',
-                'highlight-handlebars': '//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/languages/handlebars.min'
+                'highlight-handlebars': '//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/languages/handlebars.min',
             },
             shim: {
                 'ember': {
@@ -39,7 +39,27 @@
             }
         }
     </script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.14/require.js"></script>
+
+    <!-- for locally debugging..
+    <script src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.14/require.js"></script> -->
+    <script>
+        require.paths = {
+            'text': '../vendor/text',
+            'ember': '../vendor/ember',
+            'handlebars': '../vendor/handlebars',
+            'jquery': '../vendor/jquery',
+            'marked': '../vendor/marked',
+            'highlight#source': '../vendor/highlight',
+            'highlight-javascript': '../vendor/highlight-javascript',
+            'highlight-json': '../vendor/highlight-json',
+            'highlight-css': '../vendor/highlight-css',
+            'highlight-scss': '../vendor/highlight-scss',
+            'highlight-xml': '../vendor/highlight-xml',
+            'highlight-handlebars': '../vendor/highlight-handlebars',
+        }
+    </script>
+    <script>typeof require=='function'?'':document.write('<script src="/docs/vendor/require.js"><\/script>')</script>
+
     <script>
         require(['/js/shadow.js'], function(shadow) {
             window.shadow = shadow

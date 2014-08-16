@@ -2,9 +2,9 @@
 /**
  * Construct a shadow data element object.
  *
+ * @static
  * @class shadow.DataElement
  * @extends shadow.Element
- * @static
  * @since 0.6.0
  */
 shadow.Element.extend({
@@ -39,10 +39,10 @@ shadow.Element.extend({
         /**
          * The stringified “selection” of the data element's `attrs.select`.
          *
+         * @writeOnce
          * @attribute attrs.value
          * @type String
          * @default null
-         * @writeOnce
          */
         value: null,
 
@@ -81,8 +81,7 @@ shadow.Element.extend({
          * Formatting to use when stringifying `attrs.select` into `attrs.value`.
          *
          * This has to be used in conjunction with the data element's
-         * {{#link-to "class" "shadow.DataElement" (query-params itemtype="attribute" name="formats")}}`formats`{{/link-to}}
-         * hash.
+         * {{#cross-link to="shadow.DataElement#formats"}}`formats`{{/cross-link}} hash.
          *
          * @attribute attrs.format
          * @type String
@@ -121,8 +120,7 @@ shadow.Element.extend({
 
     /**
      * A formatting is used to stringify and parse values. It is used in conjunction with the
-     * {{#link-to "class" "shadow.DataElement" (query-params itemtype="attribute" name="attrs.format")}}`attrs.format`{{/link-to}}
-     * attribute.
+     * {{#cross-link to="shadow.DataElement#attrs.format"}}`attrs.format`{{/cross-link}} attribute.
      *
      * @property formats
      * @type Hash
@@ -229,10 +227,10 @@ shadow.Element.extend({
     /**
      * Create an instance of a data element object.
      *
+     * @static
      * @method create
      * @param {Object} options Options for the data element’s prototype.
      * @return {shadow.DataElement} An instance of the shadow element.
-     * @static
      */
     create: function(options) {
 
@@ -308,11 +306,11 @@ shadow.Element.extend({
     /**
      * Convert a value into a formatted string.
      *
+     * @todo Implement the `options` argument.
      * @method format
      * @param {String|Boolean|Number|Array|Hash} value The value to format.
      * @param {Hash} options Options to customize the formatting.
      * @return {String} The formatted string.
-     * @todo Implement the `options` argument.
      */
     format: function(value, options) {
 
@@ -434,10 +432,10 @@ shadow.Element.extend({
     /**
      * Convert a formatted unit string into a parsed unit hash.
      *
+     * @private
      * @method parseUnit
      * @param {String} stringUnit The string value’s unit to parse.
      * @return {Hash} The parsed formatting-unit hash.
-     * @private
      */
     parseUnit: function(stringUnit) {
 

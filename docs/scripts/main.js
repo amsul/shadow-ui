@@ -17,7 +17,10 @@ define(function(require) {
             'index',
             'module',
             'class',
-            'classitem',
+
+        // Rendering views.
+        'classitem',
+        'classitem-param',
 
         // Partial views.
         '_sidebar',

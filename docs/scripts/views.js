@@ -29,13 +29,14 @@ define(function(require) {
     })
 
     var MarkdownView = Em.View.extend({
+        classNames: ['is-block'],
         init: function() {
             this._super()
             var content = this.get('content')
             if ( content ) {
                 content = marked(content)
                 var div = document.createElement('div')
-                div.innerHTML = content + '<span></span>'
+                div.innerHTML = content
                 content = div.innerHTML
             }
             else {

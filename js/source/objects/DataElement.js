@@ -142,20 +142,6 @@ shadow.Element.extend({
 
 
     /**
-     * Setup the data element’s attributes before everything gets sealed
-     * and before getters and setters are bound onto the attributes.
-     *
-     * For an instance-specific setup, safely override the method:
-     *
-     * ```javascript
-     * var dataEl = shadow.DataElement.create({
-     *     setup: function() {
-     *         this._super()
-     *         // carry on with any setup here
-     *     }
-     * })
-     * ```
-     *
      * @method setup
      */
     setup: function() {
@@ -309,7 +295,7 @@ shadow.Element.extend({
      * @todo Implement the `options` argument.
      * @method format
      * @param {String|Boolean|Number|Array|Hash} value The value to format.
-     * @param {Hash} options Options to customize the formatting.
+     * @param {Hash} [options] Options to customize the formatting.
      * @return {String} The formatted string.
      */
     format: function(value, options) {
@@ -475,11 +461,12 @@ shadow.Element.extend({
 
 
     /**
-     * Get a data element’s attribute with certain options.
+     * Get a data element’s attribute value.
      *
      * @method get
      * @param {String} name The name of the attribute to get.
-     * @param {Hash} options Options to customize the return value, such as with formatting.
+     * @param {Hash} [options] Options to customize the return value.
+     * @param {Boolean} options.format A truthy value will return a formatted value.
      */
     get: function(name, options) {
 

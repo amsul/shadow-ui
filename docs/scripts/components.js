@@ -3,6 +3,7 @@ define(function(require) {
     'use strict';
 
     var Em = require('ember')
+    var $ = require('jquery')
 
     var ListParamsComponent = Em.Component.extend({
         tagName: 'span',
@@ -30,56 +31,59 @@ define(function(require) {
     })
 
     var ToggleTabsComponent = Em.Component.extend(Ember.ControllerMixin, {
+
         needs: ['class'],
-        showStartingTab: function() {
-            if ( this.get('controllers.class.itemtype') ) {
-                this.queryItemIntoView()
+
+        isQuerying: false,
+
+        updateScrollToQuriedItem: function() {
+            this.set('isQuerying', true)
+            this.scrollToQuriedItem()
+        }.observes('tabs', 'controllers.class.item'),
+
+        scrollToQuriedItem: function() {
+            var queryName = this.get('controllers.class.item')
+            if ( !queryName ) {
                 return
             }
-            var tab = this.get('tabs')[0]
-            this.showTab(tab.name)
-        }.on('init').observes('tabs', 'controllers.class.itemtype'),
-        queryItemIntoView: function() {
-            var itemtype = this.get('controllers.class.itemtype')
-            itemtype = itemtype || 'index'
-            this.showTab(itemtype)
-            Em.run.next(this, function() {
-                var name = this.get('controllers.class.name')
-                this.scrollIntoView(name)
-            })
-        }.on('init').observes('controllers.class.itemtype', 'controllers.class.name'),
-        showTab: function(tabName) {
-            if ( !tabName ) {
-                return
+            var component = this
+            var doTheScroll = function() {
+                component.set('isQuerying', false)
+                var $el = $('[data-query-name="' + queryName + '"]')
+                try {
+                    $el[0].scrollIntoView()
+                } catch (e) {
+                    console.error('Unable to scroll to "%@".'.fmt(queryName))
+                }
             }
-            var tabs = this.get('tabs')
-            var otherTabs = tabs.rejectBy('name', tabName)
-            otherTabs.forEach(function(tab) {
-                tab.set('isActive', false)
-            })
-            var activeTab = tabs.findBy('name', tabName)
-            activeTab.set('isActive', true)
-        },
-        scrollIntoView: function(name) {
-            if ( !name ) {
-                return
+            if ( component.get('isQuerying') ) {
+                Em.run.next(component, doTheScroll)
             }
-            var $el = $('[data-query-name="' + name + '"]')
-            $el[0].scrollIntoView()
-        }
+            else {
+                doTheScroll()
+            }
+        }.on('didInsertElement'),
+
+        filterClassitems: function() {
+            var classController = this.get('controllers.class')
+            classController.updateVisibilityOfClassitems()
+        }.on('didInsertElement').observes('tabs'),
+
     })
 
     var ToggleTabsButtonComponent = Em.Component.extend({
-        classNameBindings: ['tab.isActive:is-active']
+        classNameBindings: ['isActive:is-active']
     })
 
     var ToggleTabsBodyComponent = Em.Component.extend({
         attributeBindings: ['isNotActive:hidden'],
-        isNotActive: Em.computed.not('tab.isActive')
+        isNotActive: Em.computed.not('isActive')
     })
 
     var BlockNoteComponent = Em.Component.extend({
-        classNames: ['notification']
+        classNames: ['notification'],
+        classNameBindings: ['isWarning:notification--warning'],
+        isWarning: Em.computed.equal('type', 'warning')
     })
 
     var CrossLinkComponent = Em.Component.extend(Ember.ControllerMixin, {
@@ -112,31 +116,22 @@ define(function(require) {
             }
             return to.split('#')
         }.property('to'),
-        toNamespace: function() {
-            return this.get('toSplit.0')
-        }.property('toSplit.0'),
-        toSubspace: function() {
-            return this.get('toSplit.1')
-        }.property('toSplit.1'),
 
-        categoryName: Em.computed.alias('toNamespace'),
+        categoryName: Em.computed.alias('toSplit.0'),
+        itemName: Em.computed.alias('toSplit.1'),
+
         categoryType: function() {
             var data = this.get('data')
-            var toNamespace = this.get('toNamespace')
-            var categoryClass = data.classes.findBy('name', toNamespace)
-            if ( categoryClass ) {
+            var categoryName = this.get('categoryName')
+            if ( data.classes.findBy('name', categoryName) ) {
                 return 'class'
             }
-            var categoryModule = data.modules.findBy('name', toNamespace)
-            if ( categoryModule ) {
+            if ( data.modules.findBy('name', categoryName) ) {
                 return 'module'
             }
-        }.property('toNamespace', 'data'),
+        }.property('data', 'categoryName'),
 
-        itemName: Em.computed.alias('toSubspace'),
         itemType: function() {
-            var data = this.get('data')
-            var toSubspace = this.get('toSubspace')
             var section = this.get('section')
             if ( section ) {
                 return section == 'attributes' ? 'attribute' :
@@ -144,15 +139,15 @@ define(function(require) {
                     section == 'methods' ? 'method' :
                     section
             }
-            var itemAttribute = data.attributes.findBy('name', toSubspace)
-            if ( itemAttribute ) {
-                return 'attribute'
+            var data = this.get('data')
+            var itemName = this.get('itemName')
+            var itemShortName = itemName.replace(/\(.+\)$/, '')
+            var classitem = data.classitems.findBy('name', itemShortName)
+            if ( !classitem ) {
+                throw new Error('Nothing found to cross link to by the name of ' + itemName)
             }
-            var categoryModule = data.properties.findBy('name', toSubspace)
-            if ( categoryModule ) {
-                return 'property'
-            }
-        }.property('toSubspace', 'data')
+            return classitem.itemtype
+        }.property('section', 'data', 'itemName')
 
     })
 

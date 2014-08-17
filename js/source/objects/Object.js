@@ -80,7 +80,7 @@ shadow.Object = Object.create({}, {
      *
      * @static
      * @method create
-     * @param {Object} options Options to extend the object’s prototype.
+     * @param {Object} [options] Options to extend the object’s prototype.
      * @return {shadow.Object} An instance of the shadow object.
      */
     create: {

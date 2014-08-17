@@ -2,11 +2,11 @@
 
     <div class="container  container--padded">
         <div class="container__box">
-            <h2 class="heading  heading--two  heading--flat"><code>{{module.name}}</code> <span class="is-thin">module</span></h2>
+            <h2 class="heading  heading--two  heading--flat"><code>{{name}}</code> <span class="is-thin">module</span></h2>
             <div class="meta">
-                <div class="meta__info">Defined in {{#cross-link file=module.file line=module.line}}<code>{{module.file}}:{{module.line}}</code>{{/cross-link}}</div>
-                {{#if module.since}}
-                    <div class="meta__info">Added in v{{module.since}}</div>
+                <div class="meta__info">Defined in {{#cross-link file=file line=line}}<code>{{file}}:{{line}}</code>{{/cross-link}}</div>
+                {{#if since}}
+                    <div class="meta__info">Added in v{{since}}</div>
                 {{/if}}
             </div>
             {{md content=description}}
@@ -20,7 +20,7 @@
             <h3>Classes</h3>
             <ul>
                 {{#each class in classes}}
-                    <li>{{#link-to "class" class.name}}<code>{{class.name}}</code>{{/link-to}}</li>
+                    <li>{{#link-to "class" class}}<code>{{class}}</code>{{/link-to}}</li>
                 {{/each}}
             </ul>
         </div>

@@ -210,9 +210,21 @@ shadow.Object.extend({
 
 
     /**
-     * Set up any listeners, configurations, attributes, etc. before
-     * they all are sealed and frozen.
+     * Set up any element listeners, configurations, attributes, etc. before
+     * they all are frozen and getters/setters are bound to the attributes.
      *
+     * For an instance-specific setup, safely override the method:
+     *
+     * ```javascript
+     * var shaowEl = shadow.Element.create({
+     *     setup: function() {
+     *         this._super()
+     *         // carry on with any setup here
+     *     }
+     * })
+     * ```
+     *
+     * @protected
      * @method setup
      */
     setup: null,
@@ -236,7 +248,11 @@ shadow.Object.extend({
      * @static
      * @method create
      * @param {Object} options Options for the element’s prototype.
-     * @param {HTMLElement|jQuery} options.$el The source element of the shadow element.
+     * @param {jQuery|HTMLElement|String} options.$el
+     *        The source element of the shadow element. If it is a string,
+     *        the value will be used as a jQuery selector.
+     * @param [options.(...)] Any other attributes, properties, or methods of
+     *                        the element can be passed to be overwritten.
      * @return {shadow.Element} An instance of the shadow element.
      */
     create: function(options) {

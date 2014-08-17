@@ -277,14 +277,13 @@
         {
             "file": "js/source/objects/DataElement.js",
             "line": 144,
-            "description": "Setup the data element’s attributes before everything gets sealed\nand before getters and setters are bound onto the attributes.\n\nFor an instance-specific setup, safely override the method:\n\n```javascript\nvar dataEl = shadow.DataElement.create({\n    setup: function() {\n        this._super()\n        // carry on with any setup here\n    }\n})\n```",
             "itemtype": "method",
             "name": "setup",
             "class": "shadow.DataElement"
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 227,
+            "line": 213,
             "description": "Create an instance of a data element object.",
             "static": 1,
             "itemtype": "method",
@@ -304,7 +303,7 @@
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 306,
+            "line": 292,
             "description": "Convert a value into a formatted string.",
             "todo": [
                 "Implement the `options` argument."
@@ -320,7 +319,8 @@
                 {
                     "name": "options",
                     "description": "Options to customize the formatting.",
-                    "type": "Hash"
+                    "type": "Hash",
+                    "optional": true
                 }
             ],
             "return": {
@@ -331,7 +331,7 @@
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 369,
+            "line": 355,
             "description": "Convert a formatted string into a parsed value.",
             "itemtype": "method",
             "name": "parse",
@@ -350,7 +350,7 @@
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 432,
+            "line": 418,
             "description": "Convert a formatted unit string into a parsed unit hash.",
             "access": "private",
             "tagname": "",
@@ -371,8 +371,8 @@
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 477,
-            "description": "Get a data element’s attribute with certain options.",
+            "line": 463,
+            "description": "Get a data element’s attribute value.",
             "itemtype": "method",
             "name": "get",
             "params": [
@@ -383,57 +383,65 @@
                 },
                 {
                     "name": "options",
-                    "description": "Options to customize the return value, such as with formatting.",
-                    "type": "Hash"
+                    "description": "Options to customize the return value.",
+                    "type": "Hash",
+                    "optional": true,
+                    "props": [
+                        {
+                            "name": "format",
+                            "description": "A truthy value will return a formatted value.",
+                            "type": "Boolean"
+                        }
+                    ]
                 }
             ],
             "class": "shadow.DataElement"
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 501,
+            "line": 488,
             "description": "Format multiple units of value.",
             "class": "shadow.DataElement"
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 540,
+            "line": 527,
             "description": "Format a range’s units.",
             "class": "shadow.DataElement"
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 565,
+            "line": 552,
             "description": "Convert a formatting string into a formatting array.",
             "class": "shadow.DataElement"
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 610,
+            "line": 597,
             "description": "Parse multiple units of value.",
             "class": "shadow.DataElement"
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 671,
+            "line": 658,
             "description": "Parse a range’s units.",
             "class": "shadow.DataElement"
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 718,
+            "line": 705,
             "description": "Escape any regular expression special characters.",
             "class": "shadow.DataElement"
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 726,
+            "line": 713,
             "description": "Slice a string up to a string marked as a starting point.",
             "class": "shadow.DataElement"
         },
         {
             "file": "js/source/objects/DataElement.js",
-            "line": 738,
+            "line": 725,
             "description": "Slice a string up to a string marked as the ending point.",
             "class": "shadow.DataElement"
         },
@@ -533,9 +541,10 @@
             "params": [
                 {
                     "name": "comparison",
-                    "description": "A comparison scope. Valid values are:\n\n- `'date'`\n- `'date greater'`\n- `'date lesser'`\n- `'date greater equal'`\n- `'date lesser equal'`\n- `'month'`\n- `'month greater'`\n- `'month lesser'`\n- `'month greater equal'`\n- `'month lesser equal'`\n- `'year'`\n- `'year greater'`\n- `'year lesser'`\n- `'year greater equal'`\n- `'year lesser equal'`\n- `'decade'`\n- `'decade greater'`\n- `'decade lesser'`\n- `'decade greater equal'`\n- `'decade lesser equal'`",
+                    "description": "A comparison scope. Valid values are:\n\n- `date`\n- `date greater`\n- `date lesser`\n- `date greater equal`\n- `date lesser equal`\n- `month`\n- `month greater`\n- `month lesser`\n- `month greater equal`\n- `month lesser equal`\n- `year`\n- `year greater`\n- `year lesser`\n- `year greater equal`\n- `year lesser equal`\n- `decade`\n- `decade greater`\n- `decade lesser`\n- `decade greater equal`\n- `decade lesser equal`",
                     "type": "String",
-                    "optional": true
+                    "optional": true,
+                    "optdefault": "'time'"
                 },
                 {
                     "name": "date",
@@ -561,9 +570,10 @@
             "params": [
                 {
                     "name": "comparison",
-                    "description": "A comparison scope. Valid values are:\n\n- `'date'`\n- `'month'`\n- `'year'`\n- `'decade'`",
+                    "description": "A comparison scope. Valid values are:\n\n- `date`\n- `month`\n- `year`\n- `decade`",
                     "type": "String",
-                    "optional": true
+                    "optional": true,
+                    "optdefault": "'date'"
                 },
                 {
                     "name": "range",
@@ -713,14 +723,16 @@
         {
             "file": "js/source/objects/Element.js",
             "line": 212,
-            "description": "Set up any listeners, configurations, attributes, etc. before\nthey all are sealed and frozen.",
+            "description": "Set up any element listeners, configurations, attributes, etc. before\nthey all are frozen and getters/setters are bound to the attributes.\n\nFor an instance-specific setup, safely override the method:\n\n```javascript\nvar shaowEl = shadow.Element.create({\n    setup: function() {\n        this._super()\n        // carry on with any setup here\n    }\n})\n```",
+            "access": "protected",
+            "tagname": "",
             "itemtype": "method",
             "name": "setup",
             "class": "shadow.Element"
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 221,
+            "line": 233,
             "description": "Create a template for the shadow element.\n\nIf it’s a function, the return value must be one of the other valid types.",
             "itemtype": "property",
             "name": "template",
@@ -730,7 +742,7 @@
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 233,
+            "line": 245,
             "description": "Create an instance of a shadow element.",
             "static": 1,
             "itemtype": "method",
@@ -743,8 +755,13 @@
                     "props": [
                         {
                             "name": "$el",
-                            "description": "The source element of the shadow element.",
-                            "type": "HTMLElement|jQuery"
+                            "description": "The source element of the shadow element. If it is a string,\n       the value will be used as a jQuery selector.",
+                            "type": "JQuery|HTMLElement|String"
+                        },
+                        {
+                            "name": "(...)",
+                            "description": "Any other attributes, properties, or methods of\n                       the element can be passed to be overwritten.",
+                            "optional": true
                         }
                     ]
                 }
@@ -757,7 +774,7 @@
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 329,
+            "line": 345,
             "description": "After extending the shadow element class, build all the occurrences\nof the element in the DOM.",
             "static": 1,
             "itemtype": "method",
@@ -777,7 +794,7 @@
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 345,
+            "line": 361,
             "description": "Bind events to fire as the user interacts with the shadow element.\n\nThis method is basically a wrapper for jQuery’s `$.fn.on` method\nand uses the source element (`$el`) as the target.\n\nCheck out the [method’s documentation here](http://api.jquery.com/on/#on-events-selector-data).",
             "itemtype": "method",
             "name": "on",
@@ -809,7 +826,7 @@
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 369,
+            "line": 385,
             "description": "Unbind events from firing during the element’s lifecycle.\n\nThis method is basically a wrapper for jQuery’s `$.fn.off` method\nand uses the source element (`$el`) as the target.\n\nCheck out the [documentation here](http://api.jquery.com/on/#on-events-selector-data).",
             "itemtype": "method",
             "name": "off",
@@ -836,7 +853,7 @@
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 392,
+            "line": 408,
             "description": "Get the value of an attribute of the shadow element.\n\n```javascript\nvar element = shadow.Element.create({\n    //...\n    attrs: {\n        myAttr: true,\n        myOtherAttr: { niceness: 10 }\n    }\n})\n```\n\nWe can use the `get` method:\n\n```javascript\nelement.get('myAttr')\n// returns true\n\nelement.get('myOtherAttr')\n// returns { niceness: 10 }\n```\n\nOr, we can directly access the `attrs` object:\n\n```javascript\nelement.attrs.myAttr\n// returns true\n\nelement.attrs.myOtherAttr\n// returns { niceness: 10 }\n```",
             "itemtype": "method",
             "name": "get",
@@ -855,7 +872,7 @@
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 434,
+            "line": 450,
             "description": "Set the value of an attribute of the shadow element.",
             "itemtype": "method",
             "name": "set",
@@ -875,7 +892,7 @@
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 448,
+            "line": 464,
             "description": "Add a unit to an attribute of the shadow element.\n\nThe attribute **must** be an array containing the same types of units.\n\n```js\nvar element = shadow.Element.create({\n    //...\n    attrs: {\n        myCollection: [{ value: 6 }, { value: 14 }, { value: 19 }]\n    }\n})\n```\n\nTo add a value, we’d do something like this:\n\n```js\nelement.get('myCollection')\n// returns [{ value: 6 }, { value: 14 }, { value: 19 }]\n\nelement.add('myCollection', { value: 24 }, function(unit, loopedUnit) {\n    return unit.value === loopedUnit.value\n})\n\nelement.get('myCollection')\n// returns [{ value: 6 }, { value: 14 }, { value: 19 }, { value: 24 }]\n```",
             "itemtype": "method",
             "name": "add",
@@ -901,7 +918,7 @@
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 498,
+            "line": 514,
             "description": "Remove a unit from an attribute of the shadow element.\n\nThe attribute **must** be an array containing the same types of units.",
             "itemtype": "method",
             "name": "remove",
@@ -927,49 +944,49 @@
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 528,
+            "line": 544,
             "description": "Get the shadow ui attributes from an element.",
             "class": "shadow.Element"
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 550,
+            "line": 566,
             "description": "Attach nodes relevant to the shadow element.",
             "class": "shadow.Element"
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 584,
+            "line": 600,
             "description": "Build out the template contents.",
             "class": "shadow.Element"
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 601,
+            "line": 617,
             "description": "Define the relationship between the element and the host.",
             "class": "shadow.Element"
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 614,
+            "line": 630,
             "description": "Copy shadow ui attributes to the source element.",
             "class": "shadow.Element"
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 632,
+            "line": 648,
             "description": "Decorate a shadow attribute with a getter and setter.",
             "class": "shadow.Element"
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 664,
+            "line": 680,
             "description": "Update a shadow attribute on an element.",
             "class": "shadow.Element"
         },
         {
             "file": "js/source/objects/Element.js",
-            "line": 680,
+            "line": 696,
             "description": "Prefix each class name in a hash of class names with a prefix.",
             "class": "shadow.Element"
         },
@@ -1001,7 +1018,8 @@
                 {
                     "name": "options",
                     "description": "Options to extend the object’s prototype.",
-                    "type": "Object"
+                    "type": "Object",
+                    "optional": true
                 }
             ],
             "return": {
@@ -1444,35 +1462,35 @@
     "warnings": [
         {
             "message": "Missing item type\nFormat multiple units of value.",
-            "line": " js/source/objects/DataElement.js:501"
+            "line": " js/source/objects/DataElement.js:488"
         },
         {
             "message": "Missing item type\nFormat a range’s units.",
-            "line": " js/source/objects/DataElement.js:540"
+            "line": " js/source/objects/DataElement.js:527"
         },
         {
             "message": "Missing item type\nConvert a formatting string into a formatting array.",
-            "line": " js/source/objects/DataElement.js:565"
+            "line": " js/source/objects/DataElement.js:552"
         },
         {
             "message": "Missing item type\nParse multiple units of value.",
-            "line": " js/source/objects/DataElement.js:610"
+            "line": " js/source/objects/DataElement.js:597"
         },
         {
             "message": "Missing item type\nParse a range’s units.",
-            "line": " js/source/objects/DataElement.js:671"
+            "line": " js/source/objects/DataElement.js:658"
         },
         {
             "message": "Missing item type\nEscape any regular expression special characters.",
-            "line": " js/source/objects/DataElement.js:718"
+            "line": " js/source/objects/DataElement.js:705"
         },
         {
             "message": "Missing item type\nSlice a string up to a string marked as a starting point.",
-            "line": " js/source/objects/DataElement.js:726"
+            "line": " js/source/objects/DataElement.js:713"
         },
         {
             "message": "Missing item type\nSlice a string up to a string marked as the ending point.",
-            "line": " js/source/objects/DataElement.js:738"
+            "line": " js/source/objects/DataElement.js:725"
         },
         {
             "message": "Missing item type\nConvert a date representation into a date.",
@@ -1484,35 +1502,35 @@
         },
         {
             "message": "Missing item type\nGet the shadow ui attributes from an element.",
-            "line": " js/source/objects/Element.js:528"
+            "line": " js/source/objects/Element.js:544"
         },
         {
             "message": "Missing item type\nAttach nodes relevant to the shadow element.",
-            "line": " js/source/objects/Element.js:550"
+            "line": " js/source/objects/Element.js:566"
         },
         {
             "message": "Missing item type\nBuild out the template contents.",
-            "line": " js/source/objects/Element.js:584"
+            "line": " js/source/objects/Element.js:600"
         },
         {
             "message": "Missing item type\nDefine the relationship between the element and the host.",
-            "line": " js/source/objects/Element.js:601"
+            "line": " js/source/objects/Element.js:617"
         },
         {
             "message": "Missing item type\nCopy shadow ui attributes to the source element.",
-            "line": " js/source/objects/Element.js:614"
+            "line": " js/source/objects/Element.js:630"
         },
         {
             "message": "Missing item type\nDecorate a shadow attribute with a getter and setter.",
-            "line": " js/source/objects/Element.js:632"
+            "line": " js/source/objects/Element.js:648"
         },
         {
             "message": "Missing item type\nUpdate a shadow attribute on an element.",
-            "line": " js/source/objects/Element.js:664"
+            "line": " js/source/objects/Element.js:680"
         },
         {
             "message": "Missing item type\nPrefix each class name in a hash of class names with a prefix.",
-            "line": " js/source/objects/Element.js:680"
+            "line": " js/source/objects/Element.js:696"
         },
         {
             "message": "Missing item type\nBuild a shadow element.",

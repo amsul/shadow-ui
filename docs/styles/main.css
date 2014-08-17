@@ -113,9 +113,7 @@ a:focus {
     margin-bottom: 4rem;
 }
     .container__box {
-        padding-top: 2rem;
-        margin-top: -2rem;
-        margin-bottom: 3.25rem;
+        margin-bottom: 2.75rem;
     }
     .container__box--bordered {
         padding-bottom: 2rem;
@@ -277,6 +275,9 @@ a:focus {
     padding: 1rem 1.5rem;
     margin-bottom: 1.25rem;
 }
+.notification--warning {
+    border-top-color: darkorange;
+}
 
 
 
@@ -285,6 +286,12 @@ a:focus {
 /**
  * Style trumps.
  */
+.is-block {
+    margin-bottom: 1.25rem;
+}
+.is-centered {
+    text-align: center;
+}
 .is-thin {
     font-weight: 100;
 }

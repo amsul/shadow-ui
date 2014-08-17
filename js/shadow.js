@@ -1,6 +1,6 @@
 
 /*!
- * Shadow UI v0.6.1-0, 2014/08/15
+ * Shadow UI v0.6.1-0, 2014/08/17
  * By Amsul, http://amsul.ca
  * Hosted on http://amsul.github.io/shadow-ui
  * Licensed under MIT
@@ -476,7 +476,7 @@ shadow.Object = Object.create({}, {
      *
      * @static
      * @method create
-     * @param {Object} options Options to extend the object’s prototype.
+     * @param {Object} [options] Options to extend the object’s prototype.
      * @return {shadow.Object} An instance of the shadow object.
      */
     create: {
@@ -910,28 +910,28 @@ shadow.Object.extend({
      * ```
      *
      * @method compare
-     * @param {String} [comparison] A comparison scope. Valid values are:
+     * @param {String} [comparison='time'] A comparison scope. Valid values are:
      *
-     * - `'date'`
-     * - `'date greater'`
-     * - `'date lesser'`
-     * - `'date greater equal'`
-     * - `'date lesser equal'`
-     * - `'month'`
-     * - `'month greater'`
-     * - `'month lesser'`
-     * - `'month greater equal'`
-     * - `'month lesser equal'`
-     * - `'year'`
-     * - `'year greater'`
-     * - `'year lesser'`
-     * - `'year greater equal'`
-     * - `'year lesser equal'`
-     * - `'decade'`
-     * - `'decade greater'`
-     * - `'decade lesser'`
-     * - `'decade greater equal'`
-     * - `'decade lesser equal'`
+     * - `date`
+     * - `date greater`
+     * - `date lesser`
+     * - `date greater equal`
+     * - `date lesser equal`
+     * - `month`
+     * - `month greater`
+     * - `month lesser`
+     * - `month greater equal`
+     * - `month lesser equal`
+     * - `year`
+     * - `year greater`
+     * - `year lesser`
+     * - `year greater equal`
+     * - `year lesser equal`
+     * - `decade`
+     * - `decade greater`
+     * - `decade lesser`
+     * - `decade greater equal`
+     * - `decade lesser equal`
      *
      * @param {Array|String|Number|Date|shadow.Date} date The value of the date to compare against.
      * @return {Boolean}
@@ -1003,12 +1003,12 @@ shadow.Object.extend({
      * ```
      *
      * @method compareRange
-     * @param {String} [comparison] A comparison scope. Valid values are:
+     * @param {String} [comparison='date'] A comparison scope. Valid values are:
      *
-     * - `'date'`
-     * - `'month'`
-     * - `'year'`
-     * - `'decade'`
+     * - `date`
+     * - `month`
+     * - `year`
+     * - `decade`
      *
      * @param {Array} range The range to compare against.
      * @return {Boolean}
@@ -1298,9 +1298,21 @@ shadow.Object.extend({
      */
     content: null,
     /**
-     * Set up any listeners, configurations, attributes, etc. before
-     * they all are sealed and frozen.
+     * Set up any element listeners, configurations, attributes, etc. before
+     * they all are frozen and getters/setters are bound to the attributes.
      *
+     * For an instance-specific setup, safely override the method:
+     *
+     * ```javascript
+     * var shaowEl = shadow.Element.create({
+     *     setup: function() {
+     *         this._super()
+     *         // carry on with any setup here
+     *     }
+     * })
+     * ```
+     *
+     * @protected
      * @method setup
      */
     setup: null,
@@ -1320,7 +1332,11 @@ shadow.Object.extend({
      * @static
      * @method create
      * @param {Object} options Options for the element’s prototype.
-     * @param {HTMLElement|jQuery} options.$el The source element of the shadow element.
+     * @param {jQuery|HTMLElement|String} options.$el
+     *        The source element of the shadow element. If it is a string,
+     *        the value will be used as a jQuery selector.
+     * @param [options.(...)] Any other attributes, properties, or methods of
+     *                        the element can be passed to be overwritten.
      * @return {shadow.Element} An instance of the shadow element.
      */
     create: function(options) {
@@ -1822,20 +1838,6 @@ shadow.Element.extend({
         input: "input"
     },
     /**
-     * Setup the data element’s attributes before everything gets sealed
-     * and before getters and setters are bound onto the attributes.
-     *
-     * For an instance-specific setup, safely override the method:
-     *
-     * ```javascript
-     * var dataEl = shadow.DataElement.create({
-     *     setup: function() {
-     *         this._super()
-     *         // carry on with any setup here
-     *     }
-     * })
-     * ```
-     *
      * @method setup
      */
     setup: function() {
@@ -1959,7 +1961,7 @@ shadow.Element.extend({
      * @todo Implement the `options` argument.
      * @method format
      * @param {String|Boolean|Number|Array|Hash} value The value to format.
-     * @param {Hash} options Options to customize the formatting.
+     * @param {Hash} [options] Options to customize the formatting.
      * @return {String} The formatted string.
      */
     format: function(value, options) {
@@ -2069,11 +2071,12 @@ shadow.Element.extend({
     },
     //parseUnit
     /**
-     * Get a data element’s attribute with certain options.
+     * Get a data element’s attribute value.
      *
      * @method get
      * @param {String} name The name of the attribute to get.
-     * @param {Hash} options Options to customize the return value, such as with formatting.
+     * @param {Hash} [options] Options to customize the return value.
+     * @param {Boolean} options.format A truthy value will return a formatted value.
      */
     get: function(name, options) {
         var dataElement = this;

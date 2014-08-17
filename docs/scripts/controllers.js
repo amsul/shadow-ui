@@ -4,55 +4,201 @@ define(function(require) {
 
     var Em = require('ember')
 
+    var objects = require('objects')
+    var TabsObject = objects.TabsObject
+    var TabObject = objects.TabObject
+    var DocItemObject = objects.DocItemObject
+
     var ClassController = Em.ObjectController.extend({
-        queryParams: ['itemtype', 'name'],
-        itemtype: 'index',
-        name: '',
-        tabsSortedClass: function() {
-            var model = this.get('model')
-            var ClassItemsObject = Em.Object.extend({
-                isIndex: false,
-                isActive: false,
-                name: null,
-                title: null,
-                data: null
+
+        needs: ['application'],
+
+        queryParams: ['tab', 'item'],
+        tab: 'index',
+        item: '',
+
+        definedAt: function() {
+            return '%@#L%@'.fmt(this.get('file'), this.get('line'))
+        }.property('file', 'line'),
+
+        hasName: function(classitem) {
+            return 'name' in classitem
+        },
+
+        allAppClasses: Em.computed.alias('controllers.application.model.classes'),
+        allAppClassitems: Em.computed.alias('controllers.application.model.classitems'),
+
+        extensionTrail: function() {
+
+            var allAppClasses = this.get('allAppClasses')
+            var extensionTrail = []
+            var classObject = allAppClasses.findBy('name', this.get('name'))
+            var extendedFrom
+
+            /*jshint sub: true*/
+            while ( classObject && (extendedFrom = classObject['extends']) ) {
+                if ( extendedFrom ) {
+                    extensionTrail.push(extendedFrom)
+                    classObject = allAppClasses.findBy('name', extendedFrom)
+                }
+            }
+            /*jshint sub: false*/
+
+            return extensionTrail
+        }.property('name'),
+
+        ownedClassitems: function() {
+            return this.get('allAppClassitems').
+                filterBy('class', this.get('name')).
+                filter(this.hasName)
+        }.property('name'),
+
+        inheritedClassitems: function() {
+            var allAppClassitems = this.get('allAppClassitems')
+            var extensionTrail = this.get('extensionTrail')
+            return extensionTrail.
+                map(function(extensionName) {
+                    return allAppClassitems.filterBy('class', extensionName)
+                }).
+                reduce(function(collection, extensionClassitems) {
+                    collection = collection.concat(extensionClassitems)
+                    return collection
+                }, []).
+                filter(this.hasName)
+        }.property('name'),
+
+        docitems: function() {
+
+            var intoDocItem = function(data) {
+                return DocItemObject.create({
+                    data: data
+                })
+            }
+
+            var ownedDocItems = this.get('ownedClassitems').
+                map(intoDocItem)
+
+            var extensionTrail = this.get('extensionTrail')
+
+            var inheritedNames = []
+
+            var inheritedDocItems = !extensionTrail.length ? [] :
+                this.get('inheritedClassitems').
+                    map(intoDocItem).
+                    filter(function(docitem) {
+                        var className = docitem.get('className')
+                        var extendedDocItem = ownedDocItems.findBy('name', docitem.get('name'))
+                        if ( extendedDocItem ) {
+                            if ( !extendedDocItem.get('isExtended') ) {
+                                extendedDocItem.set('isExtended', true)
+                                extendedDocItem.set('extendedFrom', className)
+                            }
+                            return false
+                        }
+                        if ( extensionTrail.indexOf(className) > -1 ) {
+                            var docitemName = docitem.get('name')
+                            if ( inheritedNames.indexOf(docitemName) < 0 ) {
+                                inheritedNames.push(docitemName)
+                                docitem.set('isInherited', true)
+                                docitem.set('inheritedFrom', docitem.get('className'))
+                                docitem.set('className', className)
+                                return true
+                            }
+                            return false
+                        }
+                        return true
+                    })
+
+            return ownedDocItems.concat(inheritedDocItems).sortBy('queryName')
+        }.property('name'),
+
+        indexedDocitems: function() {
+            var docitems = this.get('docitems')
+            var tabObjects = this.get('tabObjects').slice(1)
+            var indexedDocitems = tabObjects.map(function(tabObject) {
+                var tabName = tabObject.get('name')
+                return {
+                    data: tabObject,
+                    units: docitems.filterBy('itemName', tabName)
+                }
             })
-            var index = ClassItemsObject.create({
-                isIndex: true,
-                name: 'index',
-                title: 'Index',
-                data: []
+            return indexedDocitems
+        }.property('docitems'),
+
+        tabObjects: function() {
+            var docitems = this.get('docitems')
+            var namesToTitles = {
+                index: 'Index',
+                attribute: 'Attributes',
+                property: 'Properties',
+                method: 'Methods',
+            }
+            var names = Object.keys(namesToTitles).filter(function(key) {
+                return docitems.findBy('itemName', key)
             })
-            var tabs = [index]
-            if ( model.attributes.length ) {
-                var attributes = ClassItemsObject.create({
-                    name: 'attribute',
-                    title: 'Attributes',
-                    data: model.attributes.sortBy('name')
+            names.unshift('index')
+            return names.map(function(name) {
+                return TabObject.create({
+                    name: name,
+                    title: namesToTitles[name] || name
                 })
-                index.data.push(attributes)
-                tabs.push(attributes)
-            }
-            if ( model.properties.length ) {
-                var properties = ClassItemsObject.create({
-                    name: 'property',
-                    title: 'Properties',
-                    data: model.properties.sortBy('name')
+            })
+        }.property('docitems'),
+
+        tabsObject: function() {
+            var tabObjects = this.get('tabObjects')
+            return TabsObject.create({
+                data: tabObjects
+            })
+        }.property('tabObjects'),
+
+        updateActiveTab: function() {
+            var tabName = this.get('tab')
+            var tabsObject = this.get('tabsObject')
+            tabsObject.setActiveTab(tabName)
+        }.observes('tab'),
+
+        indexTabObject: function() {
+            var tabObjects = this.get('tabObjects')
+            return tabObjects.findBy('name', 'index')
+        }.property('tabObjects'),
+
+        showInherited: true,
+        showProtected: true,
+        showPrivate: false,
+        showDeprecated: false,
+
+        toggleClassitemsVisibility: function(type, visibility) {
+            this.get('indexedDocitems').forEach(function(docitem) {
+                docitem.units.filterBy(type, true).forEach(function(unit) {
+                    unit.set('isHidden', !visibility)
                 })
-                index.data.push(properties)
-                tabs.push(properties)
-            }
-            if ( model.methods.length ) {
-                var methods = ClassItemsObject.create({
-                    name: 'method',
-                    title: 'Methods',
-                    data: model.methods.sortBy('name')
-                })
-                index.data.push(methods)
-                tabs.push(methods)
-            }
-            return tabs
-        }.property('model')
+            })
+        },
+
+        updateVisibilityOfClassitems: function() {
+            this.updateInheritedClassitems()
+            this.updateProtectedClassitems()
+            this.updatePrivateClassitems()
+            this.updateDeprecatedClassitems()
+        },
+
+        updateInheritedClassitems: function() {
+            this.toggleClassitemsVisibility('isInherited', this.get('showInherited'))
+        }.observes('showInherited'),
+
+        updateProtectedClassitems: function() {
+            this.toggleClassitemsVisibility('isProtected', this.get('showProtected'))
+        }.observes('showProtected'),
+
+        updatePrivateClassitems: function() {
+            this.toggleClassitemsVisibility('isPrivate', this.get('showPrivate'))
+        }.observes('showPrivate'),
+
+        updateDeprecatedClassitems: function() {
+            this.toggleClassitemsVisibility('isDeprecated', this.get('showDeprecated'))
+        }.observes('showDeprecated'),
+
     })
 
     return {

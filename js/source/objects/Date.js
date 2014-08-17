@@ -196,28 +196,28 @@ shadow.Object.extend({
      * ```
      *
      * @method compare
-     * @param {String} [comparison] A comparison scope. Valid values are:
+     * @param {String} [comparison='time'] A comparison scope. Valid values are:
      *
-     * - `'date'`
-     * - `'date greater'`
-     * - `'date lesser'`
-     * - `'date greater equal'`
-     * - `'date lesser equal'`
-     * - `'month'`
-     * - `'month greater'`
-     * - `'month lesser'`
-     * - `'month greater equal'`
-     * - `'month lesser equal'`
-     * - `'year'`
-     * - `'year greater'`
-     * - `'year lesser'`
-     * - `'year greater equal'`
-     * - `'year lesser equal'`
-     * - `'decade'`
-     * - `'decade greater'`
-     * - `'decade lesser'`
-     * - `'decade greater equal'`
-     * - `'decade lesser equal'`
+     * - `date`
+     * - `date greater`
+     * - `date lesser`
+     * - `date greater equal`
+     * - `date lesser equal`
+     * - `month`
+     * - `month greater`
+     * - `month lesser`
+     * - `month greater equal`
+     * - `month lesser equal`
+     * - `year`
+     * - `year greater`
+     * - `year lesser`
+     * - `year greater equal`
+     * - `year lesser equal`
+     * - `decade`
+     * - `decade greater`
+     * - `decade lesser`
+     * - `decade greater equal`
+     * - `decade lesser equal`
      *
      * @param {Array|String|Number|Date|shadow.Date} date The value of the date to compare against.
      * @return {Boolean}
@@ -303,12 +303,12 @@ shadow.Object.extend({
      * ```
      *
      * @method compareRange
-     * @param {String} [comparison] A comparison scope. Valid values are:
+     * @param {String} [comparison='date'] A comparison scope. Valid values are:
      *
-     * - `'date'`
-     * - `'month'`
-     * - `'year'`
-     * - `'decade'`
+     * - `date`
+     * - `month`
+     * - `year`
+     * - `decade`
      *
      * @param {Array} range The range to compare against.
      * @return {Boolean}

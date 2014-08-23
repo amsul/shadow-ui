@@ -135,17 +135,21 @@ shadow.Object.extend({
 
         value = toDate(value, shadowDate.setToTheFirst)
 
-        var year = value.getFullYear()
-        var month = value.getMonth()
-        var date = value.getDate()
+        var year = value.getUTCFullYear()
+        var month = value.getUTCMonth()
+        var date = value.getUTCDate()
+        var day = value.getUTCDay()
         var time = value.getTime()
+        var offset = value.getTimezoneOffset() * 60 * 1000
 
         _.define(shadowDate, 'value', [year, month, date])
         _.define(shadowDate, 'decade', getDecade(year))
         _.define(shadowDate, 'year', year)
         _.define(shadowDate, 'month', month)
         _.define(shadowDate, 'date', date)
+        _.define(shadowDate, 'day', day)
         _.define(shadowDate, 'time', time)
+        _.define(shadowDate, 'offset', offset)
 
         return shadowDate
     },
@@ -405,7 +409,7 @@ function toDate(val, setToTheFirst) {
     if ( setToTheFirst ) {
         val.setDate(1)
     }
-    val.setHours(0, 0, 0, 0)
+    val.setUTCHours(0, 0, 0, 0)
     return val
 }
 

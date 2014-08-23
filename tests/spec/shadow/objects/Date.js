@@ -40,10 +40,18 @@ describe('shadow.Date', function() {
             expect(date2.date).toBe(13)
         })
 
+        it('sets the day')
+
         it('sets the time', function() {
-            expect(date1.time).toBe(new Date(2014, 3, 20).getTime())
-            expect(date2.time).toBe(new Date(1969, 9, 13).getTime())
+            var date = new Date(2014, 3, 20)
+            date.setUTCHours(0,0,0,0)
+            expect(date1.time).toBe(date.getTime())
+            date = new Date(1969, 9, 13)
+            date.setUTCHours(0,0,0,0)
+            expect(date2.time).toBe(date.getTime())
         })
+
+        it('sets the timezone offset')
 
         it('can set the date to the first of the month', function() {
             var dateObj = shadow.Date.create([2013, 4, 19], { setToTheFirst: true })
@@ -325,6 +333,7 @@ describe('shadow.Date', function() {
 
         it('returns the time of the date', function() {
             var date = new Date(2013, 3, 20)
+            date.setUTCHours(0,0,0,0)
             var shadowDate = shadow.Date.create([2013, 3, 20])
             expect(shadowDate.valueOf()).toBe(date.getTime())
             expect(shadowDate.time).toBe(date.getTime())

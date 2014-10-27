@@ -324,6 +324,10 @@ shadow.Object.extend({
             comparison = ''
         }
 
+        if ( !Array.isArray(range) ) {
+            throw new Error('A range must be an array.')
+        }
+
         var shadowDate = this
 
         if ( !range.length || !shadowDate.value ) {
@@ -403,14 +407,18 @@ function toDate(val, setToTheFirst) {
     if ( Array.isArray(val) ) {
         val = new Date(val[0], val[1], val[2])
     }
-    if ( !_.isTypeOf(val, 'date') ) {
+    else {
         val = new Date(val)
     }
     if ( setToTheFirst ) {
         val.setDate(1)
     }
-    val.setUTCHours(0, 0, 0, 0)
-    return val
+    var date = new Date()
+    date.setUTCFullYear(val.getFullYear())
+    date.setUTCMonth(val.getMonth())
+    date.setUTCDate(val.getDate())
+    date.setUTCHours(val.getTimezoneOffset() / 60, val.getTimezoneOffset() % 60, 0, 0)
+    return date
 }
 
 
